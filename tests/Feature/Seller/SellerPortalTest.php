@@ -37,7 +37,7 @@ class SellerPortalTest extends TestCase
             'status' => 'approved',
         ]);
 
-        return $user;
+        return $this->withTwoFactor($user);
     }
 
     public function test_guest_is_redirected_to_login_from_seller_dashboard(): void

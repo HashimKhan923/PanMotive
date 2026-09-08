@@ -49,8 +49,8 @@
 </div>
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4" @nonce></script>
+<script @nonce>
     new Chart(document.getElementById('gmvChart'), {
         type: 'line',
         data: {

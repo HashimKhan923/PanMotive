@@ -15,8 +15,8 @@
 </div>
 
 @push('scripts')
-<script src="https://js.stripe.com/v3/"></script>
-<script>
+<script src="https://js.stripe.com/v3/" @nonce></script>
+<script @nonce>
     const stripe = Stripe(@json(config('services.stripe.key')));
     const elements = stripe.elements({ clientSecret: @json($clientSecret) });
     const paymentElement = elements.create('payment');

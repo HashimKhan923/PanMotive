@@ -24,7 +24,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/onboarding/stripe/return', [StripeOnboardingController::class, 'return'])->name('seller.onboarding.stripe.return');
     Route::get('/onboarding/stripe/refresh', [StripeOnboardingController::class, 'refresh'])->name('seller.onboarding.stripe.refresh');
 
-    Route::middleware(['seller', 'seller.approved'])->group(function () {
+    Route::middleware(['seller', 'seller.approved', '2fa'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('seller.dashboard');
 
         Route::get('/products', ProductList::class)->name('seller.products.index');

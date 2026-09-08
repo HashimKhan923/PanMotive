@@ -37,12 +37,12 @@ class AdminConsoleTest extends TestCase
         $u = User::factory()->create();
         $u->assignRole($role);
 
-        return $u;
+        return $this->withTwoFactor($u);
     }
 
     private function pendingSeller(): SellerProfile
     {
-        $user = User::factory()->create();
+        $user = $this->withTwoFactor(User::factory()->create());
         $user->assignRole('seller');
 
         return SellerProfile::create([

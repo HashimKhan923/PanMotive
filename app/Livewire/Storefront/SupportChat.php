@@ -3,6 +3,7 @@
 namespace App\Livewire\Storefront;
 
 use App\Services\AI\AiClient;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
 class SupportChat extends Component
@@ -25,6 +26,15 @@ class SupportChat extends Component
         if (! trim($this->input)) {
             return;
         }
+
+        // Cost guard — the AI call is a paid external request.
+        $key = 'ai-chat:'.(auth()->id() ?: request()->ip());
+        if (RateLimiter::tooManyAttempts($key, 20)) {
+            $this->messages[] = ['role' => 'assistant', 'content' => 'You\'re sending messages too quickly — give it a minute.'];
+
+            return;
+        }
+        RateLimiter::hit($key, 60);
 
         $this->messages[] = ['role' => 'user', 'content' => $this->input];
         $userMessage = $this->input;

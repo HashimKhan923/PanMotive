@@ -4,6 +4,7 @@ use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\OrderController;
 use App\Http\Controllers\Storefront\ProductController;
+use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Storefront\ReturnController;
 use App\Http\Controllers\Storefront\WalletController;
 use App\Http\Controllers\SitemapController;
@@ -21,6 +22,11 @@ use Illuminate\Support\Facades\Route;
 | Livewire:    App\Livewire\Storefront\*
 */
 
+// Two-factor login challenge — pre-authentication (session-gated on '2fa.user').
+Route::get('/two-factor/challenge', [TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
+Route::post('/two-factor/challenge', [TwoFactorController::class, 'verifyChallenge'])
+    ->middleware('throttle:6,1')->name('two-factor.verify');
+
 // Catalog
 Route::get('/', fn () => view('storefront.home'))->name('home');
 Route::get('/shop', ProductBrowse::class)->name('products.index');
@@ -34,8 +40,8 @@ Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remov
 
 // Checkout
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('auth')->name('checkout.store');
-Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
+Route::post('/checkout', [CheckoutController::class, 'store'])->middleware(['auth', 'throttle:checkout'])->name('checkout.store');
+Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->middleware('throttle:checkout')->name('checkout.apply-coupon');
 Route::get('/checkout/confirmation/{orderNumber}', [CheckoutController::class, 'confirmation'])
     ->name('checkout.confirmation');
 
@@ -43,6 +49,11 @@ Route::get('/checkout/confirmation/{orderNumber}', [CheckoutController::class, '
 Route::middleware('auth')->group(function () {
     Route::view('dashboard', 'dashboard')->middleware('verified')->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
+
+    // Two-factor enrolment — authenticated, but deliberately NOT behind '2fa'.
+    Route::get('/two-factor/setup', [TwoFactorController::class, 'setup'])->name('two-factor.setup');
+    Route::post('/two-factor/confirm', [TwoFactorController::class, 'confirm'])->middleware('throttle:6,1')->name('two-factor.confirm');
+    Route::delete('/two-factor', [TwoFactorController::class, 'disable'])->name('two-factor.disable');
 
     Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
 

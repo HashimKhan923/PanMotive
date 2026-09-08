@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 | (EnsureUserIsAdmin) gates on role; controllers add per-permission checks.
 */
 
-Route::middleware(['auth', 'admin'])->group(function () {
+Route::middleware(['auth', 'admin', '2fa'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     Route::get('/sellers/pending', [SellerApprovalController::class, 'index'])->name('admin.sellers.pending');

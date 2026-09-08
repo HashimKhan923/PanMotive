@@ -10,3 +10,8 @@ Artisan::command('inspire', function () {
 
 Schedule::command('orders:auto-confirm-deliveries')->daily();
 Schedule::command('carts:send-abandoned-reminders')->hourly();
+
+// Backups (spatie/laravel-backup → s3-backups disk).
+Schedule::command('backup:clean')->dailyAt('01:00');
+Schedule::command('backup:run')->dailyAt('02:00');
+Schedule::command('backup:monitor')->dailyAt('03:00');

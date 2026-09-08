@@ -60,6 +60,20 @@ return [
             'report' => false,
         ],
 
+        // Backup target — MUST be a different bucket/account from the primary
+        // 's3' disk so a compromise or fat-finger on primary can't touch backups.
+        's3-backups' => [
+            'driver' => 's3',
+            'key' => env('BACKUP_AWS_ACCESS_KEY_ID'),
+            'secret' => env('BACKUP_AWS_SECRET_ACCESS_KEY'),
+            'region' => env('BACKUP_AWS_DEFAULT_REGION'),
+            'bucket' => env('BACKUP_AWS_BUCKET'),
+            'endpoint' => env('BACKUP_AWS_ENDPOINT'),
+            'use_path_style_endpoint' => env('BACKUP_AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*

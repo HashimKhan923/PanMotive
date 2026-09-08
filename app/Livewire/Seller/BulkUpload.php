@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller;
 
 use App\Jobs\ProcessBulkProductUpload;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -19,6 +20,15 @@ class BulkUpload extends Component
     public function upload(): void
     {
         $this->validate(['csvFile' => 'required|mimes:csv,txt|max:10240']);
+
+        // Heavy background job — cap how often a seller can kick one off.
+        $key = 'bulk-upload:'.auth()->id();
+        if (RateLimiter::tooManyAttempts($key, 3)) {
+            $this->addError('csvFile', 'Too many uploads — please wait a minute before trying again.');
+
+            return;
+        }
+        RateLimiter::hit($key, 60);
 
         $path = $this->csvFile->store('bulk-uploads/'.auth()->id());
 
