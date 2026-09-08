@@ -5,10 +5,12 @@ namespace App\Notifications;
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
+use NotificationChannels\WebPush\WebPushMessage;
 
 /**
- * Minimal stub — channels (mail/broadcast) are wired with the notification
- * system in Phase 7. Persists to the database so nothing is lost.
+ * Channels are wired in Phase 7/8: persisted to the database, and pushed to the
+ * seller's subscribed devices via Web Push when they've opted in.
  */
 class NewOrderReceived extends Notification
 {
@@ -21,7 +23,22 @@ class NewOrderReceived extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        $channels = ['database'];
+
+        if (method_exists($notifiable, 'pushSubscriptions') && $notifiable->pushSubscriptions()->exists()) {
+            $channels[] = WebPushChannel::class;
+        }
+
+        return $channels;
+    }
+
+    public function toWebPush(object $notifiable, Notification $notification): WebPushMessage
+    {
+        return (new WebPushMessage)
+            ->title('New order received')
+            ->body("Order {$this->order->order_number} is waiting for you to accept.")
+            ->action('View order', 'view_order')
+            ->data(['url' => route('seller.orders.index')]);
     }
 
     /**

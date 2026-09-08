@@ -1,19 +1,17 @@
-// resources/js/app.js
 import './bootstrap';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { initMotion, pageTransition, flyToCart } from './motion';
 
-gsap.registerPlugin(ScrollTrigger);
-window.gsap = gsap;
+window.flyToCart = flyToCart; // exposed for Livewire wire:click hooks
 
-document.addEventListener('DOMContentLoaded', () => {
-    gsap.utils.toArray('[data-reveal]').forEach((el) => {
-        gsap.from(el, {
-            opacity: 0,
-            y: 30,
-            duration: 0.6,
-            ease: 'power2.out',
-            scrollTrigger: { trigger: el, start: 'top 85%' },
-        });
-    });
+document.addEventListener('DOMContentLoaded', initMotion);
+document.addEventListener('livewire:navigated', () => {
+    initMotion();
+    pageTransition();
 });
+
+// Register the service worker (hand-rolled PWA — see public/sw.js).
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+}

@@ -1,9 +1,11 @@
 <div x-data="{ open: false }" class="fixed bottom-6 right-6 z-50">
-    <button @click="open = !open" class="bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full w-14 h-14 shadow-lg flex items-center justify-center font-bold">
-        💬
+    <button @click="open = !open" x-bind:aria-expanded="open" aria-label="Open support chat"
+            class="bg-amber-500 hover:bg-amber-400 text-slate-900 rounded-full w-14 h-14 shadow-lg flex items-center justify-center font-bold">
+        <span aria-hidden="true">💬</span>
     </button>
 
-    <div x-show="open" x-transition x-cloak class="absolute bottom-16 right-0 w-80 bg-white border rounded-2xl shadow-xl flex flex-col h-96">
+    <div x-show="open" x-transition x-cloak role="dialog" aria-label="Support chat"
+         class="absolute bottom-16 right-0 w-80 bg-white border rounded-2xl shadow-xl flex flex-col h-96">
         <div class="p-3 border-b font-semibold text-sm">Pan Motive Support</div>
         <div class="flex-1 overflow-y-auto p-3 space-y-2 text-sm">
             @forelse ($messages as $msg)

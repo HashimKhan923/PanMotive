@@ -20,7 +20,8 @@
 
         <div class="mt-6 grid gap-10 md:grid-cols-2">
             <div class="aspect-square overflow-hidden rounded-lg bg-slate-100">
-                <img src="{{ $product->getFirstMediaUrl('images') }}" alt="{{ $product->title }}"
+                <img src="{{ $product->getFirstMediaUrl('images', 'webp') ?: $product->getFirstMediaUrl('images') }}"
+                     alt="{{ $product->title }}" width="800" height="800" fetchpriority="high"
                      class="h-full w-full object-cover">
             </div>
 
@@ -50,14 +51,9 @@
                     <div><dt class="inline font-medium">In stock:</dt> <dd class="inline">{{ $product->quantity }}</dd></div>
                 </dl>
 
-                <form method="POST" action="{{ route('cart.add') }}" class="mt-6">
-                    @csrf
-                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                    <button type="submit"
-                            class="w-full rounded-md bg-slate-900 px-5 py-3 text-white hover:bg-slate-700">
-                        Add to cart
-                    </button>
-                </form>
+                <div class="mt-6">
+                    @livewire('storefront.add-to-cart-button', ['product' => $product], key('atc-'.$product->id))
+                </div>
             </div>
         </div>
 

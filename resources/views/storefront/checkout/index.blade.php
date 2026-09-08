@@ -54,15 +54,15 @@
 
             @foreach (['name' => 'Full name', 'line1' => 'Address', 'line2' => 'Address line 2 (optional)', 'city' => 'City', 'state' => 'State', 'postal_code' => 'ZIP / Postal code'] as $field => $label)
                 <div>
-                    <label class="text-sm font-medium">{{ $label }}</label>
-                    <input name="{{ $field }}" value="{{ old($field) }}" class="mt-1 w-full rounded-lg border-slate-300">
+                    <label for="co-{{ $field }}" class="text-sm font-medium">{{ $label }}</label>
+                    <input id="co-{{ $field }}" name="{{ $field }}" value="{{ old($field) }}" autocomplete="{{ ['name' => 'name', 'line1' => 'address-line1', 'line2' => 'address-line2', 'city' => 'address-level2', 'state' => 'address-level1', 'postal_code' => 'postal-code'][$field] }}" class="mt-1 w-full rounded-lg border-slate-300">
                     @error($field) <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
                 </div>
             @endforeach
 
             <div>
-                <label class="text-sm font-medium">Country (2-letter code)</label>
-                <input name="country" value="{{ old('country', 'US') }}" maxlength="2" class="mt-1 w-full rounded-lg border-slate-300">
+                <label for="co-country" class="text-sm font-medium">Country (2-letter code)</label>
+                <input id="co-country" name="country" value="{{ old('country', 'US') }}" maxlength="2" autocomplete="country" class="mt-1 w-full rounded-lg border-slate-300">
                 @error('country') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
             </div>
 

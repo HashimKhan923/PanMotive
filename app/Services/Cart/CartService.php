@@ -117,6 +117,28 @@ class CartService
         return (int) $this->currentCart()->items()->sum('quantity');
     }
 
+    /**
+     * Item count without creating a cart row — safe to call on every page render
+     * (e.g. the header badge) for guests who have never added anything.
+     */
+    public function itemCount(): int
+    {
+        $cart = $this->existingCart();
+
+        return $cart ? (int) $cart->items()->sum('quantity') : 0;
+    }
+
+    private function existingCart(): ?Cart
+    {
+        if ($user = auth()->user()) {
+            return $user->cart()->first();
+        }
+
+        $sessionId = session('cart_session_id');
+
+        return $sessionId ? Cart::where('session_id', $sessionId)->first() : null;
+    }
+
     private function mergeGuestCartInto(Cart $userCart): void
     {
         $sessionId = session('cart_session_id');
