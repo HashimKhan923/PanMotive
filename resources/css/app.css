@@ -2,25 +2,125 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Visible focus states — Tailwind's reset suppresses the default browser outline. */
-*:focus-visible {
-    outline: 2px solid #f59e0b;
-    outline-offset: 2px;
-    border-radius: 2px;
+/* ============================================================
+   Design tokens — RGB triplets so Tailwind's <alpha-value> works.
+   Light is the default; .dark on <html> swaps the roles.
+   ============================================================ */
+:root {
+    --c-bg: 248 250 252;          /* slate-50  */
+    --c-surface: 255 255 255;     /* white     */
+    --c-surface-2: 241 245 249;   /* slate-100 */
+    --c-fg: 15 23 42;             /* slate-900 */
+    --c-muted: 100 116 139;       /* slate-500 */
+    --c-line: 226 232 240;        /* slate-200 */
+    --c-brand: 11 27 52;          /* deep navy */
+    --c-brand-fg: 255 255 255;
+    --c-accent: 245 165 36;       /* amber     */
+    --c-accent-fg: 15 23 42;
 }
 
-/* Alpine x-cloak: hide elements until Alpine initialises (support chat panel). */
-[x-cloak] {
-    display: none !important;
+.dark {
+    --c-bg: 2 6 23;              /* slate-950 */
+    --c-surface: 15 23 42;       /* slate-900 */
+    --c-surface-2: 30 41 59;     /* slate-800 */
+    --c-fg: 241 245 249;         /* slate-100 */
+    --c-muted: 148 163 184;      /* slate-400 */
+    --c-line: 40 52 74;
+    --c-brand: 15 23 42;
+    --c-brand-fg: 255 255 255;
+    --c-accent: 245 165 36;
+    --c-accent-fg: 15 23 42;
 }
 
-@media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        -webkit-tap-highlight-color: transparent;
     }
+    body {
+        @apply bg-bg text-fg antialiased;
+        font-feature-settings: 'cv11', 'ss01';
+    }
+    ::selection {
+        background: rgb(var(--c-accent) / 0.28);
+    }
+    h1, h2, h3, h4 {
+        @apply font-display tracking-tight text-fg;
+        text-wrap: balance;
+    }
+    a {
+        @apply transition-colors;
+    }
+
+    /* Reveal system: elements are visible by default. Only when JS is present
+       (html.js) do we hide them, so a JS failure never leaves content blank. */
+    html.js [data-reveal],
+    html.js [data-reveal-group] > * {
+        opacity: 0;
+    }
+    @media (prefers-reduced-motion: reduce) {
+        html.js [data-reveal],
+        html.js [data-reveal-group] > * {
+            opacity: 1 !important;
+        }
+        *, *::before, *::after {
+            animation-duration: .01ms !important;
+            transition-duration: .01ms !important;
+            scroll-behavior: auto !important;
+        }
+    }
+
+    *:focus-visible {
+        outline: 2px solid rgb(var(--c-accent));
+        outline-offset: 2px;
+        border-radius: 3px;
+    }
+    [x-cloak] { display: none !important; }
+}
+
+@layer components {
+    .container-x {
+        @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    }
+
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold
+               transition-[transform,background-color,box-shadow] duration-150 active:scale-[.97]
+               focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
+    }
+    .btn-accent   { @apply btn bg-accent text-accent-fg hover:brightness-105 shadow-[0_8px_24px_-8px_rgb(245_165_36/.6)]; }
+    .btn-brand    { @apply btn bg-brand text-brand-fg hover:opacity-90; }
+    .btn-outline  { @apply btn border border-line bg-surface text-fg hover:bg-surface-2; }
+    .btn-ghost    { @apply btn bg-transparent text-fg hover:bg-surface-2; }
+    .btn-sm       { @apply px-3.5 py-2 text-xs rounded-lg; }
+
+    .card {
+        @apply rounded-2xl border border-line bg-surface shadow-card;
+    }
+
+    .input {
+        @apply w-full rounded-xl border-line bg-surface text-fg placeholder:text-muted
+               focus:border-accent focus:ring-2 focus:ring-accent/30;
+    }
+    .label { @apply mb-1.5 block text-sm font-medium text-fg; }
+
+    .pill {
+        @apply inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-muted;
+    }
+
+    .skeleton {
+        @apply relative overflow-hidden rounded-lg bg-surface-2;
+    }
+    .skeleton::after {
+        content: '';
+        @apply absolute inset-0 -translate-x-full;
+        background: linear-gradient(90deg, transparent, rgb(var(--c-fg) / 0.06), transparent);
+        animation: shimmer 1.4s infinite;
+    }
+
+    .prose-pm {
+        @apply text-[15px] leading-relaxed text-fg/90;
+    }
+    .prose-pm p { @apply my-3; }
+    .prose-pm strong { @apply text-fg; }
 }

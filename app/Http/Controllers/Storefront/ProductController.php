@@ -12,11 +12,21 @@ class ProductController extends Controller
         $product = Product::query()
             ->where('slug', $slug)
             ->where('status', 'active')
-            ->with(['brand', 'category', 'seller', 'fitments.make', 'fitments.model'])
+            ->with([
+                'brand', 'category.parent', 'seller.sellerProfile',
+                'fitments.make', 'fitments.model', 'fitments.engine',
+                'attributeValues.attribute',
+            ])
             ->firstOrFail();
 
         $product->increment('views_count');
 
-        return view('storefront.products.show', compact('product'));
+        $related = Product::where('status', 'active')
+            ->where('id', '!=', $product->id)
+            ->where('category_id', $product->category_id)
+            ->with('brand')
+            ->take(4)->get();
+
+        return view('storefront.products.show', compact('product', 'related'));
     }
 }

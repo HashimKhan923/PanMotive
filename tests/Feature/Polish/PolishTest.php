@@ -100,7 +100,7 @@ class PolishTest extends TestCase
         // stagger group renders once results are present.
         $html = $this->get(route('products.index'))->assertOk()->getContent();
 
-        $this->assertStringContainsString('animate-pulse', $html);
+        $this->assertStringContainsString('skeleton', $html);
         $this->assertStringContainsString('wire:loading', $html);
     }
 

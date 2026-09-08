@@ -1,7 +1,7 @@
-<form wire:submit="findParts" class="mx-auto flex max-w-2xl flex-wrap gap-2 rounded-2xl bg-white/10 p-2 backdrop-blur">
+<form wire:submit="findParts" class="grid grid-cols-2 gap-2 sm:grid-cols-4">
     <label class="sr-only" for="vs-make">Vehicle make</label>
     <select id="vs-make" wire:model.live="makeId"
-            class="flex-1 rounded-lg border-0 bg-white/90 px-3 py-2.5 text-sm text-slate-900">
+            class="rounded-xl border-0 bg-white px-3 py-3 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-accent">
         <option value="">Make</option>
         @foreach ($makes as $make)
             <option value="{{ $make->id }}">{{ $make->name }}</option>
@@ -10,7 +10,7 @@
 
     <label class="sr-only" for="vs-model">Vehicle model</label>
     <select id="vs-model" wire:model.live="modelId" @disabled($models->isEmpty())
-            class="flex-1 rounded-lg border-0 bg-white/90 px-3 py-2.5 text-sm text-slate-900 disabled:opacity-50">
+            class="rounded-xl border-0 bg-white px-3 py-3 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-accent disabled:bg-white/60">
         <option value="">Model</option>
         @foreach ($models as $model)
             <option value="{{ $model->id }}">{{ $model->name }}</option>
@@ -19,14 +19,15 @@
 
     <label class="sr-only" for="vs-year">Vehicle year</label>
     <select id="vs-year" wire:model="year" @disabled($years->isEmpty())
-            class="w-28 rounded-lg border-0 bg-white/90 px-3 py-2.5 text-sm text-slate-900 disabled:opacity-50">
+            class="rounded-xl border-0 bg-white px-3 py-3 text-sm font-medium text-slate-900 focus:ring-2 focus:ring-accent disabled:bg-white/60">
         <option value="">Year</option>
         @foreach ($years as $y)
             <option value="{{ $y }}">{{ $y }}</option>
         @endforeach
     </select>
 
-    <button class="rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-semibold text-slate-900 hover:bg-amber-400">
-        Find Parts
+    <button class="btn-accent !py-3">
+        <span wire:loading.remove wire:target="findParts">Find Parts</span>
+        <span wire:loading wire:target="findParts">Searching…</span>
     </button>
 </form>

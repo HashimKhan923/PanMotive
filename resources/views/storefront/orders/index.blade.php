@@ -1,26 +1,36 @@
 @extends('layouts.storefront')
 
-@section('title', 'Your orders')
+@section('title', 'Your orders — ' . config('app.name'))
 
 @section('content')
-<div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-    <h1 class="text-2xl font-semibold">Your orders</h1>
+<div class="container-x max-w-3xl py-10" data-reveal>
+    <h1 class="text-2xl font-bold sm:text-3xl">Your orders</h1>
 
-    @forelse ($orders as $order)
-        <a href="{{ route('orders.show', $order) }}"
-           class="mt-4 flex items-center justify-between rounded-xl border border-slate-200 p-4 hover:bg-slate-50">
-            <div>
-                <p class="font-medium">{{ $order->order_number }}</p>
-                <p class="text-sm text-slate-500">{{ $order->items->count() }} item(s) · {{ $order->status->label() }}</p>
+    <div class="mt-6 space-y-3" data-reveal-group>
+        @forelse ($orders as $order)
+            <a href="{{ route('orders.show', $order) }}" class="card flex items-center justify-between p-5 transition-shadow hover:shadow-card-hover">
+                <div>
+                    <p class="font-semibold">{{ $order->order_number }}</p>
+                    <p class="text-sm text-muted">
+                        {{ optional($order->placed_at ?? $order->created_at)->format('M j, Y') }} ·
+                        {{ $order->items->count() }} {{ Str::plural('item', $order->items->count()) }} ·
+                        <span class="font-medium text-fg">{{ $order->status->label() }}</span>
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span class="font-bold">${{ number_format($order->total, 2) }}</span>
+                    <x-ui.icon name="chevron-right" class="w-5 h-5 text-muted" />
+                </div>
+            </a>
+        @empty
+            <div class="card grid place-items-center p-16 text-center">
+                <x-ui.icon name="box" class="w-10 h-10 text-muted" />
+                <p class="mt-3 font-semibold">No orders yet</p>
+                <a href="{{ route('products.index') }}" class="btn-accent mt-4">Start shopping</a>
             </div>
-            <span class="font-semibold">${{ number_format($order->total, 2) }}</span>
-        </a>
-    @empty
-        <div class="mt-8 rounded-lg border border-dashed border-slate-300 p-10 text-center text-slate-500">
-            No orders yet.
-        </div>
-    @endforelse
+        @endforelse
+    </div>
 
-    <div class="mt-6">{{ $orders->links() }}</div>
+    @if ($orders->hasPages())<div class="mt-6">{{ $orders->links() }}</div>@endif
 </div>
 @endsection
