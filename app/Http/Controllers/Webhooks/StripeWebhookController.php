@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Webhooks;
 
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
+use App\Models\AdminAlert;
 use App\Models\Order;
 use App\Models\SellerProfile;
 use App\Models\User;
 use App\Notifications\NewOrderReceived;
+use App\Services\AI\FraudScoringService;
 use Illuminate\Http\Request;
 use Stripe\Webhook;
 
@@ -49,6 +51,16 @@ class StripeWebhookController extends Controller
         // Notify sellers a paid order is waiting for them to accept.
         foreach ($order->items->groupBy('seller_id') as $sellerId => $items) {
             User::find($sellerId)?->notify(new NewOrderReceived($order));
+        }
+
+        // Fraud/risk scoring — flagged orders surface in the Phase 5 admin alert inbox.
+        $fraud = app(FraudScoringService::class)->score($order);
+
+        if ($fraud['flagged']) {
+            AdminAlert::create([
+                'type' => 'fraud_review',
+                'message' => "Order {$order->order_number} flagged, risk score {$fraud['risk_score']}: ".json_encode($fraud['signals']),
+            ]);
         }
     }
 

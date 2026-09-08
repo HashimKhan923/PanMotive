@@ -1,19 +1,31 @@
+@php($results = $this->results)
 <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between gap-4">
+    <div class="flex flex-wrap items-center justify-between gap-4">
         <h1 class="text-2xl font-semibold">Shop</h1>
-        <input type="search" wire:model.live.debounce.300ms="search" placeholder="Search parts…"
-               class="w-64 rounded-md border-slate-300 text-sm focus:border-slate-400 focus:ring-slate-400">
+        <div class="flex flex-wrap gap-2">
+            <input type="search" wire:model.live.debounce.300ms="q" placeholder="Search parts…"
+                   class="w-56 rounded-md border-slate-300 text-sm focus:border-slate-400 focus:ring-slate-400">
+            <select wire:model.live="sort" class="rounded-md border-slate-300 text-sm">
+                <option value="">Relevance</option>
+                <option value="price_asc">Price: low to high</option>
+                <option value="price_desc">Price: high to low</option>
+            </select>
+        </div>
     </div>
 
-    @if ($products->isEmpty())
+    @if ($fallbackNotice)
+        <p class="mt-4 rounded-md bg-amber-50 px-4 py-2 text-sm text-amber-800">{{ $fallbackNotice }}</p>
+    @endif
+
+    @if ($results->isEmpty())
         <div class="mt-10 rounded-lg border border-dashed border-slate-300 p-10 text-center text-slate-500">
-            No active products yet.
+            No matching products.
         </div>
     @else
         <div class="mt-8 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-4">
-            @foreach ($products as $product)
+            @foreach ($results as $product)
                 <a href="{{ route('products.show', $product->slug) }}"
-                   class="group rounded-lg border border-slate-100 p-3 hover:shadow-sm" data-reveal>
+                   class="group rounded-lg border border-slate-100 p-3 hover:shadow-sm" data-reveal wire:key="p-{{ $product->id }}">
                     <div class="aspect-square overflow-hidden rounded-md bg-slate-100">
                         <img src="{{ $product->getFirstMediaUrl('images') }}" alt="{{ $product->title }}"
                              class="h-full w-full object-cover transition group-hover:scale-105">
@@ -27,7 +39,7 @@
         </div>
 
         <div class="mt-10">
-            {{ $products->links() }}
+            {{ $results->links() }}
         </div>
     @endif
 </div>

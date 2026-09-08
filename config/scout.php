@@ -140,15 +140,19 @@ return [
         'host' => env('MEILISEARCH_HOST', 'http://localhost:7700'),
         'key' => env('MEILISEARCH_KEY'),
         'index-settings' => [
-            // 'users' => [
-            //     'filterableAttributes' => ['id', 'name', 'email'],
-            //     'embedders' => [
-            //         'default' => [
-            //             'source' => 'userProvided',
-            //             'dimensions' => 1536,
-            //         ],
-            //     ],
-            // ],
+            \App\Models\Product::class => [
+                'filterableAttributes' => [
+                    'status', 'category_id', 'brand_id', 'condition',
+                    'price', 'fitment_vehicle_ids', 'seller_id',
+                ],
+                'sortableAttributes' => ['price', 'created_at'],
+                'searchableAttributes' => [
+                    'title', 'part_number', 'oem_number', 'category', 'brand',
+                ],
+                'rankingRules' => [
+                    'words', 'typo', 'proximity', 'attribute', 'sort', 'exactness',
+                ],
+            ],
         ],
         'model-settings' => [
             // User::class => [

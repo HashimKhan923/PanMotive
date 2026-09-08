@@ -5,6 +5,7 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\OrderController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ReturnController;
+use App\Http\Controllers\SitemapController;
 use App\Livewire\Actions\Logout;
 use App\Livewire\Storefront\CartPage;
 use App\Livewire\Storefront\ProductBrowse;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', fn () => view('storefront.home'))->name('home');
 Route::get('/shop', ProductBrowse::class)->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 // Cart
 Route::get('/cart', CartPage::class)->name('cart.index');

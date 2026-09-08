@@ -1,6 +1,16 @@
 <x-storefront-layout>
     <x-slot name="title">{{ $product->meta_title ?: $product->title }}</x-slot>
 
+    @push('structured_data')
+        <script type="application/ld+json">
+        {!! json_encode($product->structured_data ?: [
+            '@context' => 'https://schema.org',
+            '@type' => 'Product',
+            'name' => $product->title,
+        ]) !!}
+        </script>
+    @endpush
+
     <div class="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         <nav class="text-sm text-slate-500">
             <a href="{{ route('products.index') }}" class="hover:text-slate-900">Shop</a>
@@ -54,6 +64,22 @@
         @if ($product->description)
             <div class="prose mt-12 max-w-none">
                 {!! nl2br(e($product->description)) !!}
+            </div>
+        @endif
+
+        @php($recs = app(\App\Services\Recommendations\RecommendationService::class)->frequentlyBoughtWith($product->id))
+        @if ($recs->isNotEmpty())
+            <div class="mt-10" data-reveal>
+                <h3 class="font-semibold mb-3">Frequently Bought Together</h3>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    @foreach ($recs as $rec)
+                        <a href="{{ route('products.show', $rec->slug) }}" class="border rounded-xl p-3 hover:shadow-lg transition">
+                            <img src="{{ $rec->getFirstMediaUrl('images') }}" class="rounded-lg aspect-square object-cover mb-2">
+                            <p class="text-sm line-clamp-2">{{ $rec->title }}</p>
+                            <p class="text-amber-600 font-bold">${{ number_format($rec->sale_price ?? $rec->price, 2) }}</p>
+                        </a>
+                    @endforeach
+                </div>
             </div>
         @endif
 

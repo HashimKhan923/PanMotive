@@ -21,6 +21,8 @@
 
     @include('storefront.partials.footer')
 
+    @livewire('storefront.support-chat')
+
     @livewireScripts
     @stack('scripts')
 </body>

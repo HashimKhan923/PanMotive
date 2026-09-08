@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\GenerateProductSeo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -14,6 +15,25 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Product extends Model implements HasMedia
 {
     use InteractsWithMedia, Searchable, SoftDeletes;
+
+    protected static function booted(): void
+    {
+        // Queued SEO regeneration (never synchronous). Skipped entirely when no
+        // AI key is configured so it isn't a no-op job on every save.
+        if (! config('services.anthropic.key')) {
+            return;
+        }
+
+        static::created(function (Product $product) {
+            GenerateProductSeo::dispatch($product->id);
+        });
+
+        static::updated(function (Product $product) {
+            if ($product->wasChanged(['title', 'description', 'category_id'])) {
+                GenerateProductSeo::dispatch($product->id);
+            }
+        });
+    }
 
     protected $fillable = [
         'seller_id', 'category_id', 'brand_id', 'title', 'slug', 'sku',
@@ -79,11 +99,15 @@ class Product extends Model implements HasMedia
             'part_number' => $this->part_number,
             'oem_number' => $this->oem_number,
             'category' => $this->category?->name,
+            'category_id' => $this->category_id,
             'brand' => $this->brand?->name,
+            'brand_id' => $this->brand_id,
+            'seller_id' => $this->seller_id,
             'price' => (float) ($this->sale_price ?? $this->price),
             'condition' => $this->condition,
             'fitment_vehicle_ids' => $this->fitments()->pluck('vehicles.id')->toArray(),
             'status' => $this->status,
+            'created_at' => $this->created_at?->timestamp,
         ];
     }
 
