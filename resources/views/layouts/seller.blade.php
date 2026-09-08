@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ $title ?? 'Seller Portal' }} &middot; {{ config('app.name', 'PanMotive') }}</title>
+        <title>@yield('title', $title ?? 'Seller Portal') &middot; {{ config('app.name', 'PanMotive') }}</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -21,6 +21,9 @@
                 </div>
                 <nav class="flex-1 p-4 space-y-1 text-sm">
                     <a href="{{ route('seller.dashboard') }}" class="block rounded px-3 py-2 hover:bg-gray-100">Dashboard</a>
+                    <a href="{{ route('seller.products.index') }}" class="block rounded px-3 py-2 hover:bg-gray-100">Products</a>
+                    <a href="{{ route('seller.products.bulk') }}" class="block rounded px-3 py-2 hover:bg-gray-100">Bulk upload</a>
+                    <a href="{{ route('seller.orders.index') }}" class="block rounded px-3 py-2 hover:bg-gray-100">Orders</a>
                 </nav>
             </aside>
 
@@ -34,7 +37,8 @@
                 </header>
 
                 <main class="flex-1 p-6">
-                    {{ $slot }}
+                    {{ $slot ?? '' }}
+                    @yield('content')
                 </main>
             </div>
         </div>

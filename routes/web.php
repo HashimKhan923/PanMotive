@@ -15,12 +15,11 @@ use Illuminate\Support\Facades\Route;
 | with `php artisan serve` add the hosts entries (or just use the storefront,
 | which always matches).
 |
-| The ->name() prefixes keep route names unique across the three areas
-| (seller.dashboard, admin.dashboard, dashboard).
+| routes/seller.php names its own routes in full (seller.*), so this group
+| adds no ->name() prefix. routes/admin.php relies on the admin. prefix here.
 */
 
 Route::domain('sell.'.config('app.domain'))
-    ->name('seller.')
     ->group(function () {
         require __DIR__.'/seller.php';
     });
