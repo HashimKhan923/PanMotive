@@ -56,6 +56,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Domain
+    |--------------------------------------------------------------------------
+    |
+    | The bare registrable domain (no scheme) used for subdomain routing in
+    | routes/web.php, e.g. "partsmarket.test" locally or "partsmarket.com" in
+    | production. Seller/admin routes bind to "sell."/"admin." + this value.
+    |
+    */
+
+    'domain' => env('APP_DOMAIN'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

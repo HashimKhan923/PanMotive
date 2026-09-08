@@ -6,13 +6,14 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Admin routes
 |--------------------------------------------------------------------------
-| Registered in bootstrap/app.php: "web" middleware, "/admin" path prefix,
-| "admin." route-name prefix. Target: admin.partsmarket.com (subdomain
-| swap-in later). Controllers: App\Http\Controllers\Admin\*
-| Livewire: App\Livewire\Admin\*
+| Loaded from routes/web.php inside a Route::domain('admin.'.config('app.domain'))
+| group with the "admin." route-name prefix. "web" middleware is applied by
+| the framework (these are required from the web route file).
+| Controllers: App\Http\Controllers\Admin\*
+| Livewire:    App\Livewire\Admin\*
 |
-| Add a role/permission gate (spatie/laravel-permission) here once roles
-| are seeded, e.g. ->middleware(['auth', 'role:admin']).
+| Lock this down with a role gate once roles are seeded, e.g.
+| ->middleware(['auth', 'role:super_admin|support_agent|finance|catalog_manager']).
 */
 
 Route::middleware(['auth'])->group(function (): void {
