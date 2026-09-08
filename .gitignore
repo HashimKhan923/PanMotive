@@ -24,3 +24,7 @@ Homestead.yaml
 Thumbs.db
 rr
 .rr.yaml
+
+**/caddy
+frankenphp
+frankenphp-worker.php
