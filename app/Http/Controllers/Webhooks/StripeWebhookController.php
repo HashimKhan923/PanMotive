@@ -10,6 +10,7 @@ use App\Models\SellerProfile;
 use App\Models\User;
 use App\Notifications\NewOrderReceived;
 use App\Services\AI\FraudScoringService;
+use App\Services\Marketing\ReferralService;
 use Illuminate\Http\Request;
 use Stripe\Webhook;
 
@@ -47,6 +48,12 @@ class StripeWebhookController extends Controller
 
         $order->update(['status' => OrderStatus::Paid, 'placed_at' => $order->placed_at ?? now()]);
         $order->items()->update(['status' => OrderStatus::Paid]);
+
+        // Referral bonus is gated on a real first paid order (not signup) to
+        // stop reward farming from accounts that never buy.
+        if ($order->buyer) {
+            app(ReferralService::class)->completeIfEligible($order->buyer);
+        }
 
         // Notify sellers a paid order is waiting for them to accept.
         foreach ($order->items->groupBy('seller_id') as $sellerId => $items) {

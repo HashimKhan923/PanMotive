@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
-use App\Support\Cart;
+use App\Services\Cart\CartService;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function add(Request $request, Cart $cart)
+    public function add(Request $request, CartService $cart)
     {
         $data = $request->validate([
             'product_id' => 'required|integer|exists:products,id',
@@ -23,7 +23,7 @@ class CartController extends Controller
         return redirect()->route('cart.index')->with('success', 'Added to cart.');
     }
 
-    public function remove(Request $request, Cart $cart)
+    public function remove(Request $request, CartService $cart)
     {
         $data = $request->validate(['product_id' => 'required|integer']);
 

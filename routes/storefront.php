@@ -5,6 +5,7 @@ use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\OrderController;
 use App\Http\Controllers\Storefront\ProductController;
 use App\Http\Controllers\Storefront\ReturnController;
+use App\Http\Controllers\Storefront\WalletController;
 use App\Http\Controllers\SitemapController;
 use App\Livewire\Actions\Logout;
 use App\Livewire\Storefront\CartPage;
@@ -34,6 +35,7 @@ Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remov
 // Checkout
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
 Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('auth')->name('checkout.store');
+Route::post('/checkout/apply-coupon', [CheckoutController::class, 'applyCoupon'])->name('checkout.apply-coupon');
 Route::get('/checkout/confirmation/{orderNumber}', [CheckoutController::class, 'confirmation'])
     ->name('checkout.confirmation');
 
@@ -41,6 +43,8 @@ Route::get('/checkout/confirmation/{orderNumber}', [CheckoutController::class, '
 Route::middleware('auth')->group(function () {
     Route::view('dashboard', 'dashboard')->middleware('verified')->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
+
+    Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\Marketing\ReferralService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -14,6 +15,12 @@ new #[Layout('layouts.guest')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $ref = '';
+
+    public function mount(): void
+    {
+        $this->ref = (string) request()->query('ref', '');
+    }
 
     /**
      * Handle an incoming registration request.
@@ -30,6 +37,10 @@ new #[Layout('layouts.guest')] class extends Component
 
         event(new Registered($user = User::create($validated)));
 
+        if ($this->ref !== '') {
+            app(ReferralService::class)->trackSignup($this->ref, $user);
+        }
+
         Auth::login($user);
 
         $this->redirect(route('dashboard', absolute: false), navigate: true);
@@ -38,6 +49,8 @@ new #[Layout('layouts.guest')] class extends Component
 
 <div>
     <form wire:submit="register">
+        <input type="hidden" wire:model="ref">
+
         <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />

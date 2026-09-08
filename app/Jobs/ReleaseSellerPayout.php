@@ -5,6 +5,8 @@ namespace App\Jobs;
 use App\Enums\OrderStatus;
 use App\Models\AdminAlert;
 use App\Models\OrderItem;
+use App\Services\Marketing\LoyaltyService;
+use App\Services\Marketing\WalletService;
 use App\Services\Payments\TransferPayoutService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -22,9 +24,9 @@ class ReleaseSellerPayout implements ShouldQueue
 
     public function __construct(public int $orderItemId) {}
 
-    public function handle(TransferPayoutService $payoutService): void
+    public function handle(TransferPayoutService $payoutService, WalletService $wallet, LoyaltyService $loyalty): void
     {
-        $orderItem = OrderItem::with('seller.sellerProfile')->find($this->orderItemId);
+        $orderItem = OrderItem::with('seller.sellerProfile', 'order.buyer')->find($this->orderItemId);
 
         if (! $orderItem || $orderItem->status !== OrderStatus::Delivered) {
             return; // guard against stale/duplicate dispatch
@@ -56,9 +58,37 @@ class ReleaseSellerPayout implements ShouldQueue
             'payout_released_at' => now(),
         ]);
 
+        // Buyer cashback + lifetime-spend/tier — same confirmed-delivery trigger as
+        // the seller payout, so the two can never drift out of sync. The
+        // cashback_credited_at guard keeps this retry-safe.
+        $buyer = $orderItem->order->buyer;
+
+        if ($buyer && ! $orderItem->cashback_credited_at) {
+            $rate = $loyalty->cashbackRate($buyer);
+            $cashbackAmount = round($orderItem->line_total * ($rate / 100), 2);
+
+            if ($cashbackAmount > 0) {
+                $wallet->credit(
+                    $buyer,
+                    $cashbackAmount,
+                    'cashback',
+                    "Cashback for order {$orderItem->order->order_number}",
+                    $orderItem
+                );
+
+                $orderItem->update([
+                    'cashback_amount' => $cashbackAmount,
+                    'cashback_credited_at' => now(),
+                ]);
+            }
+
+            $buyer->increment('lifetime_spend', $orderItem->line_total);
+            $loyalty->recalculateTier($buyer->fresh());
+        }
+
         $orderItem->statusHistory()->create([
             'status' => OrderStatus::PayoutReleased->value,
-            'note' => "Stripe transfer {$transfer->id} for \${$orderItem->seller_payout_amount}",
+            'note' => "Stripe transfer {$transfer->id} for \${$orderItem->seller_payout_amount}; cashback \${$orderItem->cashback_amount} credited",
         ]);
     }
 }

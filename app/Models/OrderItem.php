@@ -12,8 +12,9 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id', 'seller_id', 'product_id', 'product_title', 'product_sku',
         'quantity', 'unit_price', 'line_total', 'commission_rate',
-        'platform_fee_amount', 'seller_payout_amount', 'status',
-        'carrier', 'tracking_number', 'shipped_at', 'delivered_at', 'payout_released_at',
+        'platform_fee_amount', 'seller_payout_amount', 'cashback_amount', 'status',
+        'carrier', 'tracking_number', 'shipped_at', 'delivered_at',
+        'payout_released_at', 'cashback_credited_at',
     ];
 
     protected $casts = [
@@ -21,6 +22,8 @@ class OrderItem extends Model
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
         'payout_released_at' => 'datetime',
+        'cashback_credited_at' => 'datetime',
+        'cashback_amount' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'line_total' => 'decimal:2',
         'commission_rate' => 'decimal:2',

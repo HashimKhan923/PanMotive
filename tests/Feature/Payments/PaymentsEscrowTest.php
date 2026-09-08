@@ -11,6 +11,8 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\SellerProfile;
 use App\Models\User;
+use App\Services\Marketing\LoyaltyService;
+use App\Services\Marketing\WalletService;
 use App\Services\Payments\CheckoutPaymentService;
 use App\Services\Payments\RefundService;
 use App\Services\Payments\TransferPayoutService;
@@ -38,8 +40,10 @@ class PaymentsEscrowTest extends TestCase
         $buyer = User::factory()->create();
         $product = $this->product(price: 100);
 
+        $cart = \App\Models\Cart::create(['user_id' => $buyer->id]);
+        $cart->items()->create(['product_id' => $product->id, 'quantity' => 2]);
+
         $this->actingAs($buyer)
-            ->withSession(['cart' => [$product->id => 2]])
             ->post(route('checkout.store'), $this->address())
             ->assertOk()
             ->assertViewIs('storefront.checkout.pay');
@@ -54,7 +58,7 @@ class PaymentsEscrowTest extends TestCase
         $this->assertEquals(20, $item->platform_fee_amount);
         $this->assertEquals(180, $item->seller_payout_amount);
 
-        $this->assertSame([], session('cart', []));
+        $this->assertSame(0, $cart->items()->count());
     }
 
     // ---------- stripe webhook ----------
@@ -184,7 +188,7 @@ class PaymentsEscrowTest extends TestCase
             ->once()
             ->andReturn(Transfer::constructFrom(['id' => 'tr_test_1']));
 
-        (new ReleaseSellerPayout($item->id))->handle(app(TransferPayoutService::class));
+        (new ReleaseSellerPayout($item->id))->handle(app(TransferPayoutService::class), app(WalletService::class), app(LoyaltyService::class));
 
         $item->refresh();
         $this->assertSame(OrderStatus::PayoutReleased, $item->status);
@@ -204,7 +208,7 @@ class PaymentsEscrowTest extends TestCase
         $mock = $this->mock(TransferPayoutService::class);
         $mock->shouldNotReceive('transferToSeller');
 
-        (new ReleaseSellerPayout($item->id))->handle(app(TransferPayoutService::class));
+        (new ReleaseSellerPayout($item->id))->handle(app(TransferPayoutService::class), app(WalletService::class), app(LoyaltyService::class));
 
         $this->assertSame(1, $item->statusHistory()->count() === 0 ? 1 : $item->statusHistory()->count()); // no crash
     }
@@ -221,7 +225,7 @@ class PaymentsEscrowTest extends TestCase
         $mock = $this->mock(TransferPayoutService::class);
         $mock->shouldNotReceive('transferToSeller');
 
-        (new ReleaseSellerPayout($item->id))->handle(app(TransferPayoutService::class));
+        (new ReleaseSellerPayout($item->id))->handle(app(TransferPayoutService::class), app(WalletService::class), app(LoyaltyService::class));
 
         $this->assertDatabaseHas('admin_alerts', [
             'type' => 'payout_blocked',

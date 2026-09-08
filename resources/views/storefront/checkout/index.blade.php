@@ -23,12 +23,32 @@
                 </li>
             @endforeach
         </ul>
-        <div class="mt-3 flex justify-between border-t border-slate-200 pt-3 font-semibold">
-            <span>Total</span>
-            <span>${{ number_format($subtotal, 2) }}</span>
+        <dl class="mt-3 space-y-1 border-t border-slate-200 pt-3 text-sm">
+            <div class="flex justify-between"><dt>Subtotal</dt><dd>${{ number_format($subtotal, 2) }}</dd></div>
+            @if ($discount > 0)
+                <div class="flex justify-between text-emerald-600"><dt>Coupon ({{ $couponCode }})</dt><dd>-${{ number_format($discount, 2) }}</dd></div>
+            @endif
+            <div class="flex justify-between font-semibold"><dt>Estimated total</dt><dd>${{ number_format(max(0, $subtotal - $discount), 2) }}</dd></div>
+        </dl>
+
+        <div class="mt-6 border rounded-xl p-4">
+            <form method="POST" action="{{ route('checkout.apply-coupon') }}" class="flex gap-2">
+                @csrf
+                <input name="code" value="{{ $couponCode }}" placeholder="Coupon code"
+                       class="flex-1 rounded-lg border-slate-300 text-sm">
+                <button class="bg-slate-900 text-white text-sm font-semibold rounded-lg px-4">Apply</button>
+            </form>
+            @error('coupon') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+
+            @auth
+                <label class="flex items-center gap-2 mt-3 text-sm">
+                    <input type="checkbox" name="use_credits" value="1" form="checkout-form">
+                    Use available credits (${{ number_format(auth()->user()->wallet_balance, 2) }} available, up to 50% of order)
+                </label>
+            @endauth
         </div>
 
-        <form method="POST" action="{{ route('checkout.store') }}" class="mt-8 space-y-4">
+        <form id="checkout-form" method="POST" action="{{ route('checkout.store') }}" class="mt-6 space-y-4">
             @csrf
             <h2 class="text-sm font-semibold text-slate-500">Shipping address</h2>
 

@@ -11,7 +11,7 @@ class Order extends Model
 {
     protected $fillable = [
         'order_number', 'buyer_id', 'status', 'subtotal', 'shipping_total',
-        'tax_total', 'discount_total', 'total', 'currency',
+        'tax_total', 'discount_total', 'credits_used', 'coupon_id', 'total', 'currency',
         'shipping_address', 'billing_address', 'stripe_payment_intent_id',
         'placed_at', 'delivered_at', 'auto_confirm_at',
     ];

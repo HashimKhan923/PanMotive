@@ -2,45 +2,32 @@
 
 namespace App\Livewire\Storefront;
 
-use App\Models\Product;
-use App\Support\Cart;
+use App\Services\Cart\CartService;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('layouts.storefront')]
 class CartPage extends Component
 {
-    public function updateQuantity(int $productId, int $quantity, Cart $cart): void
+    public function updateQuantity(int $productId, int $quantity, CartService $cart): void
     {
         $cart->setQuantity($productId, $quantity);
     }
 
-    public function remove(int $productId, Cart $cart): void
+    public function remove(int $productId, CartService $cart): void
     {
         $cart->remove($productId);
     }
 
-    public function render(Cart $cart)
+    public function render(CartService $cart)
     {
-        $raw = collect($cart->items());
-
-        $products = Product::whereIn('id', $raw->pluck('product_id'))->get()->keyBy('id');
-
-        $lines = $raw
-            ->filter(fn ($i) => $products->has($i['product_id']))
-            ->map(function ($i) use ($products) {
-                $product = $products[$i['product_id']];
-                $unit = (float) ($product->sale_price ?? $product->price);
-
-                return [
-                    'product_id' => $product->id,
-                    'title' => $product->title,
-                    'unit_price' => $unit,
-                    'quantity' => $i['quantity'],
-                    'line_total' => round($unit * $i['quantity'], 2),
-                ];
-            })
-            ->values();
+        $lines = $cart->lines()->map(fn ($line) => [
+            'product_id' => $line['product']->id,
+            'title' => $line['product']->title,
+            'unit_price' => $line['unit_price'],
+            'quantity' => $line['quantity'],
+            'line_total' => $line['line_total'],
+        ]);
 
         return view('livewire.storefront.cart-page', [
             'lines' => $lines,

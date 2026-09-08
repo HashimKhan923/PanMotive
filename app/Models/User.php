@@ -29,6 +29,9 @@ class User extends Authenticatable
         'phone',
         'wallet_balance',
         'is_active',
+        'loyalty_tier',
+        'lifetime_spend',
+        'referral_code',
     ];
 
     /**
@@ -53,6 +56,7 @@ class User extends Authenticatable
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
             'wallet_balance' => 'decimal:2',
+            'lifetime_spend' => 'decimal:2',
             'is_active' => 'boolean',
         ];
     }
@@ -78,5 +82,20 @@ class User extends Authenticatable
     public function salesItems(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'seller_id');
+    }
+
+    public function creditTransactions(): HasMany
+    {
+        return $this->hasMany(CreditTransaction::class);
+    }
+
+    public function referralsMade(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'referrer_id');
+    }
+
+    public function cart(): HasOne
+    {
+        return $this->hasOne(Cart::class);
     }
 }
