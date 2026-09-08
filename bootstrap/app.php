@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureSellerApproved;
+use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsSeller;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'seller' => EnsureUserIsSeller::class,
             'seller.approved' => EnsureSellerApproved::class,
+            'admin' => EnsureUserIsAdmin::class,
         ]);
 
         $middleware->validateCsrfTokens(except: [

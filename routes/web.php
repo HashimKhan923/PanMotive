@@ -17,8 +17,8 @@ use Illuminate\Support\Facades\Route;
 | with `php artisan serve` add the hosts entries (or just use the storefront,
 | which always matches).
 |
-| routes/seller.php names its own routes in full (seller.*), so this group
-| adds no ->name() prefix. routes/admin.php relies on the admin. prefix here.
+| routes/seller.php and routes/admin.php each name their own routes in full
+| (seller.* / admin.*), so these groups add no ->name() prefix.
 */
 
 Route::domain('sell.'.config('app.domain'))
@@ -27,7 +27,6 @@ Route::domain('sell.'.config('app.domain'))
     });
 
 Route::domain('admin.'.config('app.domain'))
-    ->name('admin.')
     ->group(function () {
         require __DIR__.'/admin.php';
     });
