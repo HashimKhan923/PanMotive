@@ -41,4 +41,8 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
     ],
 
+    'easypost' => [
+        'key' => env('EASYPOST_API_KEY'),
+    ],
+
 ];

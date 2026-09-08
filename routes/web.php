@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Webhooks\EasyPostWebhookController;
+use App\Http\Controllers\Webhooks\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -29,6 +31,10 @@ Route::domain('admin.'.config('app.domain'))
     ->group(function () {
         require __DIR__.'/admin.php';
     });
+
+// Payment / carrier webhooks — apex domain, CSRF-exempt (see bootstrap/app.php).
+Route::post('webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
+Route::post('webhooks/easypost', [EasyPostWebhookController::class, 'handle'])->name('webhooks.easypost');
 
 // Storefront (default domain)
 require __DIR__.'/storefront.php';

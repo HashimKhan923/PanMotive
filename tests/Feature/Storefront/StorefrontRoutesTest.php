@@ -33,9 +33,10 @@ class StorefrontRoutesTest extends TestCase
         $this->get(route('checkout.index'))->assertOk();
     }
 
-    public function test_checkout_store_redirects_to_cart(): void
+    public function test_checkout_store_redirects_to_cart_when_empty(): void
     {
-        $this->post(route('checkout.store'))
+        $this->actingAs(User::factory()->create())
+            ->post(route('checkout.store'))
             ->assertRedirect(route('cart.index'))
             ->assertSessionHas('status');
     }

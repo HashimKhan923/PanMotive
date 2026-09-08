@@ -40,11 +40,14 @@
                     <div><dt class="inline font-medium">In stock:</dt> <dd class="inline">{{ $product->quantity }}</dd></div>
                 </dl>
 
-                {{-- TODO (Phase 3): wire to a real add-to-cart action. --}}
-                <a href="{{ route('cart.index') }}"
-                   class="mt-6 block rounded-md bg-slate-900 px-5 py-3 text-center text-white hover:bg-slate-700">
-                    Add to cart
-                </a>
+                <form method="POST" action="{{ route('cart.add') }}" class="mt-6">
+                    @csrf
+                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                    <button type="submit"
+                            class="w-full rounded-md bg-slate-900 px-5 py-3 text-white hover:bg-slate-700">
+                        Add to cart
+                    </button>
+                </form>
             </div>
         </div>
 

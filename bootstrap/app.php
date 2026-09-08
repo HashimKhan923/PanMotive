@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller' => EnsureUserIsSeller::class,
             'seller.approved' => EnsureSellerApproved::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/stripe',
+            'webhooks/easypost',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
