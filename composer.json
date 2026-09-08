@@ -17,6 +17,7 @@
         "livewire/livewire": "^3.6.4",
         "livewire/volt": "^1.7.0",
         "meilisearch/meilisearch-php": "^1.17",
+        "predis/predis": "^3.6",
         "spatie/laravel-activitylog": "^4.12",
         "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-permission": "^6.25",
