@@ -16,9 +16,6 @@ use App\Models\Review;
 use App\Models\SellerProfile;
 use App\Models\User;
 use App\Models\Vehicle;
-use App\Models\VehicleEngine;
-use App\Models\VehicleMake;
-use App\Models\VehicleModel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -31,9 +28,17 @@ use Illuminate\Support\Str;
  */
 class DemoSeeder extends Seeder
 {
+    private string $password = 'password';
+
     public function run(): void
     {
-        $this->call([RoleSeeder::class, AdminPermissionSeeder::class]);
+        $this->call([RoleSeeder::class, AdminPermissionSeeder::class, VehicleMakeSeeder::class, CategorySeeder::class]);
+
+        // A public server must never have logins with a well-known password.
+        $firstRun = ! User::where('email', 'seller1@panmotive.test')->exists();
+        if (app()->environment('production')) {
+            $this->password = Str::password(20, symbols: false);
+        }
 
         Product::withoutSyncingToSearch(function () {
             $brands = $this->brands();
@@ -49,6 +54,9 @@ class DemoSeeder extends Seeder
         });
 
         $this->command?->info('Demo catalog seeded.');
+        if ($firstRun) {
+            $this->command?->line("Demo logins seller1-3@panmotive.test and buyer1-6@panmotive.test, password: {$this->password}");
+        }
     }
 
     private function brands(): array
@@ -62,57 +70,13 @@ class DemoSeeder extends Seeder
 
     private function categories(): array
     {
-        $tree = [
-            'Brakes' => ['Brake Pads', 'Brake Rotors', 'Calipers', 'Brake Lines'],
-            'Engine' => ['Spark Plugs', 'Belts', 'Filters', 'Gaskets'],
-            'Suspension' => ['Shocks & Struts', 'Control Arms', 'Ball Joints'],
-            'Electrical' => ['Batteries', 'Alternators', 'Starters', 'Sensors'],
-            'Cooling' => ['Radiators', 'Water Pumps', 'Thermostats'],
-        ];
-
-        $out = [];
-        $order = 0;
-        foreach ($tree as $parent => $kids) {
-            $p = Category::firstOrCreate(['slug' => Str::slug($parent)], ['name' => $parent, 'sort_order' => $order++]);
-            foreach ($kids as $k) {
-                $out[$k] = Category::firstOrCreate(['slug' => Str::slug($k)], ['name' => $k, 'parent_id' => $p->id]);
-            }
-        }
-
-        return $out;
+        return Category::whereNotNull('parent_id')->get()->keyBy('name')->all();
     }
 
     private function vehicles(): array
     {
-        $data = [
-            'Toyota' => ['Camry' => [2018, 2019, 2020, 2021], 'Corolla' => [2017, 2018, 2019, 2020], 'RAV4' => [2019, 2020, 2021]],
-            'Honda' => ['Civic' => [2016, 2017, 2018, 2019, 2020], 'Accord' => [2018, 2019, 2020], 'CR-V' => [2017, 2018, 2019]],
-            'Ford' => ['F-150' => [2015, 2016, 2017, 2018, 2019, 2020], 'Escape' => [2017, 2018, 2019], 'Mustang' => [2015, 2016, 2017]],
-            'Chevrolet' => ['Silverado 1500' => [2014, 2015, 2016, 2017, 2018], 'Equinox' => [2018, 2019, 2020], 'Malibu' => [2016, 2017, 2018]],
-        ];
-        $engines = collect(['2.0L L4', '2.5L L4', '3.5L V6', '5.0L V8', '1.5L L4 Turbo'])
-            ->map(fn ($n) => VehicleEngine::firstOrCreate(['name' => $n]))->all();
-
-        $vehicles = [];
-        foreach ($data as $makeName => $models) {
-            $make = VehicleMake::firstOrCreate(['slug' => Str::slug($makeName)], ['name' => $makeName]);
-            foreach ($models as $modelName => $years) {
-                $model = VehicleModel::firstOrCreate(
-                    ['vehicle_make_id' => $make->id, 'slug' => Str::slug($modelName)],
-                    ['name' => $modelName]
-                );
-                foreach ($years as $year) {
-                    $vehicles[] = Vehicle::firstOrCreate([
-                        'vehicle_model_id' => $model->id,
-                        'year' => $year,
-                        'vehicle_engine_id' => $engines[array_rand($engines)]->id,
-                        'trim' => null,
-                    ], ['vehicle_make_id' => $make->id]);
-                }
-            }
-        }
-
-        return $vehicles;
+        return Vehicle::whereHas('make', fn ($q) => $q->whereIn('slug', ['toyota', 'honda', 'ford', 'chevrolet']))
+            ->whereBetween('year', [2016, 2021])->get()->all();
     }
 
     private function attributes(): array
@@ -143,7 +107,7 @@ class DemoSeeder extends Seeder
             [$biz, $email] = $def;
             $user = User::firstOrCreate(
                 ['email' => $email],
-                ['name' => $biz, 'password' => Hash::make('password'), 'is_active' => true]
+                ['name' => $biz, 'password' => Hash::make($this->password), 'is_active' => true]
             );
             $user->assignRole('seller');
             SellerProfile::firstOrCreate(
@@ -255,7 +219,7 @@ class DemoSeeder extends Seeder
     {
         $buyers = collect(range(1, 6))->map(fn ($n) => User::firstOrCreate(
             ['email' => "buyer{$n}@panmotive.test"],
-            ['name' => "Demo Buyer {$n}", 'password' => Hash::make('password'), 'is_active' => true]
+            ['name' => "Demo Buyer {$n}", 'password' => Hash::make($this->password), 'is_active' => true]
         ))->all();
 
         if (Order::where('order_number', 'like', 'PM-DEMO%')->exists()) {

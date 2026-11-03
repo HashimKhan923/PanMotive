@@ -2,16 +2,13 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
-     * Seed the application's database.
+     * What every environment needs. Safe to run again: existing rows are kept.
+     * Sample sellers, buyers, products and orders are separate, in DemoSeeder.
      */
     public function run(): void
     {
@@ -20,13 +17,7 @@ class DatabaseSeeder extends Seeder
             AdminPermissionSeeder::class,
             VehicleMakeSeeder::class,
             CategorySeeder::class,
-        ]);
-
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            AdminSeeder::class,
         ]);
     }
 }
