@@ -38,32 +38,36 @@ class CartService
         return $this->cart = Cart::firstOrCreate(['session_id' => $sessionId]);
     }
 
-    public function add(int $productId, int $quantity = 1): void
+    public function add(int $productId, int $quantity = 1, ?int $variantId = null): void
     {
         $cart = $this->currentCart();
-        $item = $cart->items()->firstOrNew(['product_id' => $productId]);
+        $item = $cart->items()->firstOrNew([
+            'product_id' => $productId,
+            'product_variant_id' => $variantId,
+        ]);
         $item->quantity = max(1, ($item->quantity ?? 0) + $quantity);
         $item->save();
         $cart->touch();
     }
 
-    public function setQuantity(int $productId, int $quantity): void
+    public function setQuantity(int $productId, int $quantity, ?int $variantId = null): void
     {
         $cart = $this->currentCart();
+        $match = ['product_id' => $productId, 'product_variant_id' => $variantId];
 
         if ($quantity <= 0) {
-            $cart->items()->where('product_id', $productId)->delete();
+            $cart->items()->where($match)->delete();
         } else {
-            $cart->items()->updateOrCreate(['product_id' => $productId], ['quantity' => $quantity]);
+            $cart->items()->updateOrCreate($match, ['quantity' => $quantity]);
         }
 
         $cart->touch();
     }
 
-    public function remove(int $productId): void
+    public function remove(int $productId, ?int $variantId = null): void
     {
         $cart = $this->currentCart();
-        $cart->items()->where('product_id', $productId)->delete();
+        $cart->items()->where('product_id', $productId)->where('product_variant_id', $variantId)->delete();
         $cart->touch();
     }
 
@@ -77,7 +81,7 @@ class CartService
      */
     public function items(): Collection
     {
-        return $this->currentCart()->items()->with('product')->get();
+        return $this->currentCart()->items()->with(['product.volumeDiscounts', 'variant'])->get();
     }
 
     /**
@@ -88,14 +92,25 @@ class CartService
     public function lines(): Collection
     {
         return $this->items()
-            ->filter(fn ($item) => $item->product && $item->product->status === 'active')
+            ->filter(fn ($item) => $item->product && $item->product->isListed())
+            ->filter(fn ($item) => ! $item->product_variant_id || ($item->variant && $item->variant->is_active))
             ->map(function ($item) {
-                $unit = (float) ($item->product->sale_price ?? $item->product->price);
+                $variant = $item->variant;
+
+                $unit = $variant
+                    ? $variant->effectivePrice()
+                    : $item->product->unitPriceForQuantity($item->quantity);
+
+                $listUnit = $variant
+                    ? $variant->listPrice()
+                    : (float) $item->product->price;
 
                 return [
                     'product' => $item->product,
+                    'variant' => $variant,
                     'quantity' => $item->quantity,
                     'unit_price' => $unit,
+                    'list_unit_price' => $listUnit,
                     'line_total' => round($unit * $item->quantity, 2),
                 ];
             })
@@ -105,6 +120,64 @@ class CartService
     public function subtotal(): float
     {
         return (float) $this->lines()->sum('line_total');
+    }
+
+    /**
+     * Total savings from seller bundles whose full item set (with quantities) is
+     * present in the cart.
+     *
+     * @return array{total: float, applied: array<int, array{title: string, savings: float}>}
+     */
+    public function bundleDiscount(?Collection $lines = null): array
+    {
+        $lines ??= $this->lines();
+        if ($lines->isEmpty()) {
+            return ['total' => 0.0, 'applied' => [], 'by_product' => []];
+        }
+
+        // Units in the cart per product — variant lines of the same product add up.
+        $available = $lines->groupBy(fn ($l) => $l['product']->id)->map(fn ($g) => (int) $g->sum('quantity'));
+
+        $bundles = \App\Models\Bundle::where('is_active', true)
+            ->whereHas('items', fn ($q) => $q->whereIn('product_id', $available->keys()))
+            ->with('items', 'products')
+            ->get()
+            ->filter(fn ($b) => $b->isAvailable())
+            ->sortByDesc(fn ($b) => $b->savings()); // best deal first
+
+        $applied = [];
+        $byProduct = [];
+
+        foreach ($bundles as $bundle) {
+            // Each unit can only count toward one bundle: how many complete sets do the
+            // units not already used by a better bundle still make?
+            $sets = $bundle->items->min(fn ($i) => intdiv((int) ($available[$i->product_id] ?? 0), max(1, (int) $i->quantity)));
+            if ($sets < 1) {
+                continue;
+            }
+
+            foreach ($bundle->items as $i) {
+                $available[$i->product_id] -= $i->quantity * $sets;
+            }
+
+            $saving = round($bundle->savings() * $sets, 2);
+            $applied[] = ['bundle_id' => $bundle->id, 'title' => $bundle->title, 'sets' => $sets, 'savings' => $saving];
+
+            // Attribute the saving to the member products by their share of the bundle price,
+            // so it can be charged to exactly those order lines. Last one takes the rounding remainder.
+            $full = max($bundle->fullPrice(), 0.01);
+            $left = $saving;
+            $members = $bundle->products->values();
+            foreach ($members as $idx => $p) {
+                $share = $idx === $members->count() - 1
+                    ? $left
+                    : round($saving * ($p->effectivePrice() * $p->pivot->quantity) / $full, 2);
+                $left = round($left - $share, 2);
+                $byProduct[$p->id] = round(($byProduct[$p->id] ?? 0) + $share, 2);
+            }
+        }
+
+        return ['total' => round(collect($applied)->sum('savings'), 2), 'applied' => $applied, 'by_product' => $byProduct];
     }
 
     public function isEmpty(): bool

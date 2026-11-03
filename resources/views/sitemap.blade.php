@@ -9,6 +9,12 @@
             <lastmod>{{ $cat->updated_at->toAtomString() }}</lastmod>
         </url>
     @endforeach
+    @foreach ($pages ?? [] as $page)
+        <url>
+            <loc>{{ route('pages.show', $page->slug) }}</loc>
+            <lastmod>{{ $page->updated_at->toAtomString() }}</lastmod>
+        </url>
+    @endforeach
     @foreach ($products as $product)
         <url>
             <loc>{{ route('products.show', $product->slug) }}</loc>

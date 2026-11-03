@@ -17,6 +17,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Force Two-Factor Enrolment in Local
+    |--------------------------------------------------------------------------
+    |
+    | The seller/admin 2FA enrolment gate (RequireTwoFactor) is skipped in the
+    | local environment so the portals are reachable without an authenticator
+    | app. Set FORCE_TWO_FACTOR=true in .env to exercise the real gate locally.
+    | This flag has no effect outside the local environment.
+    |
+    */
+
+    'force_two_factor' => env('FORCE_TWO_FACTOR', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

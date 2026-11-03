@@ -122,5 +122,325 @@
         @apply text-[15px] leading-relaxed text-fg/90;
     }
     .prose-pm p { @apply my-3; }
-    .prose-pm strong { @apply text-fg; }
+    .prose-pm p:first-child { @apply mt-0; }
+    .prose-pm p:last-child { @apply mb-0; }
+    .prose-pm strong, .prose-pm b { @apply font-semibold text-fg; }
+    .prose-pm em, .prose-pm i { @apply italic; }
+    .prose-pm u { @apply underline; }
+    .prose-pm s { @apply line-through; }
+    .prose-pm h1, .prose-pm h2, .prose-pm h3, .prose-pm h4 { @apply mt-5 mb-2 font-bold text-fg; }
+    .prose-pm h1 { @apply text-xl; }
+    .prose-pm h2 { @apply text-lg; }
+    .prose-pm h3, .prose-pm h4 { @apply text-base; }
+    .prose-pm ul { @apply my-3 list-disc space-y-1 pl-5; }
+    .prose-pm ol { @apply my-3 list-decimal space-y-1 pl-5; }
+    .prose-pm li { @apply pl-1; }
+    .prose-pm a { @apply text-accent underline underline-offset-2 hover:no-underline; }
+    .prose-pm blockquote { @apply my-3 border-l-2 border-line pl-4 italic text-muted; }
+
+    /* Cards that respond to hover with a subtle lift. */
+    .lift {
+        @apply transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-card-hover;
+    }
+
+}
+
+@layer utilities {
+    /* Bar chart columns grow up on first paint. */
+    .bar-grow {
+        transform-origin: bottom;
+        animation: bar-grow .7s cubic-bezier(.22, 1, .36, 1) both;
+    }
+    @keyframes bar-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bar-grow { animation: none; }
+    }
+
+    /* "Fits your vehicle" stamp thunk. */
+    .stamp-in { animation: stamp-in .5s cubic-bezier(.2, 1.4, .3, 1) both; }
+    @keyframes stamp-in {
+        0%   { opacity: 0; transform: scale(1.6) rotate(-8deg); }
+        60%  { opacity: 1; transform: scale(.92) rotate(-3deg); }
+        100% { opacity: 1; transform: scale(1) rotate(-3deg); }
+    }
+
+    /* PDP gallery zoom lens. */
+    .zoom-img { transition: transform .2s ease-out; will-change: transform; }
+}
+
+/* ============================================================
+   Motion system v2 — every effect is decorative: content is complete without it,
+   and prefers-reduced-motion switches it all off (see the base layer).
+   ============================================================ */
+
+/* Page-to-page transitions (Chrome/Edge/Safari; other browsers just navigate). The
+   product photo you click morphs into the product page's hero photo — the name
+   "product-hero" is assigned on click by motion.js, so it's unique on every page. */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: pm-vt-out .22s cubic-bezier(.4, 0, 1, 1) both; }
+::view-transition-new(root) { animation: pm-vt-in .38s cubic-bezier(.22, 1, .36, 1) both; }
+::view-transition-group(product-hero) { animation-duration: .5s; animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
+::view-transition-image-pair(product-hero) { isolation: isolate; }
+.site-header { view-transition-name: site-header; }
+@keyframes pm-vt-out { to { opacity: 0; transform: translateY(-6px) scale(.995); } }
+@keyframes pm-vt-in { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+/* Reading-progress bar along the top edge. */
+.pm-progress {
+    position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 80; pointer-events: none;
+    background: linear-gradient(90deg, rgb(var(--c-accent)), #fb923c);
+    transform-origin: 0 50%; transform: scaleX(0);
+}
+
+/* Aurora: slow drifting colour fields behind the hero. Pure CSS, GPU-cheap. */
+.pm-aurora { position: absolute; inset: -20%; overflow: hidden; pointer-events: none; filter: blur(60px) saturate(1.2); opacity: .9; }
+.pm-aurora span { position: absolute; border-radius: 9999px; mix-blend-mode: multiply; animation: pm-drift 18s ease-in-out infinite alternate; }
+.dark .pm-aurora span { mix-blend-mode: screen; opacity: .55; }
+.pm-aurora span:nth-child(1) { width: 42%; height: 46%; left: 52%; top: 4%; background: rgb(var(--c-accent) / .45); }
+.pm-aurora span:nth-child(2) { width: 38%; height: 40%; left: 8%; top: 46%; background: rgb(56 189 248 / .30); animation-duration: 22s; animation-delay: -6s; }
+.pm-aurora span:nth-child(3) { width: 30%; height: 34%; left: 34%; top: 30%; background: rgb(244 63 94 / .18); animation-duration: 26s; animation-delay: -12s; }
+@keyframes pm-drift {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    50%  { transform: translate3d(6%, -8%, 0) scale(1.12); }
+    100% { transform: translate3d(-8%, 6%, 0) scale(.94); }
+}
+/* Fine film grain over gradients — keeps them from looking flat or banded. */
+.pm-grain::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; opacity: .05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Gradient headline text with a slow sheen. */
+.pm-gradient-text {
+    background: linear-gradient(100deg, rgb(var(--c-accent)) 0%, #fb923c 40%, rgb(var(--c-accent)) 60%, #fde68a 100%);
+    background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: pm-sheen 6s linear infinite;
+}
+@keyframes pm-sheen { to { background-position: -220% 0; } }
+
+/* Product card: 3D tilt + a light glare that follows the pointer (set by motion.js). */
+.pm-tilt { transform-style: preserve-3d; transition: transform .45s cubic-bezier(.22, 1, .36, 1), box-shadow .3s; will-change: transform; }
+.pm-tilt.is-tilting { transition: transform .08s linear, box-shadow .3s; transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-4px); }
+.pm-glare { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s; z-index: 5; border-radius: inherit;
+    background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / .28), transparent 45%); }
+.pm-tilt.is-tilting .pm-glare { opacity: 1; }
+.dark .pm-glare { background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgb(255 255 255 / .12), transparent 45%); }
+
+/* Second photo crossfades in on hover. */
+.pm-swap img + img { position: absolute; inset: 0; opacity: 0; transition: opacity .45s ease, transform .6s cubic-bezier(.22, 1, .36, 1); }
+.group:hover .pm-swap img + img { opacity: 1; }
+
+/* Quick-add bar slides up from the bottom of the photo. */
+.pm-quick { transform: translateY(100%); transition: transform .3s cubic-bezier(.22, 1, .36, 1); }
+.group:hover .pm-quick, .group:focus-within .pm-quick { transform: translateY(0); }
+@media (hover: none) { .pm-quick { transform: none; } }
+
+/* Shine sweep across sale badges. */
+.pm-shine { position: relative; overflow: hidden; }
+.pm-shine::after { content: ''; position: absolute; inset: 0; transform: translateX(-120%) skewX(-20deg);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / .65), transparent); animation: pm-shine 3.2s ease-in-out infinite; }
+@keyframes pm-shine { 0%, 60% { transform: translateX(-120%) skewX(-20deg); } 100% { transform: translateX(220%) skewX(-20deg); } }
+
+/* Infinite marquee (brands strip). Duplicate the content once; pauses on hover. */
+.pm-marquee { display: flex; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.pm-marquee > div { display: flex; flex-shrink: 0; gap: 3rem; padding-right: 3rem; animation: pm-marquee 38s linear infinite; }
+.pm-marquee:hover > div { animation-play-state: paused; }
+@keyframes pm-marquee { to { transform: translateX(-100%); } }
+
+/* Heart "pop" with a burst ring when saved. */
+.pm-heart-pop { animation: pm-heart .45s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes pm-heart { 0% { transform: scale(1); } 35% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.pm-burst { position: absolute; inset: -6px; border-radius: 9999px; pointer-events: none; border: 2px solid rgb(244 63 94 / .7); animation: pm-burst .5s ease-out forwards; }
+@keyframes pm-burst { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+
+/* Checkmark that draws itself (add-to-cart success, order confirmation). */
+.pm-check path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: pm-draw .4s .05s cubic-bezier(.65, 0, .35, 1) forwards; }
+@keyframes pm-draw { to { stroke-dashoffset: 0; } }
+.pm-check-lg circle { stroke-dasharray: 160; stroke-dashoffset: 160; animation: pm-draw-c .6s cubic-bezier(.65, 0, .35, 1) forwards; }
+.pm-check-lg path { stroke-dasharray: 48; stroke-dashoffset: 48; animation: pm-draw .45s .5s cubic-bezier(.65, 0, .35, 1) forwards; }
+@keyframes pm-draw-c { to { stroke-dashoffset: 0; } }
+
+/* Mask wipe for headings (data-reveal="mask"). */
+html.js [data-reveal="mask"] { opacity: 1; clip-path: inset(0 100% 0 0); }
+
+/* SplitText word reveal — each word sits in its own clipping line. */
+.pm-split-line { overflow: hidden; padding-bottom: .08em; margin-bottom: -.08em; }
+
+/* Idle float for hero tiles. */
+.pm-float { animation: pm-float 6s ease-in-out infinite; }
+@keyframes pm-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) { .pm-float { animation: none; } }
+
+/* Product page sticky buy bar — slides up once the main Add to Cart scrolls out of view. */
+.pm-sticky-buy { transform: translateY(110%); transition: transform .45s cubic-bezier(.22, 1, .36, 1); }
+.pm-sticky-buy.is-visible { transform: translateY(0); }
+
+/* Lift the support-chat bubble above the sticky buy bar while it's showing. */
+body:has(.pm-sticky-buy.is-visible) .pm-chat { bottom: 5.5rem; }
+
+/* Toast countdown bar. */
+.pm-toast-timer { animation: pm-toast-timer 3.6s linear forwards; }
+@keyframes pm-toast-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+/* Cart icon bump after fly-to-cart. */
+.pm-bump { animation: pm-bump .5s cubic-bezier(.2, 1.6, .4, 1); }
+@keyframes pm-bump { 30% { transform: scale(1.3) rotate(-8deg); } 60% { transform: scale(.92) rotate(4deg); } 100% { transform: none; } }
+
+/* Countdown digits flip in when they change. */
+.pm-tick { display: inline-block; animation: pm-tick .35s cubic-bezier(.22, 1, .36, 1); }
+@keyframes pm-tick { from { transform: translateY(-60%); opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+    .pm-aurora span, .pm-gradient-text, .pm-shine::after, .pm-marquee > div { animation: none !important; }
+    .pm-tilt.is-tilting { transform: none; }
+    html.js [data-reveal="mask"] { clip-path: none; }
+}
+
+/* One-shot celebration burst (fired via the `celebrate` window event). */
+.pm-confetti {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden;
+}
+.pm-confetti i {
+    position: absolute; top: -12px; width: 8px; height: 14px; border-radius: 2px;
+    animation: pm-fall linear forwards;
+}
+@keyframes pm-fall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* Trix rich-text editor (product descriptions) — themed to match .input / dark mode.
+   Kept unlayered (not @layer components — Tailwind's layer processing was silently
+   dropping every rule here whose selector contained "trix-button", comma-listed or
+   not, @apply or plain CSS; moving it out of the layer fixed it) so it also reliably
+   outranks Trix's own stylesheet, which loads after ours. */
+trix-toolbar {
+    display: block;
+    margin-bottom: .375rem;
+    padding: .375rem .5rem;
+    border: 1px solid rgb(var(--c-line));
+    border-bottom: 0;
+    border-top-left-radius: .75rem;
+    border-top-right-radius: .75rem;
+    background: rgb(var(--c-surface-2));
+}
+trix-toolbar .trix-button-row { display: flex; flex-wrap: wrap; gap: .125rem; }
+trix-toolbar .trix-button-group {
+    margin: 0; display: flex; overflow: hidden;
+    border-radius: .5rem; border: 1px solid rgb(var(--c-line));
+}
+trix-toolbar .trix-button {
+    height: 2rem; min-width: 2rem; border: 0;
+    background: transparent; color: rgb(var(--c-fg));
+}
+trix-toolbar .trix-button:hover { background: rgb(var(--c-surface)); }
+trix-toolbar .trix-button.trix-active { background: rgb(var(--c-accent) / .15); color: rgb(var(--c-accent)); }
+/* No file storage is wired up for attachments, and code blocks fall outside the
+   sanitizer's allow-list — hide both rather than let a seller format something
+   that silently vanishes on save. */
+trix-toolbar .trix-button-group--file-tools { display: none; }
+trix-toolbar .trix-button--icon-attach { display: none; }
+trix-toolbar .trix-button--icon-code { display: none; }
+trix-toolbar .trix-dialogs { display: none; }
+
+trix-editor {
+    display: block;
+    max-height: 420px; min-height: 10rem; overflow-y: auto;
+    border: 1px solid rgb(var(--c-line));
+    border-bottom-left-radius: .75rem; border-bottom-right-radius: .75rem;
+    background: rgb(var(--c-surface));
+    padding: .75rem 1rem;
+    font-size: 15px; color: rgb(var(--c-fg));
+}
+trix-editor:focus { border-color: rgb(var(--c-accent)); outline: 2px solid rgb(var(--c-accent) / .3); outline-offset: 0; }
+trix-editor h1 { margin: .25rem 0 .5rem; font-size: 1.125rem; line-height: 1.75rem; font-weight: 700; }
+trix-editor ul { list-style: disc; padding-left: 1.25rem; }
+trix-editor ol { list-style: decimal; padding-left: 1.25rem; }
+trix-editor a { color: rgb(var(--c-accent)); text-decoration: underline; }
+
+/* Trix bakes every toolbar icon in as a hardcoded-black inline SVG background-image
+   (fill="#000"), not a currentColor mask, so our `color:` override above never
+   reaches them — in dark mode they render as near-invisible black-on-navy. Flip
+   them to white with a filter instead. */
+.dark trix-toolbar .trix-button--icon::before { filter: invert(1); }
+
+/* ==========================================================================
+   Admin console. Own surface treatment on the shared colour tokens.
+   ========================================================================== */
+.adm-body { position: relative; isolation: isolate; }
+.adm-aurora { position: fixed; inset: 0 0 auto 0; height: 420px; z-index: -1; pointer-events: none; overflow: hidden;
+    -webkit-mask-image: linear-gradient(#000 30%, transparent); mask-image: linear-gradient(#000 30%, transparent); }
+.adm-aurora::before, .adm-aurora::after { content: ''; position: absolute; border-radius: 50%; filter: blur(90px); opacity: .16; }
+.adm-aurora::before { width: 620px; height: 380px; top: -180px; left: 12%; background: rgb(var(--c-accent)); animation: adm-drift 22s ease-in-out infinite alternate; }
+.adm-aurora::after { width: 720px; height: 420px; top: -220px; right: 2%; background: #4f7cff; animation: adm-drift 28s ease-in-out infinite alternate-reverse; }
+@keyframes adm-drift { to { transform: translate3d(90px, 40px, 0) scale(1.15); } }
+
+.adm-sidebar { background: rgb(var(--c-surface) / .86); border-right: 1px solid rgb(var(--c-line) / .7); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.adm-logo { background: linear-gradient(135deg, rgb(var(--c-accent)), #ff8a3d); box-shadow: 0 6px 18px -6px rgb(var(--c-accent) / .7); }
+.adm-scroll { scrollbar-width: thin; scrollbar-color: rgb(var(--c-line)) transparent; }
+
+.adm-nav-link { position: relative; display: flex; align-items: center; gap: .625rem; border-radius: .625rem; padding: .45rem .75rem; font-size: 13px; font-weight: 500; color: rgb(var(--c-muted)); transition: background-color .18s, color .18s, transform .18s; }
+.adm-nav-link:hover { background: rgb(var(--c-surface-2)); color: rgb(var(--c-fg)); transform: translateX(2px); }
+.adm-nav-link.is-active { background: rgb(var(--c-accent) / .12); color: rgb(var(--c-accent)); font-weight: 600; }
+.adm-nav-link.is-active::before { content: ''; position: absolute; left: -.75rem; top: 22%; bottom: 22%; width: 3px; border-radius: 0 3px 3px 0; background: rgb(var(--c-accent)); box-shadow: 0 0 12px rgb(var(--c-accent)); }
+.adm-nav-badge { min-width: 1.15rem; border-radius: 999px; background: rgb(var(--c-accent)); padding: 0 .35rem; text-align: center; font-size: 10px; font-weight: 700; line-height: 1.15rem; color: rgb(var(--c-accent-fg)); }
+
+.adm-topbar { background: rgb(var(--c-bg) / .78); border-bottom: 1px solid rgb(var(--c-line) / .5); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.adm-search-trigger { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); transition: border-color .18s, box-shadow .18s; }
+.adm-search-trigger:hover { border-color: rgb(var(--c-accent) / .55); box-shadow: 0 0 0 3px rgb(var(--c-accent) / .1); }
+.adm-palette { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); box-shadow: 0 30px 80px -20px rgb(0 0 0 / .6); }
+.adm-ping::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: inherit; animation: adm-ping 1.8s cubic-bezier(0, 0, .2, 1) infinite; }
+@keyframes adm-ping { 70%, 100% { transform: scale(2.6); opacity: 0; } }
+
+/* Cards: a soft glow follows the cursor (position set in admin.js). */
+.adm-card { position: relative; border-radius: 1rem; background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line) / .8); box-shadow: 0 1px 2px rgb(0 0 0 / .06); transition: border-color .22s, box-shadow .22s, transform .22s; }
+.adm-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .25s;
+    background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0), rgb(var(--c-accent) / .09), transparent 70%); }
+.adm-card:hover::before { opacity: 1; }
+a.adm-card:hover, .adm-card-link:hover { border-color: rgb(var(--c-accent) / .45); transform: translateY(-2px); box-shadow: 0 14px 30px -18px rgb(0 0 0 / .5); }
+
+/* Tables */
+.adm-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+.adm-table thead th { padding: .625rem 1rem; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: rgb(var(--c-muted)); border-bottom: 1px solid rgb(var(--c-line)); white-space: nowrap; }
+.adm-table th.num, .adm-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.adm-table tbody td { padding: .7rem 1rem; border-bottom: 1px solid rgb(var(--c-line) / .5); vertical-align: middle; }
+.adm-table tbody tr:last-child td { border-bottom: 0; }
+.adm-table tbody tr { transition: background-color .14s; animation: adm-row .38s ease-out backwards; }
+.adm-table tbody tr:hover { background: rgb(var(--c-surface-2) / .7); }
+.adm-table tbody tr:nth-child(2) { animation-delay: .03s; } .adm-table tbody tr:nth-child(3) { animation-delay: .06s; }
+.adm-table tbody tr:nth-child(4) { animation-delay: .09s; } .adm-table tbody tr:nth-child(5) { animation-delay: .12s; }
+.adm-table tbody tr:nth-child(6) { animation-delay: .15s; } .adm-table tbody tr:nth-child(n+7) { animation-delay: .18s; }
+@keyframes adm-row { from { opacity: 0; transform: translateY(5px); } }
+
+/* Status pills always carry a word, so meaning is never colour alone. */
+.adm-pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; padding: .125rem .55rem; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.adm-pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.adm-pill-good { background: rgb(16 185 129 / .13); color: rgb(5 150 105); }
+.adm-pill-warn { background: rgb(245 158 11 / .15); color: rgb(180 83 9); }
+.adm-pill-bad { background: rgb(244 63 94 / .13); color: rgb(225 29 72); }
+.adm-pill-info { background: rgb(79 124 255 / .14); color: rgb(59 100 230); }
+.adm-pill-mute { background: rgb(var(--c-surface-2)); color: rgb(var(--c-muted)); }
+.dark .adm-pill-good { color: rgb(52 211 153); } .dark .adm-pill-warn { color: rgb(251 191 36); }
+.dark .adm-pill-bad { color: rgb(251 113 133); } .dark .adm-pill-info { color: rgb(147 175 255); }
+
+/* Charts */
+.adm-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: adm-draw 1.3s cubic-bezier(.65, 0, .35, 1) forwards; }
+.adm-area { opacity: 0; animation: adm-fade .7s .55s ease-out forwards; }
+@keyframes adm-draw { to { stroke-dashoffset: 0; } }
+@keyframes adm-fade { to { opacity: 1; } }
+.adm-bar { transform-origin: left; animation: adm-grow .8s cubic-bezier(.2, .8, .2, 1) backwards; }
+@keyframes adm-grow { from { transform: scaleX(0); } }
+
+/* Tabs */
+.adm-tab { display: inline-flex; align-items: center; gap: .4rem; border-radius: .625rem; padding: .4rem .75rem; font-size: 13px; font-weight: 500; color: rgb(var(--c-muted)); white-space: nowrap; transition: background-color .15s, color .15s; }
+.adm-tab:hover { background: rgb(var(--c-surface-2)); color: rgb(var(--c-fg)); }
+.adm-tab.is-active { background: rgb(var(--c-accent) / .12); color: rgb(var(--c-accent)); font-weight: 600; }
+
+@media (prefers-reduced-motion: reduce) {
+    .adm-aurora::before, .adm-aurora::after, .adm-ping::after, .adm-table tbody tr, .adm-bar { animation: none; }
+    .adm-line { animation: none; stroke-dashoffset: 0; }
+    .adm-area { animation: none; opacity: 1; }
 }

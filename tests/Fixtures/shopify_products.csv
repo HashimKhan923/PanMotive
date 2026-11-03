@@ -1,0 +1,5 @@
+Handle,Title,Body (HTML),Vendor,Product Category,Type,Tags,Published,Option1 Name,Option1 Value,Variant SKU,Variant Grams,Variant Inventory Qty,Variant Price,Variant Compare At Price,Image Src
+ceramic-brake-pads,Ceramic Brake Pad Set,"<p>Low-dust <b>ceramic</b> pads.</p>",StopTech,Vehicles & Parts > Vehicle Parts & Accessories > Brake Pads,Brake Pads,brakes,TRUE,Position,Front,BP-CER-F,900,42,45.00,59.00,https://example.com/img/pad-front.jpg
+ceramic-brake-pads,Ceramic Brake Pad Set,,StopTech,,,,TRUE,Position,Rear,BP-CER-R,850,30,42.00,55.00,https://example.com/img/pad-rear.jpg
+oil-filter-xl,Oil Filter XL,"<p>Fits most inline-4 engines</p>",Bosch,Filters,Oil Filter,filters,TRUE,Title,Default Title,OF-XL-01,120,120,8.99,,https://example.com/img/oilfilter.jpg
+no-title-row,,junk,,,,,TRUE,Title,Default Title,X,0,0,1.00,,

@@ -61,6 +61,35 @@ class StorefrontRoutesTest extends TestCase
             ->assertSee('Ceramic Brake Pad Set');
     }
 
+    public function test_product_description_renders_with_structure_for_html_and_legacy_plain_text(): void
+    {
+        $seller = User::factory()->create();
+        $category = Category::create(['name' => 'Belts', 'slug' => 'belts-desc-test']);
+
+        $rich = Product::create([
+            'seller_id' => $seller->id, 'category_id' => $category->id,
+            'title' => 'Rich Desc Belt', 'slug' => 'rich-desc-belt',
+            'price' => 20, 'quantity' => 5, 'status' => 'active',
+            'description' => '<p>Direct <strong>OEM</strong> fit.</p><ul><li>Quiet</li><li>Long-lasting</li></ul>',
+        ]);
+        $legacy = Product::create([
+            'seller_id' => $seller->id, 'category_id' => $category->id,
+            'title' => 'Legacy Desc Belt', 'slug' => 'legacy-desc-belt',
+            'price' => 20, 'quantity' => 5, 'status' => 'active',
+            'description' => "Line one\nLine two <not really a tag",
+        ]);
+
+        $this->get(route('products.show', $rich->slug))
+            ->assertOk()
+            ->assertSee('<strong>OEM</strong>', false)
+            ->assertSee('<li>Quiet</li>', false);
+
+        $this->get(route('products.show', $legacy->slug))
+            ->assertOk()
+            ->assertSee('Line one')                        // default assertSee escapes the needle too,
+            ->assertSee('Line two <not really a tag');      // so this passes only if it was HTML-escaped
+    }
+
     public function test_product_show_404s_for_draft_product(): void
     {
         $seller = User::factory()->create();
@@ -93,7 +122,8 @@ class StorefrontRoutesTest extends TestCase
             'status' => 'placed',
         ]);
 
-        $this->get(route('checkout.confirmation', $order->order_number))
+        $this->actingAs($buyer)
+            ->get(route('checkout.confirmation', $order->order_number))
             ->assertOk()
             ->assertSee('PM-TEST-1');
     }

@@ -14,7 +14,7 @@ class RecommendationService
 {
     public function forVehicle(int $vehicleId, int $limit = 8): Collection
     {
-        return Product::where('status', 'active')
+        return Product::listed()
             ->whereHas('fitments', fn ($q) => $q->where('vehicles.id', $vehicleId))
             ->inRandomOrder()->limit($limit)->get();
     }
@@ -32,7 +32,41 @@ class RecommendationService
             ->limit($limit)
             ->pluck('product_id');
 
-        return Product::whereIn('id', $coOccurringProductIds)->where('status', 'active')->get();
+        return Product::whereIn('id', $coOccurringProductIds)->listed()->get();
+    }
+
+    /** "Customers who viewed this also viewed" — co-view affinity from the view log. */
+    public function alsoViewed(int $productId, int $limit = 6): Collection
+    {
+        $since = now()->subDays(60);
+
+        $viewerKeys = DB::table('product_views')
+            ->where('product_id', $productId)
+            ->where('viewed_at', '>=', $since)
+            ->distinct()
+            ->pluck('viewer_key');
+
+        if ($viewerKeys->isEmpty()) {
+            return new Collection;
+        }
+
+        $ids = DB::table('product_views')
+            ->whereIn('viewer_key', $viewerKeys)
+            ->where('product_id', '!=', $productId)
+            ->where('viewed_at', '>=', $since)
+            ->select('product_id', DB::raw('COUNT(*) as freq'))
+            ->groupBy('product_id')
+            ->orderByDesc('freq')
+            ->limit($limit)
+            ->pluck('product_id')
+            ->all();
+
+        if (! $ids) {
+            return new Collection;
+        }
+
+        return Product::whereIn('id', $ids)->listed()->with('brand')
+            ->get()->sortBy(fn ($p) => array_search($p->id, $ids))->values();
     }
 
     public function personalizedForBuyer(int $buyerId, int $limit = 8): Collection
@@ -44,10 +78,10 @@ class RecommendationService
             ->pluck('products.category_id')->unique();
 
         if ($purchasedCategoryIds->isEmpty()) {
-            return Product::where('status', 'active')->inRandomOrder()->limit($limit)->get();
+            return Product::listed()->inRandomOrder()->limit($limit)->get();
         }
 
-        return Product::where('status', 'active')
+        return Product::listed()
             ->whereIn('category_id', $purchasedCategoryIds)
             ->inRandomOrder()->limit($limit)->get();
     }

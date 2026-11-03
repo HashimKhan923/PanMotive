@@ -16,6 +16,17 @@ class PayoutReversalService
 
     public function reverse(OrderItem $orderItem): void
     {
+        $this->reverseTransfer($orderItem);
+
+        $this->stripe->refunds->create([
+            'payment_intent' => $orderItem->order->stripe_payment_intent_id,
+            'amount' => (int) round($orderItem->line_total * 100),
+        ]);
+    }
+
+    /** Pull a released payout back from the seller's connected account (no buyer refund). */
+    public function reverseTransfer(OrderItem $orderItem): void
+    {
         // Find the original transfer via the transfer_group set in TransferPayoutService.
         $transfers = $this->stripe->transfers->all([
             'transfer_group' => "order_{$orderItem->order_id}",
@@ -28,10 +39,5 @@ class PayoutReversalService
                 'amount' => (int) round($orderItem->seller_payout_amount * 100),
             ]);
         }
-
-        $this->stripe->refunds->create([
-            'payment_intent' => $orderItem->order->stripe_payment_intent_id,
-            'amount' => (int) round($orderItem->line_total * 100),
-        ]);
     }
 }

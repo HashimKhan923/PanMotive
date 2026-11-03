@@ -21,6 +21,22 @@
             {{-- form --}}
             <form id="checkout-form" method="POST" action="{{ route('checkout.store') }}" class="space-y-5">
                 @csrf
+
+                @guest
+                    <div class="card p-6">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <h2 class="font-bold">Contact</h2>
+                            <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="text-xs font-medium text-accent hover:underline">Log in for faster checkout</a>
+                        </div>
+                        <div class="mt-4">
+                            <label for="co-email" class="label">Email</label>
+                            <input id="co-email" name="email" type="email" value="{{ old('email') }}" autocomplete="email" class="input" placeholder="you@example.com">
+                            <p class="mt-1 text-xs text-muted">We'll send your receipt and tracking here. No account needed.</p>
+                            @error('email') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+                @endguest
+
                 <div class="card p-6">
                     <h2 class="font-bold">Shipping address</h2>
                     <div class="mt-4 grid gap-4 sm:grid-cols-2">
@@ -48,22 +64,41 @@
             <div class="space-y-4">
                 <div class="card p-6">
                     <h2 class="font-bold">Order summary</h2>
-                    <ul class="mt-4 space-y-3 text-sm">
-                        @foreach ($lines as $line)
-                            <li class="flex justify-between gap-3">
-                                <span class="text-muted">{{ $line['product']->title }} <span class="text-line">×</span> {{ $line['quantity'] }}</span>
-                                <span class="font-medium">${{ number_format($line['line_total'], 2) }}</span>
-                            </li>
+
+                    <div class="mt-4 space-y-4">
+                        @foreach ($grouped as $group)
+                            <div wire:key="cs-{{ $group['seller']?->id ?? $loop->index }}">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-muted">
+                                    Sold by {{ $group['seller']?->sellerProfile?->business_name ?? 'Verified seller' }}
+                                </p>
+                                <ul class="mt-2 space-y-2 text-sm">
+                                    @foreach ($group['lines'] as $line)
+                                        <li class="flex justify-between gap-3">
+                                            <span class="text-muted">{{ $line['product']->title }} <span class="text-line">×</span> {{ $line['quantity'] }}</span>
+                                            <span class="font-medium">${{ number_format($line['line_total'], 2) }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         @endforeach
-                    </ul>
+                    </div>
+
                     <hr class="my-4 border-line">
                     <dl class="space-y-2 text-sm">
                         <div class="flex justify-between"><dt class="text-muted">Subtotal</dt><dd>${{ number_format($subtotal, 2) }}</dd></div>
+                        <div class="flex justify-between"><dt class="text-muted">Shipping</dt><dd>{{ $shippingFree ? 'FREE' : '$' . number_format($shipping, 2) }}</dd></div>
                         @if ($discount > 0)
                             <div class="flex justify-between text-emerald-600"><dt>Coupon ({{ $couponCode }})</dt><dd>−${{ number_format($discount, 2) }}</dd></div>
                         @endif
-                        <div class="flex justify-between border-t border-line pt-2 text-base font-bold"><dt>Estimated total</dt><dd>${{ number_format(max(0, $subtotal - $discount), 2) }}</dd></div>
+                        @foreach ($bundlesApplied as $b)
+                            <div class="flex justify-between text-emerald-600"><dt>Bundle: {{ $b['title'] }}</dt><dd>−${{ number_format($b['savings'], 2) }}</dd></div>
+                        @endforeach
+                        <div class="flex justify-between border-t border-line pt-2 text-base font-bold">
+                            <dt>Estimated total</dt>
+                            <dd>${{ number_format(max(0, $subtotal + $shipping - $discount - $bundleSavings), 2) }}</dd>
+                        </div>
                     </dl>
+                    <p class="mt-2 text-xs text-muted">Credits, if applied, are deducted on the payment step.</p>
                 </div>
 
                 <div class="card p-6">

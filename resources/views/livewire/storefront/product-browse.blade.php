@@ -1,13 +1,16 @@
-@php($results = $this->results)
 <div class="container-x py-8 lg:py-12" x-data="{ filters: false }">
     {{-- header --}}
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <nav class="text-xs text-muted">
-                <a href="{{ route('home') }}" class="hover:text-accent">Home</a> <span class="mx-1">/</span> Shop
+                <a href="{{ route('home') }}" class="hover:text-accent">Home</a> <span class="mx-1">/</span>
+                <a href="{{ route('products.index') }}" class="hover:text-accent">Shop</a>
+                @if ($parentCategory)
+                    <span class="mx-1">/</span> <a href="{{ route('products.index', ['category' => $parentCategory->slug]) }}" class="hover:text-accent">{{ $parentCategory->name }}</a>
+                @endif
             </nav>
             <h1 class="mt-1 text-2xl font-bold sm:text-3xl">
-                {{ $category ? ($categories->firstWhere('slug', $category)?->name ?? 'Shop') : 'All Parts' }}
+                {{ $category ? ($selectedCategory?->name ?? 'Category not found') : 'All Parts' }}
             </h1>
             <p class="mt-1 text-sm text-muted">{{ number_format($results->total()) }} {{ Str::plural('result', $results->total()) }}</p>
         </div>
@@ -26,6 +29,18 @@
             </select>
         </div>
     </div>
+
+    @if ($this->chips)
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+            @foreach ($this->chips as $chip)
+                <button type="button" wire:click="removeFilter('{{ $chip['filter'] }}')" wire:key="chip-{{ $chip['filter'] }}"
+                        class="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium hover:border-accent hover:text-accent"
+                        aria-label="Remove filter {{ $chip['label'] }}">
+                    {{ $chip['label'] }} <x-ui.icon name="x" class="w-3 h-3" />
+                </button>
+            @endforeach
+        </div>
+    @endif
 
     @if ($fallbackNotice)
         <p class="mt-4 rounded-xl bg-accent/10 px-4 py-2.5 text-sm text-accent">
@@ -53,6 +68,25 @@
 
         {{-- ===== RESULTS ===== --}}
         <div>
+            @php($sponsored = $this->sponsored)
+            @if ($sponsored->isNotEmpty())
+                <div class="mb-4">
+                    <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Sponsored</p>
+                    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                        @foreach ($sponsored as $ad)
+                            <div class="relative" wire:key="spon-{{ $ad['source'] }}-{{ $ad['ref_id'] }}">
+                                <span class="absolute left-2 top-2 z-10 rounded-full bg-brand/85 px-2 py-0.5 text-[10px] font-semibold text-brand-fg">Ad</span>
+                                <x-product-card :product="$ad['product']"
+                                    :href="route('ad.click', ['source' => $ad['source'], 'ref' => $ad['ref_id'], 'p' => $ad['product']->id])" />
+                                @if ($ad['headline'])
+                                    <p class="mt-1 line-clamp-1 px-1 text-xs font-medium text-accent">{{ $ad['headline'] }}</p>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <div wire:loading.delay.class="opacity-40" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 @forelse ($results as $product)
                     <x-product-card :product="$product" />

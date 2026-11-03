@@ -17,7 +17,9 @@ class AutoConfirmDeliveries extends Command
     {
         $days = config('marketplace.auto_confirm_delivery_days');
 
-        $items = OrderItem::where('status', OrderStatus::Shipped)
+        // "Out for delivery" counts too — otherwise a carrier scan that never turns into
+        // "delivered" would leave the seller's money stuck forever.
+        $items = OrderItem::whereIn('status', [OrderStatus::Shipped, OrderStatus::OutForDelivery])
             ->where('shipped_at', '<=', now()->subDays($days))
             ->get();
 
@@ -27,6 +29,7 @@ class AutoConfirmDeliveries extends Command
                 'delivered_at' => now(),
             ]);
 
+            app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.delivered', [$item->fresh('order')]);
             ReleaseSellerPayout::dispatch($item->id);
         }
 

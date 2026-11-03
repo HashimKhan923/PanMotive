@@ -19,6 +19,9 @@ class AdminPermissionSeeder extends Seeder
             'catalog.manage', 'coupons.manage',
             'finance.view', 'finance.export',
             'settings.manage',
+            'users.view', 'users.manage', 'users.impersonate', 'wallet.adjust',
+            'sellers.manage', 'staff.manage', 'reviews.moderate',
+            'marketing.manage', 'content.manage', 'audit.view', 'system.manage',
         ];
 
         foreach ($permissions as $perm) {
@@ -26,9 +29,9 @@ class AdminPermissionSeeder extends Seeder
         }
 
         Role::findByName('super_admin')->givePermissionTo(Permission::all());
-        Role::findByName('support_agent')->givePermissionTo(['orders.view', 'disputes.resolve', 'sellers.approve']);
-        Role::findByName('finance')->givePermissionTo(['finance.view', 'finance.export', 'refunds.issue']);
-        Role::findByName('catalog_manager')->givePermissionTo(['catalog.manage', 'coupons.manage']);
+        Role::findByName('support_agent')->givePermissionTo(['orders.view', 'disputes.resolve', 'sellers.approve', 'users.view', 'reviews.moderate']);
+        Role::findByName('finance')->givePermissionTo(['finance.view', 'finance.export', 'refunds.issue', 'orders.view', 'users.view']);
+        Role::findByName('catalog_manager')->givePermissionTo(['catalog.manage', 'coupons.manage', 'reviews.moderate', 'marketing.manage', 'content.manage']);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

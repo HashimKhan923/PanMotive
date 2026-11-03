@@ -72,6 +72,24 @@ class PolishTest extends TestCase
         $this->assertSame(1, app(CartService::class)->itemCount());
     }
 
+    public function test_switching_variant_dispatches_its_own_photo_for_the_gallery(): void
+    {
+        $product = $this->product();
+        $whiteMedia = $product->addMedia(\Illuminate\Http\UploadedFile::fake()->image('white.jpg'))->toMediaCollection('images');
+        $blueMedia = $product->addMedia(\Illuminate\Http\UploadedFile::fake()->image('blue.jpg'))->toMediaCollection('images');
+
+        $white = $product->variants()->create(['label' => 'White', 'options' => ['Color' => 'White'], 'media_id' => $whiteMedia->id, 'quantity' => 5]);
+        $blue = $product->variants()->create(['label' => 'Blue', 'options' => ['Color' => 'Blue'], 'media_id' => $blueMedia->id, 'quantity' => 5]);
+
+        $buyer = User::factory()->create();
+
+        Livewire::actingAs($buyer)
+            ->test(AddToCartButton::class, ['product' => $product])
+            ->assertSet('variantId', $white->id) // in-stock variants first, alphabetical id order
+            ->set('variantId', $blue->id)
+            ->assertDispatched('variant-image-changed', productId: $product->id, url: $blueMedia->getUrl('webp') ?: $blueMedia->getUrl());
+    }
+
     public function test_item_count_does_not_create_a_cart_row_for_a_fresh_guest(): void
     {
         app(CartService::class)->itemCount();

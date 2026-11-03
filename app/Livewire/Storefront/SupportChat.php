@@ -44,7 +44,7 @@ class SupportChat extends Component
         $history = collect($this->messages)->map(fn ($m) => "{$m['role']}: {$m['content']}")->implode("\n");
 
         $reply = $ai->complete($this->systemPrompt, $history, maxTokens: 300)
-            ?: "I'm having trouble reaching support right now — please email support@panmotive.test.";
+            ?: "I'm having trouble reaching support right now — please email ".(config('marketplace.platform.support_email') ?: 'support@panmotive.test').'.';
 
         if (str_contains(strtolower($reply), 'connect me to a human') || str_contains(strtolower($userMessage), 'human')) {
             $reply .= "\n\nI've flagged this for a support agent — they'll follow up by email.";

@@ -38,6 +38,14 @@ class LoginForm extends Form
             ]);
         }
 
+        if (Auth::user()?->is_active === false) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'form.email' => 'This account has been suspended. Contact support if you think this is a mistake.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

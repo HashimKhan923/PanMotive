@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name') . ' — Auto Parts for Every Vehicle')</title>
     <meta name="description" content="@yield('meta_description', 'Genuine and aftermarket auto parts from trusted sellers, matched to your exact vehicle. Fast shipping, buyer protection, cashback on every order.')">
 
@@ -27,7 +28,11 @@
     @livewireStyles
 </head>
 <body class="min-h-screen bg-bg text-fg">
+@include('partials.impersonation-banner')
+@include('storefront.partials.announcement-bar')
     @include('storefront.partials.header')
+
+    @livewire('storefront.garage-banner')
 
     <main>
         {{ $slot ?? '' }}
@@ -37,6 +42,12 @@
     @include('storefront.partials.footer')
 
     @livewire('storefront.support-chat')
+
+    <x-storefront.mini-cart />
+    <x-ui.toaster />
+
+    @php($pmCompare = app(\App\Support\Compare::class))
+    <script type="application/json" id="compare-seed">@json(['ids' => $pmCompare->ids(), 'count' => $pmCompare->count(), 'max' => \App\Support\Compare::MAX])</script>
 
     @livewireScripts
     @stack('scripts')

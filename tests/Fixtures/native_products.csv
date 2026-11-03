@@ -1,0 +1,4 @@
+title,category_id,sku,part_number,condition,price,quantity,description
+Front Rotor Pair,3,RT-100,RT100,new,89.99,12,Vented rotors
+Cabin Filter,7,CF-22,,new,14.50,60,HEPA cabin filter
+,7,BAD,,new,9.99,1,missing title

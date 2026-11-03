@@ -1,70 +1,85 @@
 @extends('layouts.admin')
 
-@section('title', 'Disputes & Returns')
+@section('title', 'Disputes & claims')
 
 @section('content')
-<div>
-    <h1 class="text-xl font-bold mb-4">Disputes &amp; Returns</h1>
+<x-admin.header title="Disputes & claims" subtitle="When a buyer and a seller can't agree, Pan Motive decides. Decisions move real money." />
 
-    @if (session('success'))
-        <p class="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</p>
+<x-admin.card title="Buyer claims" :subtitle="$claims->count().' open, escalated ones first'" class="mb-4">
+    @if ($claims->isEmpty())
+        <x-admin.empty title="No open claims" class="!py-6" />
+    @else
+        <ul class="-my-2 divide-y divide-line/60">
+            @foreach ($claims as $claim)
+                <li class="flex flex-wrap items-start justify-between gap-4 py-4">
+                    <div class="min-w-0 flex-1">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p class="font-semibold">{{ $claim->claim_number }}</p>
+                            <x-admin.status :value="$claim->status" />
+                            <span class="text-xs text-muted">{{ ucfirst(str_replace('_', ' ', $claim->reason)) }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-muted">
+                            {{ $claim->buyer?->name ?? 'Buyer' }} vs {{ $claim->seller?->sellerProfile?->business_name ?? 'seller' }}
+                            @if ($claim->orderItem?->order) · <a href="{{ route('admin.orders.show', $claim->orderItem->order) }}" class="hover:text-accent">{{ $claim->orderItem->order->order_number }}</a>@endif
+                            · ${{ number_format((float) $claim->amount, 2) }}
+                        </p>
+                        @if ($claim->detail)<p class="mt-2 text-[13px]">{{ $claim->detail }}</p>@endif
+                        @if ($claim->seller_response)
+                            <div class="mt-2 rounded-xl bg-surface-2 p-3 text-[13px]"><p class="mb-0.5 text-xs font-semibold text-muted">Seller's response</p>{{ $claim->seller_response }}</div>
+                        @endif
+                    </div>
+                    @can('refunds.issue')
+                        <div class="flex items-center gap-2">
+                            <x-admin.action :url="route('admin.claims.decide', $claim)" label="Grant claim" size="xs" tone="danger" reason reason-name="note" reason-label="Decision note" confirm="Grant and refund"
+                                            body="The buyer is refunded the way they paid. If the seller was paid, that payout is pulled back. The store gets a violation.">
+                                <input type="hidden" name="decision" value="grant">
+                            </x-admin.action>
+                            <x-admin.action :url="route('admin.claims.decide', $claim)" label="Deny" size="xs" reason reason-name="note" reason-label="Decision note" body="The claim closes and no money moves.">
+                                <input type="hidden" name="decision" value="deny">
+                            </x-admin.action>
+                        </div>
+                    @endcan
+                </li>
+            @endforeach
+        </ul>
     @endif
-    @error('refund')
-        <p class="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">{{ $message }}</p>
-    @enderror
+</x-admin.card>
 
-    @forelse ($items as $item)
-        <div class="border rounded-xl p-4 mb-3 bg-white" data-reveal>
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="font-medium">{{ $item->product_title }}</p>
-                    <p class="text-xs text-slate-500">
-                        Order {{ $item->order->order_number }} ·
-                        Buyer: {{ $item->order->buyer->name ?? 'Guest' }} ·
-                        Seller: {{ $item->seller->sellerProfile?->business_name ?? '—' }}
-                    </p>
-                    <p class="text-xs text-slate-500 mt-1">Reason: {{ $item->statusHistory->last()?->note }}</p>
-                    @if ($item->payout_released_at)
-                        <p class="text-xs text-red-600 font-medium mt-1">⚠ Payout already released to seller — requires reversal</p>
-                    @endif
-                </div>
-                <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">{{ $item->status->label() }}</span>
-            </div>
-
-            <div class="flex gap-2 mt-3">
-                @if ($item->payout_released_at)
-                    <form method="POST" action="{{ route('admin.disputes.reverse-payout', $item) }}"
-                          onsubmit="return confirm('Reverse seller payout and refund buyer?')">
-                        @csrf
-                        <input type="hidden" name="reason" value="Approved return after payout release">
-                        <button class="bg-red-500 hover:bg-red-400 text-white text-sm font-semibold rounded-lg px-4 py-2 transition">
-                            Reverse Payout &amp; Refund
-                        </button>
-                    </form>
-                @else
-                    <form method="POST" action="{{ route('admin.disputes.approve-return', $item) }}">
-                        @csrf
-                        <button class="bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold rounded-lg px-4 py-2 transition">
-                            Approve &amp; Refund
-                        </button>
-                    </form>
-                @endif
-                <button onclick="document.getElementById('deny-{{ $item->id }}').showModal()" class="bg-slate-200 text-sm font-semibold rounded-lg px-4 py-2">
-                    Deny
-                </button>
-                <dialog id="deny-{{ $item->id }}" class="rounded-xl p-6">
-                    <form method="POST" action="{{ route('admin.disputes.deny-return', $item) }}" class="space-y-3 w-80">
-                        @csrf
-                        <textarea name="reason" placeholder="Reason for denial..." rows="3" class="w-full rounded-lg border-slate-300" required></textarea>
-                        <button class="bg-slate-900 text-white font-semibold rounded-lg px-4 py-2 w-full">Confirm Deny</button>
-                    </form>
-                </dialog>
-            </div>
-        </div>
-    @empty
-        <p class="text-slate-400">No open disputes.</p>
-    @endforelse
-
-    {{ $items->links() }}
-</div>
+<x-admin.card title="Disputed order lines" flush>
+    @if ($items->isEmpty())
+        <x-admin.empty title="No disputed lines" />
+    @else
+        <table class="adm-table">
+            <thead><tr><th>Order</th><th>Item</th><th>Seller</th><th>Status</th><th class="num">Total</th><th></th></tr></thead>
+            <tbody>
+                @foreach ($items as $item)
+                    <tr>
+                        <td>
+                            <a href="{{ route('admin.orders.show', $item->order) }}" class="font-medium hover:text-accent">{{ $item->order?->order_number }}</a>
+                            <p class="text-xs text-muted">{{ $item->order?->buyer?->name ?? $item->order?->guest_name ?? 'Guest' }}</p>
+                        </td>
+                        <td class="max-w-[220px] truncate">{{ $item->product_title }}</td>
+                        <td class="whitespace-nowrap text-muted">{{ $item->seller?->sellerProfile?->business_name }}</td>
+                        <td class="whitespace-nowrap"><x-admin.status :value="$item->status" :label="$item->status->label()" />
+                            @if ($item->payout_released_at)<x-admin.status value="held" label="Seller already paid" />@endif</td>
+                        <td class="num">${{ number_format((float) $item->line_total, 2) }}</td>
+                        <td class="whitespace-nowrap text-right">
+                            @can('refunds.issue')
+                                @if ($item->payout_released_at)
+                                    <x-admin.action :url="route('admin.disputes.reverse-payout', $item)" label="Reverse payout and refund" size="xs" tone="danger" reason body="Pulls the money back from the seller, then refunds the buyer. This moves real money." confirm="Reverse and refund" />
+                                @else
+                                    <x-admin.action :url="route('admin.disputes.approve-return', $item)" label="Approve and refund" size="xs" tone="primary" body="Refunds what the buyer paid. This moves real money." confirm="Refund buyer" />
+                                @endif
+                            @endcan
+                            @can('disputes.resolve')
+                                <x-admin.action :url="route('admin.disputes.deny-return', $item)" label="Deny" size="xs" reason reason-label="Reason (the buyer will see this)" />
+                            @endcan
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+</x-admin.card>
+<div class="mt-4">{{ $items->links() }}</div>
 @endsection

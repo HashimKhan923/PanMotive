@@ -21,15 +21,31 @@ use Illuminate\Support\Facades\Route;
 | (seller.* / admin.*), so these groups add no ->name() prefix.
 */
 
-Route::domain('sell.'.config('app.domain'))
-    ->group(function () {
+Route::post('/impersonate/stop', [\App\Http\Controllers\Admin\ImpersonationController::class, 'stop'])
+    ->middleware('auth')->name('impersonate.stop');
+
+// Local dev can't resolve subdomains under `php artisan serve`, so the portals
+// are mounted under path prefixes there. Every other environment (incl. testing)
+// keeps the production subdomain layout. Route names are identical either way.
+if (app()->environment('local')) {
+    Route::prefix('seller')->group(function () {
         require __DIR__.'/seller.php';
     });
 
-Route::domain('admin.'.config('app.domain'))
-    ->group(function () {
+    Route::prefix('admin')->group(function () {
         require __DIR__.'/admin.php';
     });
+} else {
+    Route::domain('sell.'.config('app.domain'))
+        ->group(function () {
+            require __DIR__.'/seller.php';
+        });
+
+    Route::domain('admin.'.config('app.domain'))
+        ->group(function () {
+            require __DIR__.'/admin.php';
+        });
+}
 
 // Payment / carrier webhooks — apex domain, CSRF-exempt (see bootstrap/app.php).
 Route::post('webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');

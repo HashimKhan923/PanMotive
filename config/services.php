@@ -50,4 +50,22 @@ return [
         'model' => env('ANTHROPIC_MODEL', 'claude-sonnet-4-6'),
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'base' => rtrim(env('OPENAI_API_BASE', 'https://api.openai.com/v1'), '/'),
+    ],
+
+    // Which provider AiClient uses. 'auto' = OpenAI if its key is set, else Anthropic.
+    'ai' => [
+        'provider' => env('AI_PROVIDER', 'auto'),
+    ],
+
+    // SMS marketing. Without all three, the SMS channel is hidden — texts are never faked.
+    'twilio' => [
+        'sid' => env('TWILIO_SID'),
+        'token' => env('TWILIO_TOKEN'),
+        'from' => env('TWILIO_FROM'),
+    ],
+
 ];

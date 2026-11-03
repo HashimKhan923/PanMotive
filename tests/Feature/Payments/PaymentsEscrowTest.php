@@ -96,7 +96,7 @@ class PaymentsEscrowTest extends TestCase
         $this->assertSame(1, $order->items()->count());
     }
 
-    public function test_stripe_payment_failed_cancels_order(): void
+    public function test_stripe_payment_failed_keeps_order_open_for_another_card(): void
     {
         config()->set('services.stripe.webhook_secret', 'whsec_test');
 
@@ -105,7 +105,8 @@ class PaymentsEscrowTest extends TestCase
         $this->postStripe($this->eventPayload('payment_intent.payment_failed', $order->stripe_payment_intent_id))
             ->assertOk();
 
-        $this->assertSame(OrderStatus::Cancelled, $order->refresh()->status);
+        // A decline isn't final — the buyer can retry; unpaid orders expire separately.
+        $this->assertSame(OrderStatus::Placed, $order->refresh()->status);
     }
 
     // ---------- delivery confirmation ----------

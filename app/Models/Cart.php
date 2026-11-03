@@ -25,7 +25,7 @@ class Cart extends Model
     public function subtotal(): float
     {
         return (float) $this->items
-            ->filter(fn ($i) => $i->product && $i->product->status === 'active')
-            ->sum(fn ($i) => (float) ($i->product->sale_price ?? $i->product->price) * $i->quantity);
+            ->filter(fn ($i) => $i->product && $i->product->isListed())
+            ->sum(fn ($i) => $i->product->effectivePrice() * $i->quantity);
     }
 }

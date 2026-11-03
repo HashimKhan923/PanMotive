@@ -35,6 +35,21 @@ enum OrderStatus: string
         };
     }
 
+    /**
+     * Paid and waiting on the seller to accept. Placed means payment hasn't
+     * cleared yet, so it must never be actionable by the seller.
+     */
+    public static function awaitingAcceptance(): array
+    {
+        return [self::Paid];
+    }
+
+    /** Before anything has shipped — the only window in which a seller may cancel a line. */
+    public static function cancellable(): array
+    {
+        return [self::Placed, self::Paid, self::SellerAccepted];
+    }
+
     /** Statuses a buyer's "confirm delivery" action or auto-confirm job can transition FROM */
     public static function deliverable(): array
     {

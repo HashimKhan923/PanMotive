@@ -3,10 +3,19 @@
 namespace Tests;
 
 use App\Models\User;
+use App\Support\SellerContext;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // SellerContext holds request-scoped statics; clear leftovers between tests.
+        SellerContext::clear();
+    }
+
     /**
      * Give a user a confirmed 2FA secret so the RequireTwoFactor enrolment gate
      * lets them into the seller/admin portals. (The login OTP challenge is a

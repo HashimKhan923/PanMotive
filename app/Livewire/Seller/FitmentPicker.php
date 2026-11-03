@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller;
 
 use App\Models\Vehicle;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class FitmentPicker extends Component
@@ -15,6 +16,17 @@ class FitmentPicker extends Component
     public function mount(array $selected = []): void
     {
         $this->selected = array_map('intval', $selected);
+    }
+
+    #[On('fitments-suggested')]
+    public function addSuggested(array $ids): void
+    {
+        $this->selected = array_values(array_unique(array_merge(
+            $this->selected,
+            array_map('intval', $ids)
+        )));
+
+        $this->dispatch('fitment-updated', ids: $this->selected);
     }
 
     public function toggle(int $vehicleId): void

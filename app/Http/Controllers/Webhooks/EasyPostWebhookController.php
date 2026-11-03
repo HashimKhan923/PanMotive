@@ -37,6 +37,7 @@ class EasyPostWebhookController extends Controller
                 'status' => OrderStatus::Delivered,
                 'delivered_at' => now(),
             ]);
+            app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.delivered', [$orderItem->fresh('order')]);
             ReleaseSellerPayout::dispatch($orderItem->id);
         } elseif ($status === 'out_for_delivery') {
             $orderItem->update(['status' => OrderStatus::OutForDelivery]);

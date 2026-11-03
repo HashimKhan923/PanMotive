@@ -1,28 +1,25 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
+        <h1 class="text-xl font-bold">{{ __('Profile') }}</h1>
+        <p class="mt-1 text-sm text-muted">Manage how you sign in and how we reach you.</p>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.update-profile-information-form />
-                </div>
+    <div class="container-x max-w-3xl space-y-6 py-10">
+        <div class="card p-6 sm:p-8" data-reveal>
+            <div class="max-w-xl">
+                <livewire:profile.update-profile-information-form />
             </div>
+        </div>
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.update-password-form />
-                </div>
+        <div class="card p-6 sm:p-8" data-reveal>
+            <div class="max-w-xl">
+                <livewire:profile.update-password-form />
             </div>
+        </div>
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.delete-user-form />
-                </div>
+        <div class="card p-6 sm:p-8" data-reveal>
+            <div class="max-w-xl">
+                <livewire:profile.delete-user-form />
             </div>
         </div>
     </div>

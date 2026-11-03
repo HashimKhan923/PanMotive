@@ -47,7 +47,10 @@ class NewOrderReceived extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'type' => 'new_order_received',
+            'type' => 'order',
+            'title' => "New order {$this->order->order_number}",
+            'body' => 'A buyer checked out — accept it to start fulfilment.',
+            'url' => route('seller.orders.index', ['status' => 'new']),
             'order_id' => $this->order->id,
             'order_number' => $this->order->order_number,
         ];

@@ -3,8 +3,10 @@
 namespace App\Services\Payments;
 
 use App\Enums\OrderStatus;
+use App\Models\Order;
 use App\Models\OrderItem;
 use RuntimeException;
+use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 
 class RefundService
@@ -31,5 +33,23 @@ class RefundService
         ]);
 
         $orderItem->update(['status' => OrderStatus::Refunded]);
+    }
+
+    /** Refund an arbitrary amount of an order's card payment, without touching any statuses. */
+    public function refundAmount(Order $order, float $amount, array $metadata = []): void
+    {
+        if ($amount <= 0 || ! $order->stripe_payment_intent_id) {
+            return;
+        }
+
+        try {
+            $this->stripe->refunds->create([
+                'payment_intent' => $order->stripe_payment_intent_id,
+                'amount' => (int) round($amount * 100),
+                'metadata' => $metadata,
+            ]);
+        } catch (ApiErrorException $e) {
+            throw new RuntimeException('The card refund could not be processed: '.$e->getMessage(), 0, $e);
+        }
     }
 }

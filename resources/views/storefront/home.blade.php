@@ -5,61 +5,99 @@
 @section('content')
 @php
     $stats = cache()->remember('home.stats.v2.' . now()->format('Y-m-d-H'), 1800, fn () => [
-        'listings' => \App\Models\Product::where('status', 'active')->count(),
+        'listings' => \App\Models\Product::listed()->count(),
         'sellers'  => \App\Models\SellerProfile::where('status', 'approved')->count(),
         'makes'    => \App\Models\VehicleMake::count(),
         'orders'   => \App\Models\Order::whereNotIn('status', ['placed', 'cancelled'])->count(),
     ]);
-    $featured = \App\Models\Product::where('status', 'active')->with('brand', 'seller.sellerProfile')->latest()->take(8)->get();
-    $deals = \App\Models\Product::where('status', 'active')->whereNotNull('sale_price')
-        ->whereColumn('sale_price', '<', 'price')->with('brand')->take(4)->get();
-    $categories = \App\Models\Category::whereNull('parent_id')->orderBy('sort_order')->orderBy('name')->take(8)->get();
+    $featured = \App\Models\Product::listed()->with('brand', 'seller.sellerProfile')->latest()->take(8)->get();
+    $deals = \App\Models\Product::onDeal()->listed()
+        ->with('brand', 'seller.sellerProfile')->orderByRaw('(price - sale_price) / price DESC')->take(4)->get();
+    $categories = \App\Models\Category::shopRoots()->take(8);
+    $brands = cache()->remember('home.brands.v2', 3600, fn () => \App\Models\Brand::whereHas('products', fn ($q) => $q->listed())
+        ->withCount(['products' => fn ($q) => $q->listed()])->orderByDesc('products_count')->take(14)->pluck('name', 'slug'));
+
+    $garage = app(\App\Services\GarageService::class)->current();
+    $forVehicle = $garage
+        ? \App\Models\Product::listed()
+            ->whereHas('fitments', fn ($q) => $q->where('vehicles.id', $garage['id']))
+            ->with('brand')->latest()->take(4)->get()
+        : collect();
+
+    $recent = app(\App\Services\RecentlyViewedService::class)->products(limit: 4);
+
+    $adServer = app(\App\Services\Seller\AdServingService::class);
+    $sponsored = $adServer->forPlacement('home', [], 4);
+    $adServer->recordImpressions($sponsored);
+
+    $fromFollowed = auth()->check()
+        ? \App\Models\Product::listed()
+            ->whereIn('seller_id', auth()->user()->followedSellers()->pluck('users.id'))
+            ->with('brand')->latest()->take(4)->get()
+        : collect();
 @endphp
 
 {{-- ================= HERO ================= --}}
-<section class="relative overflow-hidden bg-brand text-brand-fg">
-    <div class="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-accent/20 blur-3xl"></div>
-    <div class="pointer-events-none absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-white/5 blur-3xl"></div>
+<section class="pm-grain relative isolate overflow-hidden bg-surface-2 text-fg">
+    {{-- Drifting colour fields — pure CSS, paused for reduced-motion users. --}}
+    <div class="pm-aurora -z-10" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div data-parallax="0.35" class="pointer-events-none absolute -right-24 -top-24 -z-10 h-96 w-96 rounded-full bg-accent/20 blur-3xl"></div>
 
     <div class="container-x relative grid gap-12 py-16 lg:grid-cols-2 lg:py-24">
         <div data-reveal="slide-up" class="flex flex-col justify-center">
-            <span class="pill w-fit !bg-white/10 !text-white/80">
-                <x-ui.icon name="sparkles" class="w-3.5 h-3.5 text-accent" /> Trusted by researchers of horsepower everywhere
+            <span class="pill w-fit !bg-surface !text-muted ring-1 ring-line">
+                <x-ui.icon name="sparkles" class="w-3.5 h-3.5 text-accent" /> {{ config('marketplace.platform.hero_badge') }}
             </span>
-            <h1 class="mt-5 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-6xl">
-                Every Part.<br>Every Vehicle. <span class="text-accent">Fast.</span>
+            <h1 class="mt-5 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-6xl" data-split>
+                {{ config('marketplace.platform.hero_line_1') }}<br>{{ config('marketplace.platform.hero_line_2') }} <span class="pm-gradient-text">{{ config('marketplace.platform.hero_accent') }}</span>
             </h1>
-            <p class="mt-5 max-w-md text-lg text-white/70">
-                Genuine and aftermarket auto parts from vetted sellers — matched to your exact
-                year, make and model. Buyer protection and cashback on every order.
+            <p class="mt-5 max-w-md text-lg text-muted">
+                {{ config('marketplace.platform.hero_text') }}
             </p>
 
-            <div class="mt-8 rounded-2xl bg-white/10 p-2 ring-1 ring-white/10 backdrop-blur">
+            <div id="garage" class="mt-8 scroll-mt-24 rounded-2xl bg-surface/80 p-2 shadow-[0_24px_60px_-28px_rgb(15_23_42/.45)] ring-1 ring-line backdrop-blur-xl">
                 @livewire('storefront.vehicle-selector')
             </div>
 
-            <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/70">
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> OEM &amp; part-number search</span>
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> Escrow-protected payments</span>
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> Verified sellers only</span>
+            <div class="mt-5 flex flex-wrap gap-3">
+                <a href="{{ route('products.index') }}" data-magnetic class="btn-accent">Shop all parts <x-ui.icon name="arrow-right" class="w-4 h-4" /></a>
+                <a href="{{ route('deals.index') }}" data-magnetic class="btn-outline !bg-surface/70 backdrop-blur">Today's deals</a>
+            </div>
+
+            <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted">
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> {{ config('marketplace.platform.hero_point_1') }}</span>
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> {{ config('marketplace.platform.hero_point_2') }}</span>
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> {{ config('marketplace.platform.hero_point_3') }}</span>
             </div>
         </div>
 
         <div data-reveal="scale" class="relative hidden lg:block">
             <div class="grid h-full grid-cols-2 gap-4">
                 @foreach ($featured->take(4) as $i => $p)
-                    <a href="{{ route('products.show', $p->slug) }}"
-                       class="group relative overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/10 {{ $i % 2 ? 'mt-8' : '' }}">
-                        <img src="{{ $p->getFirstMediaUrl('images', 'thumb') ?: $p->getFirstMediaUrl('images') }}"
-                             alt="{{ $p->title }}" class="aspect-square w-full object-cover transition group-hover:scale-105">
+                    {{-- Three layers, three transforms: scroll parallax → idle float → pointer tilt. --}}
+                    <div data-parallax="{{ $i % 2 ? '-0.12' : '0.12' }}" class="{{ $i % 2 ? 'mt-8' : '' }}">
+                    <div class="pm-float" style="animation-delay: -{{ $i * 1.3 }}s">
+                    <a href="{{ route('products.show', $p->slug) }}" data-morph data-tilt
+                       class="pm-tilt group relative block overflow-hidden rounded-2xl bg-surface shadow-[0_24px_50px_-24px_rgb(15_23_42/.5)] ring-1 ring-line">
+                        <div class="pm-glare"></div>
+                        @if ($p->hasMedia('images'))
+                            <img src="{{ $p->getFirstMediaUrl('images', 'thumb') ?: $p->getFirstMediaUrl('images') }}"
+                                 alt="{{ $p->title }}" class="aspect-square w-full object-cover transition group-hover:scale-105">
+                        @else
+                            <div class="grid aspect-square w-full place-items-center bg-surface-2">
+                                <x-ui.icon name="image" class="w-8 h-8 text-muted" />
+                            </div>
+                        @endif
                         <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                             <p class="line-clamp-1 text-xs font-semibold text-white">{{ $p->title }}</p>
-                            <p class="text-xs text-accent">${{ number_format($p->sale_price ?? $p->price, 2) }}</p>
+                            <p class="text-xs font-bold text-accent">${{ number_format($p->effectivePrice(), 2) }}</p>
                         </div>
                     </a>
+                    </div>
+                    </div>
                 @endforeach
                 @if ($featured->count() < 4)
-                    <div class="col-span-2 grid place-items-center rounded-2xl bg-white/5 p-10 text-center text-sm text-white/50">
+                    <div class="col-span-2 grid place-items-center rounded-2xl bg-surface p-10 text-center text-sm text-muted ring-1 ring-line">
                         Seller listings appear here.
                     </div>
                 @endif
@@ -68,26 +106,99 @@
     </div>
 
     {{-- stat bar --}}
-    <div class="border-t border-white/10 bg-black/20">
+    <div class="border-t border-line bg-surface">
         <div class="container-x grid grid-cols-2 gap-6 py-8 text-center sm:grid-cols-4" data-reveal-group>
             @foreach ([
                 ['listings', 'Parts Listed'], ['sellers', 'Verified Sellers'],
                 ['makes', 'Vehicle Makes'], ['orders', 'Orders Fulfilled'],
             ] as [$key, $label])
                 <div>
-                    <p class="text-3xl font-extrabold text-white" data-counter-to="{{ $stats[$key] }}">0</p>
-                    <p class="mt-1 text-xs uppercase tracking-wide text-white/50">{{ $label }}</p>
+                    <p class="text-3xl font-extrabold text-fg" data-counter-to="{{ $stats[$key] }}">0</p>
+                    <p class="mt-1 text-xs uppercase tracking-wide text-muted">{{ $label }}</p>
                 </div>
             @endforeach
         </div>
     </div>
 </section>
 
+{{-- ================= BRANDS MARQUEE ================= --}}
+@if ($brands->count() >= 4)
+    <section class="border-b border-line bg-surface py-6" aria-label="Brands sold on Pan Motive">
+        <div class="pm-marquee text-lg font-extrabold uppercase tracking-widest text-muted/70">
+            @foreach ([0, 1] as $copy)
+                <div @if ($copy) aria-hidden="true" @endif>
+                    @foreach ($brands as $slug => $b)
+                        <a href="{{ route('products.index', ['brand' => $slug]) }}" class="whitespace-nowrap transition hover:text-accent">{{ $b }}</a>
+                    @endforeach
+                </div>
+            @endforeach
+        </div>
+    </section>
+@endif
+
+{{-- ================= FOR YOUR VEHICLE ================= --}}
+@if ($forVehicle->isNotEmpty())
+    <section class="container-x py-14" data-reveal>
+        <div class="flex items-end justify-between">
+            <div>
+                <h2 class="text-lg font-bold tracking-tight sm:text-xl">For your {{ $garage['label'] }}</h2>
+                <p class="mt-1 text-sm text-muted">Parts confirmed to fit the vehicle in your garage.</p>
+            </div>
+            <a href="{{ route('products.index', ['vehicleId' => $garage['id']]) }}" class="hidden text-sm font-medium text-accent hover:underline sm:block">See all</a>
+        </div>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($forVehicle as $product)
+                <x-product-card :product="$product" />
+            @endforeach
+        </div>
+    </section>
+@endif
+
+{{-- ================= FROM STORES YOU FOLLOW ================= --}}
+@if ($fromFollowed->isNotEmpty())
+    <section class="container-x py-14" data-reveal>
+        <h2 class="text-lg font-bold tracking-tight sm:text-xl">New from stores you follow</h2>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($fromFollowed as $product)
+                <x-product-card :product="$product" />
+            @endforeach
+        </div>
+    </section>
+@endif
+
+{{-- ================= SPONSORED ================= --}}
+@if ($sponsored->isNotEmpty())
+    <section class="container-x py-14" data-reveal>
+        <div class="flex items-center gap-2">
+            <h2 class="text-lg font-bold tracking-tight sm:text-xl">Featured parts</h2>
+            <span class="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold uppercase text-muted">Sponsored</span>
+        </div>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($sponsored as $ad)
+                <x-product-card :product="$ad['product']"
+                    :href="route('ad.click', ['source' => $ad['source'], 'ref' => $ad['ref_id'], 'p' => $ad['product']->id])" />
+            @endforeach
+        </div>
+    </section>
+@endif
+
+{{-- ================= RECENTLY VIEWED ================= --}}
+@if ($recent->isNotEmpty())
+    <section class="container-x py-14" data-reveal>
+        <h2 class="text-lg font-bold tracking-tight sm:text-xl">Recently viewed</h2>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($recent as $product)
+                <x-product-card :product="$product" />
+            @endforeach
+        </div>
+    </section>
+@endif
+
 {{-- ================= CATEGORIES ================= --}}
 <section class="container-x py-16" data-reveal>
     <div class="flex items-end justify-between">
         <div>
-            <h2 class="text-2xl font-bold sm:text-3xl">Shop by category</h2>
+            <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Shop by category</h2>
             <p class="mt-1 text-sm text-muted">Everything from brake pads to alternators.</p>
         </div>
         <a href="{{ route('products.index') }}" class="hidden text-sm font-semibold text-accent hover:underline sm:inline-flex items-center gap-1">
@@ -98,13 +209,14 @@
     <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" data-reveal-group>
         @forelse ($categories as $cat)
             <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
-               class="group card flex items-center gap-4 p-5 transition-shadow hover:shadow-card-hover">
-                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
+               data-tilt class="pm-tilt group card relative flex items-center gap-4 p-5 hover:shadow-card-hover hover:ring-1 hover:ring-accent/40">
+                <div class="pm-glare"></div>
+                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent transition duration-500 group-hover:rotate-[20deg] group-hover:scale-110 group-hover:bg-accent group-hover:text-accent-fg">
                     <x-ui.icon name="wrench" class="w-6 h-6" />
                 </span>
                 <div>
                     <p class="font-semibold text-fg group-hover:text-accent">{{ $cat->name }}</p>
-                    <p class="text-xs text-muted">{{ $cat->children_count ?? $cat->children()->count() }} subcategories</p>
+                    <p class="text-xs text-muted">{{ number_format($cat->listings_count) }} {{ Str::plural('part', $cat->listings_count) }}</p>
                 </div>
             </a>
         @empty
@@ -118,8 +230,8 @@
 <section class="bg-surface py-16">
     <div class="container-x" data-reveal>
         <div class="flex items-end justify-between">
-            <h2 class="text-2xl font-bold sm:text-3xl">Today's deals</h2>
-            <a href="{{ route('products.index', ['sort' => 'price_asc']) }}" class="text-sm font-semibold text-accent hover:underline">See all deals</a>
+            <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Today's deals</h2>
+            <a href="{{ route('deals.index') }}" class="text-sm font-semibold text-accent hover:underline">See all deals</a>
         </div>
         <div class="mt-8 grid grid-cols-2 gap-5 lg:grid-cols-4" data-reveal-group>
             @foreach ($deals as $product)
@@ -133,7 +245,7 @@
 {{-- ================= FEATURED ================= --}}
 <section class="container-x py-16" data-reveal>
     <div class="flex items-end justify-between">
-        <h2 class="text-2xl font-bold sm:text-3xl">Fresh listings</h2>
+        <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Fresh listings</h2>
         <a href="{{ route('products.index') }}" class="text-sm font-semibold text-accent hover:underline">Browse catalog</a>
     </div>
     @if ($featured->isNotEmpty())
@@ -172,14 +284,14 @@
 
 {{-- ================= CTA ================= --}}
 <section class="container-x py-16">
-    <div class="relative overflow-hidden rounded-3xl bg-brand p-10 text-center text-brand-fg sm:p-16" data-reveal="scale">
-        <div class="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-accent/20 blur-3xl"></div>
+    <div class="pm-grain relative isolate overflow-hidden rounded-3xl bg-brand p-10 text-center text-brand-fg sm:p-16" data-reveal="scale">
+        <div class="pm-aurora -z-10 opacity-60" aria-hidden="true"><span></span><span></span><span></span></div>
         <h2 class="relative text-2xl font-bold sm:text-3xl">Have parts to sell?</h2>
         <p class="relative mx-auto mt-3 max-w-lg text-white/70">
             Reach buyers searching for the exact parts you stock. 10% flat commission, payouts released on delivery,
             AI-assisted listing tools included.
         </p>
-        <a href="{{ route('two-factor.setup') }}" class="btn-accent relative mt-6">Start selling <x-ui.icon name="arrow-right" class="w-4 h-4" /></a>
+        <a href="{{ route('seller.onboarding.start') }}" data-magnetic class="btn-accent relative mt-6">Start selling <x-ui.icon name="arrow-right" class="w-4 h-4" /></a>
     </div>
 </section>
 @endsection

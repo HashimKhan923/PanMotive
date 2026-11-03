@@ -9,14 +9,49 @@ use App\Models\User;
 class CouponService
 {
     /**
-     * @return array{valid: bool, message?: string, coupon?: Coupon, discount?: float}
+     * @param  iterable|null  $lines  cart lines (['product' => Product, 'line_total' => float]);
+     *                                when given, a seller-scoped coupon only discounts that seller's items.
+     * @return array{valid: bool, message?: string, coupon?: Coupon, discount?: float, base?: float}
      */
-    public function validate(string $code, ?User $user, float $subtotal): array
+    public function validate(string $code, ?User $user, float $subtotal, ?iterable $lines = null): array
     {
         $coupon = Coupon::where('code', strtoupper($code))->where('is_active', true)->first();
 
         if (! $coupon) {
             return ['valid' => false, 'message' => 'Invalid coupon code.'];
+        }
+
+        // A personal code (e.g. from an accepted offer) only works for the shopper it was made for.
+        if ($coupon->user_id && $coupon->user_id !== $user?->id) {
+            return ['valid' => false, 'message' => 'This code was issued to another shopper.'];
+        }
+
+        // Listing-restricted code: base the discount on that listing only, and require the
+        // negotiated quantity so a "$40 off 4 units" code can't be used on 1.
+        if ($coupon->product_id && $lines !== null) {
+            $productLines = collect($lines)->filter(fn ($l) => ($l['product']->id ?? null) === $coupon->product_id);
+            $qty = (int) $productLines->sum('quantity');
+            if ($qty < max(1, (int) $coupon->min_quantity)) {
+                $title = $coupon->product?->title ?? 'the listing this code is for';
+
+                return ['valid' => false, 'message' => 'This code needs '.max(1, (int) $coupon->min_quantity)." × {$title} in your cart."];
+            }
+
+            $subtotal = round((float) $productLines->sum('line_total'), 2);
+        } elseif ($coupon->seller_id && $lines !== null) {
+            // Seller-restricted code: base the discount on that seller's portion of the cart.
+            $sellerSubtotal = 0.0;
+            foreach ($lines as $line) {
+                if (($line['product']->seller_id ?? null) === $coupon->seller_id) {
+                    $sellerSubtotal += (float) $line['line_total'];
+                }
+            }
+
+            if ($sellerSubtotal <= 0) {
+                return ['valid' => false, 'message' => 'This code only applies to items from a specific seller — none are in your cart.'];
+            }
+
+            $subtotal = round($sellerSubtotal, 2);
         }
 
         if ($coupon->starts_at && now()->lt($coupon->starts_at)) {
@@ -42,7 +77,12 @@ class CouponService
             }
         }
 
-        return ['valid' => true, 'coupon' => $coupon, 'discount' => $this->calculateDiscount($coupon, $subtotal)];
+        return [
+            'valid' => true,
+            'coupon' => $coupon,
+            'discount' => $this->calculateDiscount($coupon, $subtotal),
+            'base' => $subtotal,
+        ];
     }
 
     public function calculateDiscount(Coupon $coupon, float $subtotal): float

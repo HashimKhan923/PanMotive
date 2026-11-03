@@ -19,6 +19,26 @@ class Category extends Model
         'sort_order' => 'integer',
     ];
 
+    /**
+     * Root categories that have something to sell, each with listings_count (subcategories included).
+     * Shared by the header, home and part finder, so an empty category never gets a link.
+     */
+    public static function shopRoots(): \Illuminate\Support\Collection
+    {
+        return \Illuminate\Support\Facades\Cache::remember('shop.category_roots', 300, function () {
+            $counts = Product::listed()->selectRaw('category_id, COUNT(*) AS aggregate')
+                ->groupBy('category_id')->pluck('aggregate', 'category_id');
+
+            $all = static::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();
+
+            return $all->whereNull('parent_id')
+                ->each(fn ($root) => $root->listings_count = (int) ($counts[$root->id] ?? 0)
+                    + $all->where('parent_id', $root->id)->sum(fn ($c) => (int) ($counts[$c->id] ?? 0)))
+                ->filter(fn ($root) => $root->listings_count > 0)
+                ->values();
+        });
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');

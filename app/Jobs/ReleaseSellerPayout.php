@@ -40,6 +40,30 @@ class ReleaseSellerPayout implements ShouldQueue
 
         $profile = $orderItem->seller->sellerProfile;
 
+        if ($profile?->payouts_held) {
+            AdminAlert::firstOrCreate([
+                'type' => 'payout_held',
+                'related_order_item_id' => $orderItem->id,
+                'resolved_at' => null,
+            ], ['message' => "Order item #{$orderItem->id} delivered, but payouts for {$profile->business_name} are on hold."]);
+
+            // No retry: a hold can outlast every attempt. Releasing the hold queues this line again.
+            return;
+        }
+
+        if (config('marketplace.kyc.enforce_payouts')
+            && \App\Models\SellerVerification::where('seller_id', $orderItem->seller_id)->where('status', 'approved')->doesntExist()) {
+            AdminAlert::create([
+                'type' => 'payout_blocked',
+                'message' => "Order item #{$orderItem->id} delivered but seller identity verification is not approved.",
+                'related_order_item_id' => $orderItem->id,
+            ]);
+
+            $this->release(3600);
+
+            return;
+        }
+
         if (! $profile?->stripe_account_id || ! $profile->stripe_onboarding_complete) {
             AdminAlert::create([
                 'type' => 'payout_blocked',
@@ -52,9 +76,16 @@ class ReleaseSellerPayout implements ShouldQueue
             return;
         }
 
+        // 0. If the seller already pulled this payout forward (instant payout on
+        //    ship), the platform fronted the cash — recoup it, don't pay again.
+        $advance = \App\Models\PayoutAdvance::where('order_item_id', $orderItem->id)
+            ->where('status', 'advanced')->first();
+
         // 1. Transfer — Stripe idempotency_key ("payout-order-item-{id}") means a
         //    retry returns the same transfer, never a second one.
-        $transfer = $payoutService->transferToSeller($orderItem, $profile->stripe_account_id);
+        $transfer = $advance
+            ? (object) ['id' => $advance->stripe_transfer_id ?? 'advance-'.$advance->id]
+            : $payoutService->transferToSeller($orderItem, $profile->stripe_account_id);
 
         // 2. Buyer cashback + lifetime-spend, all in one transaction and guarded by
         //    cashback_credited_at. Runs BEFORE payout_released_at is set, so if this
@@ -98,6 +129,17 @@ class ReleaseSellerPayout implements ShouldQueue
             'status' => OrderStatus::PayoutReleased->value,
             'note' => "Stripe transfer {$transfer->id} for \${$orderItem->seller_payout_amount}; cashback \${$orderItem->cashback_amount} credited",
         ]);
+
+        if ($advance) {
+            $advance->update(['status' => 'recouped', 'recouped_at' => now()]);
+        }
+
+        // Store loyalty points for the buyer.
+        if ($orderItem->order) {
+            app(\App\Services\Marketing\StoreLoyaltyService::class)->earnForOrder($orderItem->order);
+        }
+
+        $orderItem->seller?->notify(new \App\Notifications\SellerPayoutReleased($orderItem));
     }
 
     public function failed(Throwable $e): void

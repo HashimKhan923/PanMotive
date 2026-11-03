@@ -1,18 +1,52 @@
 <div>
     <div id="pdp-anchor-{{ $product->id }}" class="hidden"></div>
-    @if ($product->quantity > 0)
-        <button wire:click="add"
-                onclick="window.flyToCart && window.flyToCart(document.querySelector('.container-x .card.aspect-square') || this)"
-                wire:loading.attr="disabled" wire:target="add"
-                class="btn-accent w-full !py-3.5 text-base">
-            <span wire:loading.remove wire:target="add">
-                <x-ui.icon name="cart" class="w-5 h-5" />
-                {{ $added ? 'Add another' : 'Add to Cart' }}
+
+    @php($hasVariants = $variants->isNotEmpty())
+    @php($stock = $hasVariants ? (int) $variants->sum('quantity') : $product->quantity)
+
+    @if ($hasVariants)
+        <div class="mb-3">
+            <label class="label" for="atc-variant-{{ $product->id }}">Option</label>
+            <select id="atc-variant-{{ $product->id }}" wire:model.live="variantId" class="input">
+                @foreach ($variants as $variant)
+                    <option value="{{ $variant->id }}" @disabled($variant->quantity < 1)>
+                        {{ $variant->label }} — ${{ number_format($variant->effectivePrice(), 2) }}{{ $variant->quantity < 1 ? ' (out of stock)' : ($variant->quantity <= 5 ? ' (only '.$variant->quantity.' left)' : '') }}
+                    </option>
+                @endforeach
+            </select>
+            @error('variantId') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
+        </div>
+    @endif
+
+    @if ($paused)
+        <button disabled class="btn-outline h-12 w-full !py-0 opacity-70">Seller is away — not taking orders</button>
+    @elseif ($stock > 0)
+        {{-- idle → adding (spinner) → added (drawn checkmark) → back to idle --}}
+        <button type="button" data-magnetic="0.12"
+                x-data="{ state: 'idle' }"
+                @click="if (state !== 'idle') return;
+                        state = 'adding';
+                        window.flyToCart && window.flyToCart(document.getElementById('pdp-hero-{{ $product->id }}') || $el);
+                        $wire.add().then((ok) => {
+                            state = ok ? 'added' : 'idle';
+                            if (ok) setTimeout(() => state = 'idle', 1700);
+                        }).catch(() => state = 'idle')"
+                :class="state === 'added' ? '!bg-emerald-500 !text-white !shadow-[0_8px_24px_-8px_rgb(16_185_129/.6)]' : ''"
+                class="btn-accent relative h-12 w-full overflow-hidden !py-0 text-[15px] transition-colors duration-300">
+            <span x-show="state === 'idle'" class="inline-flex items-center gap-2">
+                <x-ui.icon name="cart" class="w-[18px] h-[18px]" /> {{ $added ? 'Add another' : 'Add to cart' }}
             </span>
-            <span wire:loading wire:target="add">Adding…</span>
+            <span x-show="state === 'adding'" x-cloak class="inline-flex items-center gap-2">
+                <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                Adding…
+            </span>
+            <span x-show="state === 'added'" x-cloak class="inline-flex items-center gap-2">
+                <svg class="pm-check h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Added to cart
+            </span>
         </button>
     @else
-        <button disabled class="btn-outline w-full !py-3.5 opacity-60">Out of stock</button>
+        <button disabled class="btn-outline h-12 w-full !py-0 opacity-60">Out of stock</button>
     @endif
 
     @if ($added)

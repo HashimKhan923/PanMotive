@@ -32,6 +32,10 @@ class StripeWebhookController extends Controller
             'payment_intent.succeeded' => $this->onPaymentSucceeded($event->data->object),
             'payment_intent.payment_failed' => $this->onPaymentFailed($event->data->object),
             'account.updated' => $this->onConnectAccountUpdated($event->data->object),
+            // Ad credit bought via Stripe Checkout — grant it even if the seller closed the tab.
+            'checkout.session.completed', 'checkout.session.async_payment_succeeded' => ($event->data->object->metadata['kind'] ?? null) === 'ad_credit'
+                ? app(\App\Services\Seller\AdCreditPurchaseService::class)->fulfil($event->data->object->id)
+                : null,
             default => null,
         };
 
@@ -46,8 +50,23 @@ class StripeWebhookController extends Controller
             return; // idempotency guard — webhooks can be delivered more than once
         }
 
+        // Paid after we'd already cancelled it as unpaid (its stock is back on sale):
+        // give the money straight back rather than fulfil an order we can't stand behind.
+        if ($order->status === OrderStatus::Cancelled) {
+            app(\App\Services\Payments\RefundService::class)->refundAmount(
+                $order, (float) ($paymentIntent->amount_received ?? 0) / 100, ['kind' => 'late_payment_on_cancelled_order']
+            );
+            AdminAlert::create([
+                'type' => 'late_payment_refunded',
+                'message' => "Order {$order->order_number} was paid after it had been cancelled as unpaid — the payment was refunded automatically.",
+            ]);
+
+            return;
+        }
+
         $order->update(['status' => OrderStatus::Paid, 'placed_at' => $order->placed_at ?? now()]);
         $order->items()->update(['status' => OrderStatus::Paid]);
+        app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.paid', $order->items()->with('order')->get());
 
         // Referral bonus is gated on a real first paid order (not signup) to
         // stop reward farming from accounts that never buy.
@@ -73,8 +92,20 @@ class StripeWebhookController extends Controller
 
     protected function onPaymentFailed($paymentIntent): void
     {
-        $order = Order::where('stripe_payment_intent_id', $paymentIntent->id)->first();
-        $order?->update(['status' => OrderStatus::Cancelled]);
+        $order = Order::with('items')->where('stripe_payment_intent_id', $paymentIntent->id)->first();
+        if (! $order || $order->status !== OrderStatus::Placed) {
+            return;
+        }
+
+        // A declined card doesn't end the order: the buyer usually just tries another card
+        // on the same payment page. Note it; if they never pay, UnpaidOrderService cancels
+        // the order and frees the stock after the grace period.
+        foreach ($order->items as $item) {
+            $item->statusHistory()->create([
+                'status' => 'payment_failed',
+                'note' => 'Card payment attempt failed'.(($paymentIntent->last_payment_error->message ?? null) ? ': '.$paymentIntent->last_payment_error->message : ''),
+            ]);
+        }
     }
 
     protected function onConnectAccountUpdated($account): void

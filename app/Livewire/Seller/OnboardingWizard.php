@@ -22,9 +22,13 @@ class OnboardingWizard extends Component
 
     public string $shipping_processing_days = '1-2';
 
+    public string $sref = '';
+
     public function mount(): void
     {
         auth()->user()->assignRole('seller');
+
+        $this->sref = (string) request()->query('sref', '');
 
         // Resume where the seller left off.
         $profile = auth()->user()->sellerProfile;
@@ -54,6 +58,10 @@ class OnboardingWizard extends Component
                 'kyc_status' => 'unsubmitted',
             ]
         );
+
+        if ($this->sref !== '') {
+            app(\App\Services\Seller\SellerReferralService::class)->attach($this->sref, auth()->user());
+        }
 
         $this->step = 2;
     }

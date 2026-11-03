@@ -16,9 +16,11 @@
         </div>
 
         @foreach ([
-            'Shop' => [['All Parts', route('products.index')], ["Today's Deals", route('products.index', ['sort' => 'price_asc'])], ['Brands', route('products.index')]],
+            'Shop' => [['All Parts', route('products.index')], ["Today's Deals", route('deals.index')], ['Brands', route('products.index')]],
             'Account' => [['Your Orders', route('orders.index')], ['Wallet & Credits', route('wallet.index')], ['Sign in', route('login')]],
-            'Sell' => [['Become a Seller', route('two-factor.setup')], ['Seller Portal', route('two-factor.setup')]],
+            'Sell' => [['Become a Seller', route('seller.onboarding.start')], ['Seller Portal', route('seller.dashboard')]],
+            ...(($footerPages = cache()->remember('footer.pages', 300, fn () => \App\Models\Page::where('is_published', true)->where('show_in_footer', true)->orderBy('title')->get(['title', 'slug'])))->isNotEmpty()
+                ? ['Help & policies' => $footerPages->map(fn ($p) => [$p->title, route('pages.show', $p)])->all()] : []),
         ] as $heading => $links)
             <div>
                 <h4 class="text-sm font-semibold text-fg">{{ $heading }}</h4>
@@ -34,7 +36,7 @@
     <div class="border-t border-line">
         <div class="container-x flex flex-col items-center justify-between gap-2 py-5 text-xs text-muted sm:flex-row">
             <span>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</span>
-            <span>Secure checkout by Stripe · PCI-compliant</span>
+            <span>@if ($supportEmail = config('marketplace.platform.support_email'))<a href="mailto:{{ $supportEmail }}" class="hover:text-accent">{{ $supportEmail }}</a> · @endif Secure checkout by Stripe · PCI-compliant</span>
         </div>
     </div>
 </footer>

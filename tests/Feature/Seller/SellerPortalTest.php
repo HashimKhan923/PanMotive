@@ -163,7 +163,7 @@ class SellerPortalTest extends TestCase
             ->assertSessionHasErrors(['carrier', 'tracking_number']);
     }
 
-    private function makeOrderItemFor(User $seller, OrderStatus $status = OrderStatus::Placed): OrderItem
+    private function makeOrderItemFor(User $seller, OrderStatus $status = OrderStatus::Paid): OrderItem
     {
         $buyer = User::factory()->create();
         $order = Order::create([

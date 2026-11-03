@@ -1,16 +1,25 @@
 <x-storefront-layout>
     <x-slot name="title">Order {{ $order->order_number }} — {{ config('app.name') }}</x-slot>
 
+    @push('scripts')
+        <script @nonce>window.addEventListener('load', () => window.pmCelebrate && window.pmCelebrate());</script>
+    @endpush
+
     <div class="container-x max-w-2xl py-14" data-reveal>
         @if (session('success'))
             <p class="mb-4 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600">{{ session('success') }}</p>
         @endif
 
         <div class="card p-6 text-center sm:p-10">
-            <span class="mx-auto grid h-14 w-14 place-items-center rounded-full bg-emerald-500/15 text-emerald-600">
-                <x-ui.icon name="check" class="w-7 h-7" />
+            {{-- Circle draws, then the tick, then a ripple — and a confetti burst once. --}}
+            <span class="relative mx-auto grid h-20 w-20 place-items-center text-emerald-500" x-data x-init="setTimeout(() => window.pmCelebrate && window.pmCelebrate(), 650)">
+                <span class="absolute inset-0 animate-ping rounded-full bg-emerald-500/20 [animation-iteration-count:2]"></span>
+                <svg class="pm-check-lg relative h-20 w-20" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+                    <circle cx="28" cy="28" r="25" stroke="currentColor" stroke-width="3"/>
+                    <path d="M17 29l7.5 7.5L40 21" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </span>
-            <h1 class="mt-4 text-2xl font-bold">Thanks — your order is in</h1>
+            <h1 class="mt-5 text-2xl font-bold sm:text-3xl" data-split data-split-delay="0.5">Thanks — your order is in</h1>
             <p class="mt-1 text-sm text-muted">Order <span class="font-semibold text-fg">{{ $order->order_number }}</span> · {{ $order->status->label() }}</p>
 
             <table class="mt-8 w-full text-left text-sm">

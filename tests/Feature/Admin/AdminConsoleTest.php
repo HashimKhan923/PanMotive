@@ -10,8 +10,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\SellerProfile;
 use App\Models\User;
-use App\Services\Payments\PayoutReversalService;
-use App\Services\Payments\RefundService;
+use App\Services\Orders\BuyerRefundService;
 use Database\Seeders\AdminPermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -162,7 +161,7 @@ class AdminConsoleTest extends TestCase
         $seller = $this->admin('support_agent'); // any user works as the seller here
         $item = $this->disputedItem($seller);
 
-        $this->mock(RefundService::class)->shouldReceive('refund')->once();
+        $this->mock(BuyerRefundService::class)->shouldReceive('refundLine')->once()->andReturn(100.0);
 
         $this->actingAs($this->admin('finance'))
             ->post(route('admin.disputes.approve-return', $item))
@@ -192,7 +191,7 @@ class AdminConsoleTest extends TestCase
         $seller = $this->admin('support_agent');
         $item = $this->disputedItem($seller, ['payout_released_at' => now()]);
 
-        $this->mock(PayoutReversalService::class)->shouldReceive('reverse')->once();
+        $this->mock(BuyerRefundService::class)->shouldReceive('refundLine')->once()->andReturn(100.0);
 
         $this->actingAs($this->admin('finance'))
             ->post(route('admin.disputes.reverse-payout', $item), ['reason' => 'Approved after release'])

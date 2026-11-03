@@ -117,6 +117,8 @@ class TwoFactorController extends Controller
         $request->session()->regenerate();
         $request->session()->forget(['2fa.user', '2fa.remember']);
 
-        return redirect()->intended(route('dashboard'));
+        $isStaff = $user->hasAnyRole(['super_admin', 'support_agent', 'finance', 'catalog_manager']);
+
+        return redirect()->intended($isStaff ? route('admin.dashboard') : route('dashboard'));
     }
 }
