@@ -7,8 +7,8 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
     /**
-     * What every environment needs. Safe to run again: existing rows are kept.
-     * Sample sellers, buyers, products and orders are separate, in DemoSeeder.
+     * Everything, including sample sellers, customers, products and orders from DemoSeeder.
+     * Safe to run again: existing rows are kept.
      */
     public function run(): void
     {
@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             VehicleMakeSeeder::class,
             CategorySeeder::class,
             AdminSeeder::class,
+            DemoSeeder::class,
         ]);
     }
 }

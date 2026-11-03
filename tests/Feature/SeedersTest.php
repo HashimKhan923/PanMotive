@@ -28,13 +28,23 @@ class SeedersTest extends TestCase
         (new $seeder)->setContainer(app())->run();
     }
 
-    public function test_base_seed_works_twice_and_leaves_no_known_login(): void
+    public function test_one_seed_command_adds_everything_and_works_twice(): void
     {
+        Storage::fake('public');
+        Queue::fake();
+        Notification::fake();
+
         $this->run_(DatabaseSeeder::class);
 
-        $counts = [Category::count(), VehicleMake::count(), Vehicle::count(), User::count()];
+        $counts = fn () => [Category::count(), VehicleMake::count(), Vehicle::count(), User::count(), Product::count(), Order::count()];
+        $first = $counts();
         $this->run_(DatabaseSeeder::class);
-        $this->assertSame($counts, [Category::count(), VehicleMake::count(), Vehicle::count(), User::count()]);
+        $this->assertSame($first, $counts());
+
+        $this->assertSame(75, Product::count());
+        $this->assertSame(12, Order::count());
+        $this->assertSame(3, User::role('seller')->count());
+        $this->assertDatabaseHas('users', ['email' => 'buyer6@panmotive.test']);
 
         $this->assertDatabaseMissing('users', ['email' => 'test@example.com']);
         $admin = User::where('email', 'admin@panmotive.test')->firstOrFail();
