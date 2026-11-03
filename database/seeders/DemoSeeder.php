@@ -3,50 +3,32 @@
 namespace Database\Seeders;
 
 use App\Enums\OrderStatus;
-use App\Models\Attribute;
-use App\Models\AttributeValue;
-use App\Models\Brand;
-use App\Models\Category;
 use App\Models\Answer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Question;
 use App\Models\Review;
-use App\Models\SellerProfile;
 use App\Models\User;
-use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * Realistic demo catalog so the storefront isn't empty. Idempotent-ish
- * (firstOrCreate on lookups). Safe to run repeatedly.
+ * Everything sample: stores, customers and products from their own seeders, plus orders,
+ * reviews, questions, messages and promotions. Safe to run repeatedly.
  *
  *   php artisan db:seed --class=Database\\Seeders\\DemoSeeder
  */
 class DemoSeeder extends Seeder
 {
-    private string $password = 'password';
-
     public function run(): void
     {
-        $this->call([RoleSeeder::class, AdminPermissionSeeder::class, VehicleMakeSeeder::class, CategorySeeder::class]);
-
-        // A public server must never have logins with a well-known password.
-        $firstRun = ! User::where('email', 'seller1@panmotive.test')->exists();
-        if (app()->environment('production')) {
-            $this->password = Str::password(20, symbols: false);
-        }
+        $this->call([CustomerSeeder::class, ProductSeeder::class]);
 
         Product::withoutSyncingToSearch(function () {
-            $brands = $this->brands();
-            $catTree = $this->categories();
-            $vehicles = $this->vehicles();
-            $attrs = $this->attributes();
-            $sellers = $this->sellers();
-            $products = $this->products($brands, $catTree, $vehicles, $attrs, $sellers);
+            $sellers = User::whereIn('email', SellerSeeder::EMAILS)->orderBy('email')->get()->all();
+            $products = Product::whereIn('seller_id', collect($sellers)->pluck('id'))->where('status', 'active')->get()->all();
+
             $this->orders($products, $sellers);
             $this->flashDeals($products);
             $this->reviewsAndQuestions($sellers);
@@ -54,173 +36,11 @@ class DemoSeeder extends Seeder
         });
 
         $this->command?->info('Demo catalog seeded.');
-        if ($firstRun) {
-            $this->command?->line("Demo logins seller1-3@panmotive.test and buyer1-6@panmotive.test, password: {$this->password}");
-        }
-    }
-
-    private function brands(): array
-    {
-        $names = ['Bosch', 'Denso', 'ACDelco', 'Moog', 'NGK', 'Brembo', 'Gates', 'Monroe', 'K&N', 'Dorman', 'Motorcraft', 'Febi'];
-
-        return collect($names)->mapWithKeys(fn ($n) => [
-            $n => Brand::firstOrCreate(['slug' => Str::slug($n)], ['name' => $n]),
-        ])->all();
-    }
-
-    private function categories(): array
-    {
-        return Category::whereNotNull('parent_id')->get()->keyBy('name')->all();
-    }
-
-    private function vehicles(): array
-    {
-        return Vehicle::whereHas('make', fn ($q) => $q->whereIn('slug', ['toyota', 'honda', 'ford', 'chevrolet']))
-            ->whereBetween('year', [2016, 2021])->get()->all();
-    }
-
-    private function attributes(): array
-    {
-        $defs = [
-            'Position' => ['Front', 'Rear', 'Front Left', 'Front Right'],
-            'Material' => ['Ceramic', 'Semi-Metallic', 'Organic'],
-            'Warranty' => ['1 Year', '2 Year', 'Lifetime'],
-        ];
-        $out = [];
-        foreach ($defs as $name => $values) {
-            $a = Attribute::firstOrCreate(['slug' => Str::slug($name)], ['name' => $name]);
-            $out[$name] = collect($values)->map(fn ($v) => AttributeValue::firstOrCreate(['attribute_id' => $a->id, 'value' => $v]))->all();
-        }
-
-        return $out;
-    }
-
-    private function sellers(): array
-    {
-        $defs = [
-            ['AutoPro Parts Warehouse', 'seller1@panmotive.test'],
-            ['Junkyard Genuine', 'seller2@panmotive.test'],
-            ['OEM Direct Supply', 'seller3@panmotive.test'],
-        ];
-
-        return collect($defs)->map(function ($def) {
-            [$biz, $email] = $def;
-            $user = User::firstOrCreate(
-                ['email' => $email],
-                ['name' => $biz, 'password' => Hash::make($this->password), 'is_active' => true]
-            );
-            $user->assignRole('seller');
-            SellerProfile::firstOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'business_name' => $biz, 'business_type' => 'llc',
-                    'status' => 'approved', 'kyc_status' => 'verified',
-                    'stripe_account_id' => 'acct_demo_'.Str::random(8),
-                    'stripe_onboarding_complete' => true,
-                    'rating' => round(mt_rand(40, 50) / 10, 1),
-                    'rating_count' => mt_rand(12, 240),
-                ]
-            );
-
-            return $user;
-        })->all();
-    }
-
-    private function products(array $brands, array $cats, array $vehicles, array $attrs, array $sellers): array
-    {
-        $catalog = [
-            ['Brake Pads', 'Bosch', 'Ceramic Brake Pad Set', 'BP', 34.99, true, 'Material'],
-            ['Brake Pads', 'Brembo', 'Performance Ceramic Brake Pads', 'BP', 59.99, false, 'Material'],
-            ['Brake Rotors', 'ACDelco', 'Vented Front Brake Rotor', 'BR', 48.50, true, 'Position'],
-            ['Brake Rotors', 'Bosch', 'QuietCast Brake Rotor', 'BR', 42.00, false, 'Position'],
-            ['Calipers', 'ACDelco', 'Remanufactured Brake Caliper', 'BC', 79.99, false, 'Position'],
-            ['Spark Plugs', 'NGK', 'Iridium IX Spark Plug (4-pack)', 'SP', 27.96, true, null],
-            ['Spark Plugs', 'Denso', 'Platinum TT Spark Plug', 'SP', 8.49, false, null],
-            ['Belts', 'Gates', 'Serpentine Belt', 'SB', 24.99, true, 'Warranty'],
-            ['Belts', 'Dorman', 'Timing Belt Kit', 'TB', 89.00, false, 'Warranty'],
-            ['Filters', 'K&N', 'High-Flow Air Filter', 'AF', 54.99, false, null],
-            ['Filters', 'Bosch', 'Premium Oil Filter', 'OF', 9.99, true, null],
-            ['Filters', 'Febi', 'Cabin Air Filter', 'CF', 14.50, false, null],
-            ['Shocks & Struts', 'Monroe', 'OESpectrum Strut Assembly', 'ST', 119.99, false, 'Position'],
-            ['Shocks & Struts', 'Monroe', 'Gas-Magnum Shock Absorber', 'SH', 44.99, true, 'Position'],
-            ['Control Arms', 'Moog', 'Front Lower Control Arm', 'CA', 74.99, false, 'Position'],
-            ['Ball Joints', 'Moog', 'Problem Solver Ball Joint', 'BJ', 32.99, true, 'Position'],
-            ['Batteries', 'ACDelco', 'AGM Automotive Battery Group 48', 'BT', 189.99, false, 'Warranty'],
-            ['Alternators', 'Denso', 'Remanufactured Alternator 130A', 'AL', 168.00, false, 'Warranty'],
-            ['Starters', 'Bosch', 'Remanufactured Starter Motor', 'SM', 112.50, true, 'Warranty'],
-            ['Sensors', 'Denso', 'Oxygen Sensor (Downstream)', 'O2', 61.99, false, null],
-            ['Sensors', 'Bosch', 'Mass Air Flow Sensor', 'MAF', 88.00, false, null],
-            ['Radiators', 'Denso', 'OE-Replacement Radiator', 'RD', 142.00, false, 'Warranty'],
-            ['Water Pumps', 'Gates', 'Engine Water Pump', 'WP', 47.99, true, 'Warranty'],
-            ['Thermostats', 'Motorcraft', 'Engine Coolant Thermostat', 'TH', 16.99, false, null],
-        ];
-
-        $products = [];
-        foreach ($catalog as $i => [$catName, $brandName, $title, $prefix, $price, $onSale, $attrName]) {
-            $seller = $sellers[$i % count($sellers)];
-            $slug = Str::slug($title).'-'.$prefix.($i + 100);
-            $partNo = strtoupper($prefix).'-'.mt_rand(1000, 9999);
-
-            $product = Product::updateOrCreate(
-                ['slug' => $slug],
-                [
-                    'seller_id' => $seller->id,
-                    'category_id' => $cats[$catName]->id,
-                    'brand_id' => $brands[$brandName]->id,
-                    'title' => "{$brandName} {$title}",
-                    'sku' => $partNo,
-                    'part_number' => $partNo,
-                    'oem_number' => mt_rand(0, 1) ? strtoupper(Str::random(3)).mt_rand(10000, 99999) : null,
-                    'description' => "Direct-fit {$title} from {$brandName}. Engineered to meet or exceed OEM specifications for fit, "
-                        ."performance and durability. Backed by seller support and a hassle-free 30-day return window.",
-                    'bullet_points' => ['Direct OEM-style fit', 'Meets or exceeds OE specs', "Genuine {$brandName} quality", 'Fast US shipping'],
-                    'price' => $price,
-                    'sale_price' => $onSale ? round($price * 0.82, 2) : null,
-                    'cost_price' => round($price * 0.55, 2),
-                    'quantity' => [0, 2, 4, 12, 25, 40, 60][mt_rand(0, 6)],
-                    'weight_lbs' => round(mt_rand(5, 180) / 10, 1),
-                    'condition' => ['new', 'new', 'new', 'refurbished', 'used'][mt_rand(0, 4)],
-                    'status' => 'active',
-                    'published_at' => now()->subDays(mt_rand(0, 40)),
-                    'views_count' => mt_rand(20, 4000),
-                ]
-            );
-
-            // fitments — 3–7 random vehicles
-            $fits = collect($vehicles)->random(min(mt_rand(3, 7), count($vehicles)));
-            $product->fitments()->syncWithoutDetaching(
-                $fits->mapWithKeys(fn ($v) => [$v->id => ['position' => $attrName === 'Position' ? ['Front', 'Rear'][mt_rand(0, 1)] : null]])->all()
-            );
-
-            // attributes
-            if ($attrName && isset($attrs[$attrName])) {
-                $product->attributeValues()->syncWithoutDetaching([$attrs[$attrName][array_rand($attrs[$attrName])]->id]);
-            }
-            $product->attributeValues()->syncWithoutDetaching([$attrs['Warranty'][array_rand($attrs['Warranty'])]->id]);
-
-            // image
-            if (! $product->hasMedia('images')) {
-                try {
-                    $product->addMediaFromString($this->placeholderPng($product->title, $catName))
-                        ->usingFileName($slug.'.png')
-                        ->toMediaCollection('images');
-                } catch (\Throwable $e) {
-                    // conversions may fail without an image driver — original still stored
-                }
-            }
-
-            $products[] = $product;
-        }
-
-        return $products;
     }
 
     private function orders(array $products, array $sellers): void
     {
-        $buyers = collect(range(1, 6))->map(fn ($n) => User::firstOrCreate(
-            ['email' => "buyer{$n}@panmotive.test"],
-            ['name' => "Demo Buyer {$n}", 'password' => Hash::make($this->password), 'is_active' => true]
-        ))->all();
+        $buyers = User::where('email', 'like', 'buyer%@panmotive.test')->get()->all();
 
         if (Order::where('order_number', 'like', 'PM-DEMO%')->exists()) {
             return;
@@ -516,30 +336,4 @@ class DemoSeeder extends Seeder
         }
     }
 
-    private function placeholderPng(string $title, string $category): string
-    {
-        $w = 800;
-        $h = 800;
-        $im = imagecreatetruecolor($w, $h);
-        [$r, $g, $b] = [[15, 23, 42], [30, 41, 59], [51, 65, 85], [11, 27, 52]][crc32($category) % 4];
-        imagefill($im, 0, 0, imagecolorallocate($im, $r, $g, $b));
-        $amber = imagecolorallocate($im, 245, 165, 36);
-        $white = imagecolorallocate($im, 255, 255, 255);
-
-        imagesetthickness($im, 8);
-        imagearc($im, $w / 2, $h / 2 - 40, 320, 320, 0, 360, $amber);
-        imagefilledellipse($im, $w / 2, $h / 2 - 40, 90, 90, $amber);
-
-        $label = strtoupper(substr($category, 0, 18));
-        imagestring($im, 5, (int) (($w - strlen($label) * 9) / 2), $h - 120, $label, $white);
-        $sub = substr($title, 0, 28);
-        imagestring($im, 3, (int) (($w - strlen($sub) * 7) / 2), $h - 90, $sub, $amber);
-
-        ob_start();
-        imagepng($im);
-        $data = ob_get_clean();
-        imagedestroy($im);
-
-        return $data;
-    }
 }
