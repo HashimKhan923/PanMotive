@@ -23,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
 
         $this->configureRateLimiters();
 
+        // Nginx hosts like CloudPanel treat any ".js" address as a file on disk and answer 404 before
+        // Laravel sees it. Without this script, Livewire and Alpine never start and no button works.
+        Livewire::setScriptRoute(fn ($handle) => \Illuminate\Support\Facades\Route::get('/livewire/script', $handle));
+
         // Keep the "act as store owner" rebinding alive across Livewire updates
         // in the seller portal (Livewire re-runs only persistent middleware).
         Livewire::addPersistentMiddleware([
