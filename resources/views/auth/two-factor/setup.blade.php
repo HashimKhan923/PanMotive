@@ -25,7 +25,14 @@
                 Scan this QR code with Google Authenticator, 1Password, or Authy, then enter the 6-digit code to confirm.
             </p>
 
-            <div class="my-5 flex justify-center">{!! $qrImage !!}</div>
+            {{-- With Imagick installed the library returns a PNG data address; without it, inline SVG. --}}
+            <div class="my-5 flex justify-center">
+                @if (str_starts_with($qrImage, 'data:image/'))
+                    <img src="{{ $qrImage }}" alt="QR code to scan with your authenticator app" width="200" height="200">
+                @else
+                    {!! $qrImage !!}
+                @endif
+            </div>
 
             <p class="mb-4 break-all text-center text-xs text-gray-400">Manual key: {{ $secret }}</p>
 

@@ -18,4 +18,20 @@ class TwoFactorSetupTest extends TestCase
             ->assertOk()
             ->assertSee('<svg', false);
     }
+
+    /** Servers with Imagick get a PNG data address, which must be an image and not printed as text. */
+    public function test_setup_page_shows_a_png_qr_code_as_an_image(): void
+    {
+        $this->actingAs(User::factory()->create());
+
+        $html = view('auth.two-factor.setup', [
+            'secret' => 'ABC123',
+            'qrUrl' => 'otpauth://totp/test',
+            'qrImage' => 'data:image/png;base64,iVBORw0KGgo=',
+            'errors' => new \Illuminate\Support\ViewErrorBag,
+        ])->render();
+
+        $this->assertStringContainsString('<img src="data:image/png;base64,iVBORw0KGgo="', $html);
+        $this->assertStringNotContainsString('>data:image/png', $html);
+    }
 }
