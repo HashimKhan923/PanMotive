@@ -3,7 +3,7 @@
 
 <div {{ $attributes->merge(['class' => 'inline-flex items-center gap-1']) }}
      role="img" aria-label="{{ number_format($v, 1) }} out of 5 stars">
-    <div class="flex text-accent">
+    <div class="flex text-amber-500">
         @for ($i = 1; $i <= 5; $i++)
             <x-ui.icon name="star" :class="$size . ' ' . ($i <= $full ? 'fill-current' : 'text-line')" />
         @endfor

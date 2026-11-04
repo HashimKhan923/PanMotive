@@ -4,7 +4,7 @@
 
 @section('content')
 <x-admin.header title="Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 18 ? 'afternoon' : 'evening') }}, {{ \Illuminate\Support\Str::before(auth()->user()->name, ' ') }}"
-                subtitle="Here is how Pan Motive is doing, and what needs you today.">
+                subtitle="Here is how PanMotive is doing, and what needs you today.">
     <div class="flex rounded-xl border border-line bg-surface p-1" role="group" aria-label="Date range">
         @foreach ([7 => '7 days', 30 => '30 days', 90 => '90 days', 365 => '1 year'] as $value => $label)
             <a href="{{ route('admin.dashboard', ['days' => $value]) }}" @class(['adm-tab !py-1 !text-xs', 'is-active' => $days === $value])>{{ $label }}</a>

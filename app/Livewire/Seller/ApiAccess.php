@@ -103,7 +103,7 @@ class ApiAccess extends Component
         \App\Jobs\DeliverWebhook::dispatchSync($e->id, [
             'event' => 'test.ping',
             'created_at' => now()->toIso8601String(),
-            'data' => ['message' => 'Hello from Pan Motive — your webhook endpoint works.', 'order_number' => 'PM-TEST'],
+            'data' => ['message' => 'Hello from PanMotive — your webhook endpoint works.', 'order_number' => 'PM-TEST'],
         ]);
         $last = $e->deliveries()->first();
         $this->dispatch('toast', message: $last?->success ? "Test delivered ({$last->status})." : 'Test failed: '.($last?->error ?? $last?->status ?? 'no response'));

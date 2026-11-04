@@ -3,7 +3,7 @@
 @section('title', 'Disputes & claims')
 
 @section('content')
-<x-admin.header title="Disputes & claims" subtitle="When a buyer and a seller can't agree, Pan Motive decides. Decisions move real money." />
+<x-admin.header title="Disputes & claims" subtitle="When a buyer and a seller can't agree, PanMotive decides. Decisions move real money." />
 
 <x-admin.card title="Buyer claims" :subtitle="$claims->count().' open, escalated ones first'" class="mb-4">
     @if ($claims->isEmpty())

@@ -191,7 +191,7 @@
                                       @keydown.ctrl.enter="$wire.reply()" @keydown.meta.enter="$wire.reply()"></textarea>
                             <button class="btn-accent btn-sm self-end" wire:loading.attr="disabled" wire:target="reply,photos">Send</button>
                         </div>
-                        <p class="mt-1 text-[10px] text-muted">Ctrl+Enter to send. Keep payments and contact details on Pan Motive — it protects you in disputes.</p>
+                        <p class="mt-1 text-[10px] text-muted">Ctrl+Enter to send. Keep payments and contact details on PanMotive — it protects you in disputes.</p>
                         @error('body') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         @error('photos') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         @error('photos.*') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
@@ -206,7 +206,7 @@
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wide text-muted">Buyer</p>
                     <p class="mt-1 font-semibold">{{ $active->buyer->name }}</p>
-                    <p class="text-xs text-muted">Pan Motive member since {{ $active->buyer->created_at?->format('M Y') }}</p>
+                    <p class="text-xs text-muted">PanMotive member since {{ $active->buyer->created_at?->format('M Y') }}</p>
                     @if ($context['badges'])
                         <div class="mt-1.5 flex flex-wrap gap-1">
                             @foreach ($context['badges'] as $b)<span class="pill text-[10px]">{{ $b }}</span>@endforeach

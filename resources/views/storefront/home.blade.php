@@ -55,7 +55,7 @@
                 {{ config('marketplace.platform.hero_text') }}
             </p>
 
-            <div id="garage" class="mt-8 scroll-mt-24 rounded-2xl bg-surface/80 p-2 shadow-[0_24px_60px_-28px_rgb(15_23_42/.45)] ring-1 ring-line backdrop-blur-xl">
+            <div id="garage" class="mt-8 scroll-mt-24 rounded-2xl bg-surface/80 p-2 shadow-[0_24px_60px_-28px_rgb(23_24_29/.45)] ring-1 ring-line backdrop-blur-xl">
                 @livewire('storefront.vehicle-selector')
             </div>
 
@@ -78,7 +78,7 @@
                     <div data-parallax="{{ $i % 2 ? '-0.12' : '0.12' }}" class="{{ $i % 2 ? 'mt-8' : '' }}">
                     <div class="pm-float" style="animation-delay: -{{ $i * 1.3 }}s">
                     <a href="{{ route('products.show', $p->slug) }}" data-morph data-tilt
-                       class="pm-tilt group relative block overflow-hidden rounded-2xl bg-surface shadow-[0_24px_50px_-24px_rgb(15_23_42/.5)] ring-1 ring-line">
+                       class="pm-tilt group relative block overflow-hidden rounded-2xl bg-surface shadow-[0_24px_50px_-24px_rgb(23_24_29/.5)] ring-1 ring-line">
                         <div class="pm-glare"></div>
                         @if ($p->hasMedia('images'))
                             <img src="{{ $p->getFirstMediaUrl('images', 'thumb') ?: $p->getFirstMediaUrl('images') }}"
@@ -90,7 +90,7 @@
                         @endif
                         <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                             <p class="line-clamp-1 text-xs font-semibold text-white">{{ $p->title }}</p>
-                            <p class="text-xs font-bold text-accent">${{ number_format($p->effectivePrice(), 2) }}</p>
+                            <p class="text-xs font-bold text-white">${{ number_format($p->effectivePrice(), 2) }}</p>
                         </div>
                     </a>
                     </div>
@@ -123,7 +123,7 @@
 
 {{-- ================= BRANDS MARQUEE ================= --}}
 @if ($brands->count() >= 4)
-    <section class="border-b border-line bg-surface py-6" aria-label="Brands sold on Pan Motive">
+    <section class="border-b border-line bg-surface py-6" aria-label="Brands sold on PanMotive">
         <div class="pm-marquee text-lg font-extrabold uppercase tracking-widest text-muted/70">
             @foreach ([0, 1] as $copy)
                 <div @if ($copy) aria-hidden="true" @endif>

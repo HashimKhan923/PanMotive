@@ -22,7 +22,7 @@
                     <div class="flex items-center gap-3 text-xs">
                         <span class="w-10 shrink-0 text-muted">{{ $star }} star</span>
                         <div class="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
-                            <div class="h-full rounded-full bg-accent" style="width: {{ $total ? round($count / $total * 100) : 0 }}%"></div>
+                            <div class="h-full rounded-full bg-amber-500" style="width: {{ $total ? round($count / $total * 100) : 0 }}%"></div>
                         </div>
                         <span class="w-8 shrink-0 text-right text-muted">{{ $count }}</span>
                     </div>
@@ -38,7 +38,7 @@
                 <div class="mt-1 flex gap-1">
                     @for ($i = 1; $i <= 5; $i++)
                         <button type="button" wire:click="$set('rating', {{ $i }})" class="transition hover:scale-110" aria-label="{{ $i }} stars">
-                            <x-ui.icon name="star" :class="'w-7 h-7 ' . ($i <= $rating ? 'fill-current text-accent' : 'text-line')" />
+                            <x-ui.icon name="star" :class="'w-7 h-7 ' . ($i <= $rating ? 'fill-current text-amber-500' : 'text-line')" />
                         </button>
                     @endfor
                 </div>
@@ -77,7 +77,7 @@
                 @endif
                 <p class="mt-1 text-sm text-muted">{{ $review->body }}</p>
                 <div class="mt-2 flex items-center gap-3 text-xs text-muted">
-                    <span>{{ $review->user?->name ?? 'Pan Motive buyer' }}</span>
+                    <span>{{ $review->user?->name ?? 'PanMotive buyer' }}</span>
                     <span>·</span>
                     <span>{{ $review->created_at->format('M j, Y') }}</span>
                     <button wire:click="markHelpful({{ $review->id }})" class="ml-2 inline-flex items-center gap-1 hover:text-fg">

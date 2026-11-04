@@ -13,7 +13,7 @@
             <h1 class="text-2xl font-bold">Order {{ $order->order_number }}</h1>
             <p class="mt-1 text-sm text-muted">Placed {{ optional($order->placed_at ?? $order->created_at)->format('M j, Y') }}</p>
         </div>
-        <span class="pill !bg-accent/10 !text-accent">{{ $order->status->value === 'placed' ? 'Awaiting payment' : $order->status->label() }}</span>
+        <span class="pill !bg-surface-2 !text-fg">{{ $order->status->value === 'placed' ? 'Awaiting payment' : $order->status->label() }}</span>
     </div>
 
     @if ($order->status->value === 'placed')
@@ -82,11 +82,11 @@
                         </ol>
 
                         @if ($activeReturn->escalated_at)
-                            <p class="mt-2 text-xs font-medium text-accent">Escalated to Pan Motive — a specialist is reviewing.</p>
+                            <p class="mt-2 text-xs font-medium text-accent">Escalated to PanMotive — a specialist is reviewing.</p>
                         @elseif (in_array($activeReturn->status, ['requested', 'approved'], true))
                             <form method="POST" action="{{ route('orders.return.escalate', $activeReturn) }}" class="mt-2">
                                 @csrf
-                                <button class="text-xs font-medium text-accent hover:underline">Not resolving? Escalate to Pan Motive</button>
+                                <button class="text-xs font-medium text-accent hover:underline">Not resolving? Escalate to PanMotive</button>
                             </form>
                         @endif
                     </div>
@@ -137,7 +137,7 @@
                             <form method="POST" action="{{ route('orders.claim', $item) }}" class="space-y-3">
                                 @csrf
                                 <h3 class="font-semibold">Buyer-protection claim</h3>
-                                <p class="text-xs text-muted">Use this when a return isn't the right fit — item never arrived, is not as described, or the seller isn't responding. Pan Motive reviews if the seller doesn't resolve it in 72 hours.</p>
+                                <p class="text-xs text-muted">Use this when a return isn't the right fit — item never arrived, is not as described, or the seller isn't responding. PanMotive reviews if the seller doesn't resolve it in 72 hours.</p>
                                 <label class="label" for="cl-reason-{{ $item->id }}">Reason</label>
                                 <select id="cl-reason-{{ $item->id }}" name="reason" class="input text-sm" required>
                                     <option value="">Choose a reason…</option>

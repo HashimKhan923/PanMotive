@@ -13,7 +13,7 @@
         $stats['to_ship'] > 0 ? ['route' => route('seller.orders.index', ['status' => 'seller_accepted']), 'label' => $stats['to_ship'] . ' ' . Str::plural('order', $stats['to_ship']) . ' ready to ship', 'icon' => 'truck'] : null,
         $stats['open_returns'] > 0 ? ['route' => route('seller.returns.index'), 'label' => $stats['open_returns'] . ' open return ' . Str::plural('request', $stats['open_returns']), 'icon' => 'refresh'] : null,
         ($stats['unanswered_questions'] ?? 0) > 0 ? ['route' => route('seller.questions.index'), 'label' => $stats['unanswered_questions'] . ' shopper ' . Str::plural('question', $stats['unanswered_questions']) . ' to answer', 'icon' => 'help'] : null,
-        ($stats['support_replies'] ?? 0) > 0 ? ['route' => route('seller.support.index'), 'label' => 'Pan Motive support replied to ' . $stats['support_replies'] . ' ' . Str::plural('request', $stats['support_replies']), 'icon' => 'message'] : null,
+        ($stats['support_replies'] ?? 0) > 0 ? ['route' => route('seller.support.index'), 'label' => 'PanMotive support replied to ' . $stats['support_replies'] . ' ' . Str::plural('request', $stats['support_replies']), 'icon' => 'message'] : null,
         $stats['out_of_stock'] > 0 ? ['route' => route('seller.products.index', ['stock' => 'out']), 'label' => $stats['out_of_stock'] . ' active ' . Str::plural('listing', $stats['out_of_stock']) . ' out of stock', 'icon' => 'alert'] : null,
         $stats['low_stock'] > 0 ? ['route' => route('seller.products.index', ['stock' => 'low']), 'label' => $stats['low_stock'] . ' ' . Str::plural('listing', $stats['low_stock']) . ' low on stock', 'icon' => 'alert'] : null,
     ])->filter()->values();
@@ -84,7 +84,7 @@
             </div>
             <p class="mt-2 text-2xl font-bold">{{ number_format($stats['active_listings']) }}</p>
             <p class="mt-1 text-xs text-muted">
-                @if ($stats['rating']) <x-ui.icon name="star" class="mr-0.5 inline w-3 h-3 fill-current text-accent" /> {{ number_format($stats['rating'], 1) }} ({{ $stats['rating_count'] }}) @else No ratings yet @endif
+                @if ($stats['rating']) <x-ui.icon name="star" class="mr-0.5 inline w-3 h-3 fill-current text-amber-500" /> {{ number_format($stats['rating'], 1) }} ({{ $stats['rating_count'] }}) @else No ratings yet @endif
             </p>
         </div>
     </div>
@@ -102,7 +102,7 @@
                 <div class="mt-4 flex items-end gap-1" style="height: 160px;">
                     @foreach ($series as $p)
                         <div class="group relative flex-1">
-                            <div class="w-full rounded-t bg-accent/70 transition group-hover:bg-accent"
+                            <div class="w-full rounded-t bg-chart/70 transition group-hover:bg-accent"
                                  style="height: {{ max(2, round($p['total'] / $max * 150)) }}px"></div>
                             <div class="pointer-events-none absolute -top-9 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-brand px-2 py-1 text-[10px] text-brand-fg group-hover:block">
                                 {{ \Illuminate\Support\Carbon::parse($p['date'])->format('M j') }} · ${{ number_format($p['total'], 0) }}

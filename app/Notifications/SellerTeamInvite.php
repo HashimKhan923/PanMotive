@@ -23,15 +23,15 @@ class SellerTeamInvite extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $store = $this->member->owner->sellerProfile?->business_name ?? 'a Pan Motive store';
+        $store = $this->member->owner->sellerProfile?->business_name ?? 'a PanMotive store';
         $url = route('seller.team.accept', $this->member->invite_token);
 
         return (new MailMessage)
-            ->subject("You've been invited to help run {$store} on Pan Motive")
+            ->subject("You've been invited to help run {$store} on PanMotive")
             ->greeting('Hello!')
             ->line("{$store} has invited you to their seller team with the role of \"{$this->member->role}\".")
             ->action('Accept invitation', $url)
-            ->line('If you don\'t have a Pan Motive account yet, you\'ll be able to create one — use this same email address.')
+            ->line('If you don\'t have a PanMotive account yet, you\'ll be able to create one — use this same email address.')
             ->line('This invitation expires in '.\App\Services\Seller\TeamService::INVITE_TTL_DAYS.' days.');
     }
 }

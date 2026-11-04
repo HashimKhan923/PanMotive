@@ -103,7 +103,7 @@ class SellerApprovalController extends Controller
 
         $sellerProfile->update(['status' => 'suspended']);
         $sellerProfile->user->notify(new AccountNotice(
-            'Your Pan Motive store has been suspended',
+            'Your PanMotive store has been suspended',
             "Your listings are hidden and you can't sell for now. Reason: {$request->reason}. Reply through Help & support if you think this is a mistake."
         ));
 
@@ -117,7 +117,7 @@ class SellerApprovalController extends Controller
         abort_unless($sellerProfile->status === 'suspended', 422);
 
         $sellerProfile->update(['status' => 'approved']);
-        $sellerProfile->user->notify(new AccountNotice('Your Pan Motive store is active again', 'Your suspension has been lifted and your listings are visible to shoppers again.'));
+        $sellerProfile->user->notify(new AccountNotice('Your PanMotive store is active again', 'Your suspension has been lifted and your listings are visible to shoppers again.'));
 
         $this->audit('Seller reinstated', $sellerProfile);
 

@@ -38,7 +38,7 @@
 <div {{ $attributes }}>
     @if ($previous)
         <div class="mb-2 flex items-center gap-4 text-xs text-muted">
-            <span class="inline-flex items-center gap-1.5"><span class="h-0.5 w-4 rounded bg-accent"></span> {{ $name }}</span>
+            <span class="inline-flex items-center gap-1.5"><span class="h-0.5 w-4 rounded bg-chart"></span> {{ $name }}</span>
             <span class="inline-flex items-center gap-1.5"><span class="h-0.5 w-4 rounded bg-muted/60"></span> {{ $previousName }}</span>
         </div>
     @endif
@@ -46,8 +46,8 @@
         <svg viewBox="0 0 {{ $W }} {{ $H }}" class="block w-full" role="img" aria-label="{{ $name }} chart">
             <defs>
                 <linearGradient id="{{ $gradient }}" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0" stop-color="rgb(var(--c-accent))" stop-opacity=".22" />
-                    <stop offset="1" stop-color="rgb(var(--c-accent))" stop-opacity="0" />
+                    <stop offset="0" stop-color="rgb(var(--c-chart))" stop-opacity=".14" />
+                    <stop offset="1" stop-color="rgb(var(--c-chart))" stop-opacity="0" />
                 </linearGradient>
             </defs>
             @foreach ([0, .25, .5, .75, 1] as $f)
@@ -64,13 +64,13 @@
                     <path d="{{ $path($previous) }}" fill="none" stroke="rgb(var(--c-muted))" stroke-opacity=".55" stroke-width="1.5" stroke-dasharray="4 4" stroke-linejoin="round" />
                 @endif
                 <path class="adm-area" d="{{ $path($values) }} L {{ $x($n - 1) }} {{ $y(0) }} L {{ $x(0) }} {{ $y(0) }} Z" fill="url(#{{ $gradient }})" />
-                <path class="adm-line" pathLength="1" d="{{ $path($values) }}" fill="none" stroke="rgb(var(--c-accent))" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
+                <path class="adm-line" pathLength="1" d="{{ $path($values) }}" fill="none" stroke="rgb(var(--c-chart))" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
             @endif
         </svg>
 
         <template x-if="point">
             <div class="pointer-events-none absolute inset-0">
-                <span class="absolute bottom-[26px] top-3 w-px bg-accent/40" :style="`left:${point.x * 100}%`"></span>
+                <span class="absolute bottom-[26px] top-3 w-px bg-chart/30" :style="`left:${point.x * 100}%`"></span>
                 <span class="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-surface bg-accent" :style="`left:${point.x * 100}%;top:${point.y * 100}%`"></span>
                 <div class="absolute top-1 z-10 min-w-[120px] rounded-lg border border-line bg-surface px-2.5 py-1.5 text-xs shadow-lg"
                      :style="point.x > .7 ? `right:${(1 - point.x) * 100 + 1.5}%` : `left:${point.x * 100 + 1.5}%`">

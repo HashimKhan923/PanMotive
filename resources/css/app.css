@@ -5,31 +5,56 @@
 /* ============================================================
    Design tokens — RGB triplets so Tailwind's <alpha-value> works.
    Light is the default; .dark on <html> swaps the roles.
+   Red and black come from the logo. --c-accent is the exact logo red, for fills;
+   --c-accent-ink is the shade that stays readable as small text on each background.
    ============================================================ */
 :root {
-    --c-bg: 248 250 252;          /* slate-50  */
-    --c-surface: 255 255 255;     /* white     */
-    --c-surface-2: 241 245 249;   /* slate-100 */
-    --c-fg: 15 23 42;             /* slate-900 */
-    --c-muted: 100 116 139;       /* slate-500 */
-    --c-line: 226 232 240;        /* slate-200 */
-    --c-brand: 11 27 52;          /* deep navy */
+    --c-bg: 247 247 248;
+    --c-surface: 255 255 255;
+    --c-surface-2: 240 240 242;
+    --c-fg: 23 24 29;             /* logo black */
+    --c-muted: 95 98 107;
+    --c-line: 227 228 232;
+    --c-brand: 23 24 29;          /* logo black */
     --c-brand-fg: 255 255 255;
-    --c-accent: 245 165 36;       /* amber     */
-    --c-accent-fg: 15 23 42;
+    --c-accent: 221 30 37;        /* logo red */
+    --c-accent-fg: 255 255 255;
+    --c-accent-ink: 200 22 29;
+    --c-accent-sheen: 168 15 21;
+    --c-chart: 23 24 29;          /* charts stay neutral: a red revenue line reads as a loss */
 }
 
 .dark {
-    --c-bg: 2 6 23;              /* slate-950 */
-    --c-surface: 15 23 42;       /* slate-900 */
-    --c-surface-2: 30 41 59;     /* slate-800 */
-    --c-fg: 241 245 249;         /* slate-100 */
-    --c-muted: 148 163 184;      /* slate-400 */
-    --c-line: 40 52 74;
-    --c-brand: 15 23 42;
+    --c-bg: 14 15 18;
+    --c-surface: 23 24 29;
+    --c-surface-2: 35 37 43;
+    --c-fg: 244 244 245;
+    --c-muted: 161 164 173;
+    --c-line: 51 53 60;
+    --c-brand: 23 24 29;
     --c-brand-fg: 255 255 255;
-    --c-accent: 245 165 36;
-    --c-accent-fg: 15 23 42;
+    --c-accent: 221 30 37;
+    --c-accent-fg: 255 255 255;
+    --c-accent-ink: 255 107 112;
+    --c-accent-sheen: 255 150 154;
+    --c-chart: 229 230 233;
+}
+
+.dark [type='radio']:not(:checked), .dark [type='checkbox']:not(:checked) {
+    background-color: rgb(var(--c-surface-2));
+    border-color: rgb(var(--c-muted) / .6);
+}
+
+/* Black panels stay black in light mode, so everything inside them uses the dark values. */
+.bg-brand, .from-brand {
+    --c-surface: 35 37 43;
+    --c-surface-2: 51 53 60;
+    --c-fg: 255 255 255;
+    --c-muted: 176 179 187;
+    --c-line: 64 66 74;
+    --c-accent-ink: 255 107 112;
+    --c-accent-sheen: 255 150 154;
+    --c-chart: 229 230 233;
 }
 
 @layer base {
@@ -88,7 +113,7 @@
                transition-[transform,background-color,box-shadow] duration-150 active:scale-[.97]
                focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
     }
-    .btn-accent   { @apply btn bg-accent text-accent-fg hover:brightness-105 shadow-[0_8px_24px_-8px_rgb(245_165_36/.6)]; }
+    .btn-accent   { @apply btn bg-accent text-accent-fg hover:brightness-95 shadow-[0_8px_24px_-8px_rgb(221_30_37/.5)]; }
     .btn-brand    { @apply btn bg-brand text-brand-fg hover:opacity-90; }
     .btn-outline  { @apply btn border border-line bg-surface text-fg hover:bg-surface-2; }
     .btn-ghost    { @apply btn bg-transparent text-fg hover:bg-surface-2; }
@@ -192,17 +217,17 @@
 /* Reading-progress bar along the top edge. */
 .pm-progress {
     position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 80; pointer-events: none;
-    background: linear-gradient(90deg, rgb(var(--c-accent)), #fb923c);
+    background: linear-gradient(90deg, rgb(var(--c-accent)), #ff5a5f);
     transform-origin: 0 50%; transform: scaleX(0);
 }
 
 /* Aurora: slow drifting colour fields behind the hero. Pure CSS, GPU-cheap. */
 .pm-aurora { position: absolute; inset: -20%; overflow: hidden; pointer-events: none; filter: blur(60px) saturate(1.2); opacity: .9; }
 .pm-aurora span { position: absolute; border-radius: 9999px; mix-blend-mode: multiply; animation: pm-drift 18s ease-in-out infinite alternate; }
-.dark .pm-aurora span { mix-blend-mode: screen; opacity: .55; }
-.pm-aurora span:nth-child(1) { width: 42%; height: 46%; left: 52%; top: 4%; background: rgb(var(--c-accent) / .45); }
-.pm-aurora span:nth-child(2) { width: 38%; height: 40%; left: 8%; top: 46%; background: rgb(56 189 248 / .30); animation-duration: 22s; animation-delay: -6s; }
-.pm-aurora span:nth-child(3) { width: 30%; height: 34%; left: 34%; top: 30%; background: rgb(244 63 94 / .18); animation-duration: 26s; animation-delay: -12s; }
+.dark .pm-aurora span { mix-blend-mode: screen; opacity: .8; }
+.pm-aurora span:nth-child(1) { width: 42%; height: 46%; left: 52%; top: 4%; background: rgb(var(--c-accent) / .14); }
+.pm-aurora span:nth-child(2) { width: 38%; height: 40%; left: 8%; top: 46%; background: rgb(120 124 135 / .10); animation-duration: 22s; animation-delay: -6s; }
+.pm-aurora span:nth-child(3) { width: 30%; height: 34%; left: 34%; top: 30%; background: rgb(168 15 21 / .06); animation-duration: 26s; animation-delay: -12s; }
 @keyframes pm-drift {
     0%   { transform: translate3d(0, 0, 0) scale(1); }
     50%  { transform: translate3d(6%, -8%, 0) scale(1.12); }
@@ -216,7 +241,7 @@
 
 /* Gradient headline text with a slow sheen. */
 .pm-gradient-text {
-    background: linear-gradient(100deg, rgb(var(--c-accent)) 0%, #fb923c 40%, rgb(var(--c-accent)) 60%, #fde68a 100%);
+    background: linear-gradient(100deg, rgb(var(--c-accent-ink)) 0%, rgb(var(--c-accent-sheen)) 40%, rgb(var(--c-accent-ink)) 60%, rgb(var(--c-accent-sheen)) 100%);
     background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
     animation: pm-sheen 6s linear infinite;
 }
@@ -254,7 +279,7 @@
 /* Heart "pop" with a burst ring when saved. */
 .pm-heart-pop { animation: pm-heart .45s cubic-bezier(.2, 1.6, .4, 1); }
 @keyframes pm-heart { 0% { transform: scale(1); } 35% { transform: scale(1.35); } 100% { transform: scale(1); } }
-.pm-burst { position: absolute; inset: -6px; border-radius: 9999px; pointer-events: none; border: 2px solid rgb(244 63 94 / .7); animation: pm-burst .5s ease-out forwards; }
+.pm-burst { position: absolute; inset: -6px; border-radius: 9999px; pointer-events: none; border: 2px solid rgb(var(--c-accent) / .7); animation: pm-burst .5s ease-out forwards; }
 @keyframes pm-burst { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
 
 /* Checkmark that draws itself (add-to-cart success, order confirmation). */
@@ -373,13 +398,13 @@ trix-editor a { color: rgb(var(--c-accent)); text-decoration: underline; }
 .adm-body { position: relative; isolation: isolate; }
 .adm-aurora { position: fixed; inset: 0 0 auto 0; height: 420px; z-index: -1; pointer-events: none; overflow: hidden;
     -webkit-mask-image: linear-gradient(#000 30%, transparent); mask-image: linear-gradient(#000 30%, transparent); }
-.adm-aurora::before, .adm-aurora::after { content: ''; position: absolute; border-radius: 50%; filter: blur(90px); opacity: .16; }
+.adm-aurora::before, .adm-aurora::after { content: ''; position: absolute; border-radius: 50%; filter: blur(90px); opacity: .08; }
+.dark .adm-aurora::before, .dark .adm-aurora::after { opacity: .14; }
 .adm-aurora::before { width: 620px; height: 380px; top: -180px; left: 12%; background: rgb(var(--c-accent)); animation: adm-drift 22s ease-in-out infinite alternate; }
-.adm-aurora::after { width: 720px; height: 420px; top: -220px; right: 2%; background: #4f7cff; animation: adm-drift 28s ease-in-out infinite alternate-reverse; }
+.adm-aurora::after { width: 720px; height: 420px; top: -220px; right: 2%; background: #8a8d96; animation: adm-drift 28s ease-in-out infinite alternate-reverse; }
 @keyframes adm-drift { to { transform: translate3d(90px, 40px, 0) scale(1.15); } }
 
 .adm-sidebar { background: rgb(var(--c-surface) / .86); border-right: 1px solid rgb(var(--c-line) / .7); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
-.adm-logo { background: linear-gradient(135deg, rgb(var(--c-accent)), #ff8a3d); box-shadow: 0 6px 18px -6px rgb(var(--c-accent) / .7); }
 .adm-scroll { scrollbar-width: thin; scrollbar-color: rgb(var(--c-line)) transparent; }
 
 .adm-nav-link { position: relative; display: flex; align-items: center; gap: .625rem; border-radius: .625rem; padding: .45rem .75rem; font-size: 13px; font-weight: 500; color: rgb(var(--c-muted)); transition: background-color .18s, color .18s, transform .18s; }

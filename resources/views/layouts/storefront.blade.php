@@ -18,8 +18,9 @@
     </script>
 
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0B1B34">
-    <link rel="apple-touch-icon" href="/pwa-192x192.png">
+    <meta name="theme-color" content="#17181D">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 

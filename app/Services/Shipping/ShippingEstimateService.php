@@ -8,7 +8,7 @@ use App\Models\User;
 /**
  * Shipping estimate — weight-tiered flat rates per seller shipment, overridable
  * by a per-seller ShippingPolicy (flat rate, free-over threshold, regional
- * surcharges) chosen at the product level. Pan Motive Plus members and a
+ * surcharges) chosen at the product level. PanMotive Plus members and a
  * loyalty-tier threshold still short-circuit to free.
  */
 class ShippingEstimateService
@@ -21,7 +21,7 @@ class ShippingEstimateService
     {
         $lines = collect($lines);
 
-        // Pan Motive Plus — free shipping on everything, no minimum.
+        // PanMotive Plus — free shipping on everything, no minimum.
         if ($buyer && $buyer->isPlusMember()) {
             $perSellerFree = [];
             $grand = 0.0;

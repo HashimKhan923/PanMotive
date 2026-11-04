@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Offsite Ads, Etsy-style: Pan Motive runs ads for sellers' listings on its own
+ * Offsite Ads, Etsy-style: PanMotive runs ads for sellers' listings on its own
  * ad accounts; a seller pays a fee only on an order placed within the
  * attribution window after a buyer clicked one of their ads. The fee comes out
  * of the seller's payout, so every payout path charges it automatically.

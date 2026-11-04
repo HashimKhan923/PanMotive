@@ -19,7 +19,7 @@ class TimeoutDownloader implements Downloader
     {
         try {
             $response = Http::timeout(8)->connectTimeout(4)
-                ->withUserAgent('Pan Motive Media Fetcher')
+                ->withUserAgent('PanMotive Media Fetcher')
                 ->withOptions(['verify' => config('media-library.media_downloader_ssl', true)])
                 ->get($url);
         } catch (\Throwable $e) {

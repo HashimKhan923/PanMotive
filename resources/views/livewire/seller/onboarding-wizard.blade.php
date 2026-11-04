@@ -3,7 +3,7 @@
         <span class="grid mx-auto h-11 w-11 place-items-center rounded-xl bg-accent text-accent-fg">
             <x-ui.icon name="store" class="w-6 h-6" />
         </span>
-        <h1 class="mt-3 text-2xl font-bold">Become a Pan Motive seller</h1>
+        <h1 class="mt-3 text-2xl font-bold">Become a PanMotive seller</h1>
         <p class="mt-1 text-sm text-muted">Three quick steps and you can start listing parts.</p>
     </div>
 

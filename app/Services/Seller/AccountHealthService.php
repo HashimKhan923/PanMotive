@@ -92,7 +92,7 @@ class AccountHealthService
      */
     public function resolveWithRefund(BuyerClaim $claim, User $seller): float
     {
-        abort_unless(in_array($claim->status, ['open', 'seller_responded'], true), 422, 'This claim is already with Pan Motive or closed.');
+        abort_unless(in_array($claim->status, ['open', 'seller_responded'], true), 422, 'This claim is already with PanMotive or closed.');
 
         $item = $claim->orderItem;
         $refunded = app(\App\Services\Orders\BuyerRefundService::class)->refundLine(

@@ -52,7 +52,7 @@
             <x-ui.ring :value="$m['response_rate']" :display="$m['response_rate']" tone="{{ $m['response_rate'] >= 85 ? 'emerald' : ($m['response_rate'] >= 70 ? 'amber' : 'rose') }}" label="Message response" :sub="$m['avg_response_hours'] !== null ? 'avg '.$m['avg_response_hours'].'h to reply' : null" />
         </div>
         <div class="card grid place-items-center p-6">
-            <x-ui.ring :value="min(100, $m['rating'] / 5 * 100)" :display="number_format($m['rating'], 1)" suffix="" tone="accent" label="Seller rating" :sub="$m['rating_count'].' ratings'" />
+            <x-ui.ring :value="min(100, $m['rating'] / 5 * 100)" :display="number_format($m['rating'], 1)" suffix="" tone="{{ $m['rating'] >= 4.5 ? 'emerald' : ($m['rating'] >= 4 ? 'amber' : 'rose') }}" label="Seller rating" :sub="$m['rating_count'].' ratings'" />
         </div>
     </div>
 

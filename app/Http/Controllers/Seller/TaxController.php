@@ -68,7 +68,7 @@ class TaxController extends Controller
 
         return response()->streamDownload(
             fn () => print ($ledger->toCsv(auth()->id(), $from, $to)),
-            "pan-motive-statement-{$label}.csv",
+            "panmotive-statement-{$label}.csv",
             ['Content-Type' => 'text/csv'],
         );
     }

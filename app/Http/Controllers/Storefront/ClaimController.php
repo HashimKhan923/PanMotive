@@ -46,6 +46,6 @@ class ClaimController extends Controller
 
         $orderItem->seller?->notify(new \App\Notifications\BuyerClaimFiled($claim));
 
-        return back()->with('success', "Claim {$claim->claim_number} filed. The seller has 72 hours to respond before Pan Motive steps in.");
+        return back()->with('success', "Claim {$claim->claim_number} filed. The seller has 72 hours to respond before PanMotive steps in.");
     }
 }

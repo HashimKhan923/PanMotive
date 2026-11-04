@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 
-/** Pan Motive's own email to its buyers and sellers. Drafted first, tested on yourself, then sent once. */
+/** PanMotive's own email to its buyers and sellers. Drafted first, tested on yourself, then sent once. */
 class BroadcastController extends Controller
 {
     use AdminTools;
@@ -46,7 +46,7 @@ class BroadcastController extends Controller
 
     public function test(Request $request, AdminBroadcast $broadcast)
     {
-        Mail::to($request->user()->email)->send(new CampaignMail('[Test] '.$broadcast->subject, (string) $broadcast->preview, (string) $broadcast->body, null, 'Pan Motive', true));
+        Mail::to($request->user()->email)->send(new CampaignMail('[Test] '.$broadcast->subject, (string) $broadcast->preview, (string) $broadcast->body, null, 'PanMotive', true));
 
         return back()->with('success', 'Test sent to '.$request->user()->email.'.');
     }

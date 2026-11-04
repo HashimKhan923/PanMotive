@@ -10,7 +10,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-/** Seller help centre: answers to common questions, plus tickets with the Pan Motive support team. */
+/** Seller help centre: answers to common questions, plus tickets with the PanMotive support team. */
 #[Layout('layouts.seller')]
 class Support extends Component
 {
@@ -107,10 +107,10 @@ class Support extends Component
         $instant = config('marketplace.instant_payout_fee_pct');
 
         return [
-            ['q' => 'What does it cost to sell on Pan Motive?', 'a' => "No listing or monthly fees. We take a flat {$rate}% commission on each sale, shown on every order before you ship. Higher performance tiers earn a lower rate automatically — see Performance & tiers."],
+            ['q' => 'What does it cost to sell on PanMotive?', 'a' => "No listing or monthly fees. We take a flat {$rate}% commission on each sale, shown on every order before you ship. Higher performance tiers earn a lower rate automatically — see Performance & tiers."],
             ['q' => 'When do I get paid?', 'a' => "Your payout is held in escrow and released when the buyer confirms delivery, or automatically {$confirm} days after delivery if they don't respond. Want it sooner? Use Instant payout on a shipped order ({$instant}% fee, free for Top Rated and Powerseller)."],
             ['q' => 'A buyer paid but I can\'t fill the order — what do I do?', 'a' => 'Open the order and choose "Cancel order". The buyer is refunded automatically and the stock goes back on your shelf. Only "buyer asked" and "suspected fraud" cancellations are excused from your cancellation rate, so keep your stock counts accurate.'],
-            ['q' => 'How long do I have to respond to a return?', 'a' => 'You have 48 hours to approve or reject a return request. After that it escalates to Pan Motive automatically and may count against your account health.'],
+            ['q' => 'How long do I have to respond to a return?', 'a' => 'You have 48 hours to approve or reject a return request. After that it escalates to PanMotive automatically and may count against your account health.'],
             ['q' => 'Why isn\'t my listing showing in search?', 'a' => 'Check that it\'s Active (not a draft), has stock, at least one photo, a category and vehicle fitment. Listing insights shows exactly what each listing is missing.'],
             ['q' => 'How do I bulk upload my catalog?', 'a' => 'Products → Bulk upload accepts a Shopify product export or our CSV template. Images, variants and categories are imported automatically; everything lands as a draft for you to review.'],
             ['q' => 'Can my staff help run the store?', 'a' => 'Yes — Settings → Team & permissions lets you invite people with exactly the access they need (for example orders and shipping only, no payouts).'],

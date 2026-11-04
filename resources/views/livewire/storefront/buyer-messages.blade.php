@@ -91,7 +91,7 @@
                         @error('body') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         @error('photos') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         @error('photos.*') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
-                        <p class="mt-1 text-[10px] text-muted">For your protection, keep payments and conversations on Pan Motive.</p>
+                        <p class="mt-1 text-[10px] text-muted">For your protection, keep payments and conversations on PanMotive.</p>
                     </form>
                 @endif
             @endif

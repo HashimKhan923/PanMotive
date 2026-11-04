@@ -39,7 +39,7 @@ class PolishTest extends TestCase
         }
 
         $manifest = json_decode(file_get_contents(public_path('manifest.json')), true);
-        $this->assertSame('Pan Motive', $manifest['name']);
+        $this->assertSame('PanMotive', $manifest['name']);
         $this->assertSame('standalone', $manifest['display']);
         $this->assertCount(2, $manifest['icons']);
 

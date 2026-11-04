@@ -11,7 +11,7 @@
 <div class="flex items-start justify-between">
     <div>
         <p class="text-lg font-bold">{{ $store?->business_name }}</p>
-        <p class="text-xs text-slate-500">Sold via Pan Motive</p>
+        <p class="text-xs text-slate-500">Sold via PanMotive</p>
     </div>
     <div class="text-right">
         <p class="text-xl font-bold">Invoice</p>
@@ -67,7 +67,7 @@
 </table>
 
 <p class="mt-8 text-xs text-slate-500">
-    Shipping and any order-wide discounts are settled by Pan Motive on the buyer's combined receipt.
-    Questions about this order? Message {{ $store?->business_name }} from your Pan Motive account.
+    Shipping and any order-wide discounts are settled by PanMotive on the buyer's combined receipt.
+    Questions about this order? Message {{ $store?->business_name }} from your PanMotive account.
 </p>
 @endsection

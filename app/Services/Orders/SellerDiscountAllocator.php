@@ -9,9 +9,9 @@ use Illuminate\Support\Collection;
  * Works out how much of each cart line's price a SELLER is giving away — bundle
  * savings and the seller's own coupon codes — so that discount comes off that
  * seller's order lines (and so their payout and our commission), instead of
- * being silently absorbed by Pan Motive at the order level.
+ * being silently absorbed by PanMotive at the order level.
  *
- * Platform-wide coupons (no seller) are Pan Motive's own promotion and are not
+ * Platform-wide coupons (no seller) are PanMotive's own promotion and are not
  * allocated here — they stay an order-level discount we fund.
  */
 class SellerDiscountAllocator

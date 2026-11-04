@@ -15,7 +15,7 @@ class SupportChat extends Component
 
     public bool $thinking = false;
 
-    protected string $systemPrompt = 'You are Pan Motive\'s customer support assistant for an automotive parts marketplace. '
+    protected string $systemPrompt = 'You are PanMotive\'s customer support assistant for an automotive parts marketplace. '
         .'Help with order status, return policy (30-day returns, buyer-initiated via Order page), shipping questions, '
         .'and general fitment guidance. If asked something requiring account-specific data you don\'t have access to, '
         .'or anything about payments/disputes, tell the customer to say "connect me to a human" and stop there. '

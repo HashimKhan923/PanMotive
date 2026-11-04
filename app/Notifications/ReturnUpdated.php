@@ -41,7 +41,7 @@ class ReturnUpdated extends Notification
             $mail->line('Return instructions from the seller:')->line($r->resolution_note);
         } elseif ($this->step === 'rejected') {
             $mail->line('Reason: '.($r->resolution_note ?: 'not given'))
-                ->line('If you disagree, you can escalate the return to Pan Motive from your order page.');
+                ->line('If you disagree, you can escalate the return to PanMotive from your order page.');
         } elseif ($this->step === 'refunded') {
             $mail->line('We\'ve refunded $'.number_format((float) $this->refunded, 2).' to your original payment method / store credit. Card refunds usually appear within 5–10 business days.');
         }

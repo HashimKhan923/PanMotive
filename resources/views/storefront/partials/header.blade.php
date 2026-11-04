@@ -9,7 +9,7 @@
             scrolled = y > 8;
             if (! open) hidden = y > 160 && y > lastY + 4 ? true : (y < lastY - 4 ? false : hidden);
             lastY = y"
-        :class="{ '-translate-y-full': hidden, 'shadow-[0_10px_30px_-18px_rgb(15_23_42/.35)]': scrolled }"
+        :class="{ '-translate-y-full': hidden, 'shadow-[0_10px_30px_-18px_rgb(23_24_29/.35)]': scrolled }"
         class="site-header sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur-xl backdrop-saturate-150 transition-[transform,box-shadow] duration-300 ease-out">
     {{-- top strip --}}
     <div class="hidden border-b border-line bg-brand text-brand-fg lg:block">
@@ -20,18 +20,16 @@
             </div>
             <div class="flex items-center gap-5">
                 <span class="inline-flex items-center gap-1.5"><x-ui.icon name="sparkles" class="w-3.5 h-3.5 text-accent" /> Cashback credited on delivery</span>
-                <a href="{{ route('seller.onboarding.start') }}" class="hover:text-accent">Sell on Pan Motive</a>
+                <a href="{{ route('seller.onboarding.start') }}" class="hover:text-accent">Sell on PanMotive</a>
             </div>
         </div>
     </div>
 
     <div class="container-x flex h-14 items-center gap-4 lg:h-16">
         {{-- logo --}}
-        <a href="{{ route('home') }}" class="flex shrink-0 items-center gap-2">
-            <span class="grid h-8 w-8 place-items-center rounded-lg bg-accent text-accent-fg">
-                <x-ui.icon name="wrench" class="w-4 h-4" />
-            </span>
-            <span class="text-[17px] font-extrabold tracking-tight text-fg">Pan<span class="text-accent">Motive</span></span>
+        <a href="{{ route('home') }}" class="flex shrink-0 items-center text-fg" aria-label="PanMotive home">
+            <x-ui.logo class="hidden h-7 w-auto min-[360px]:block sm:h-8 lg:h-9" />
+            <x-ui.logo variant="mark" class="h-7 w-auto min-[360px]:hidden" />
         </a>
 
         {{-- search --}}
@@ -93,7 +91,7 @@
                :aria-label="`Compare, ${$store.compare.count} items`">
                 <x-ui.icon name="grid" class="w-[18px] h-[18px]" />
                 <span x-show="$store.compare.count > 0" x-cloak x-text="$store.compare.count"
-                      class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-brand-fg"></span>
+                      class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-fg"></span>
             </a>
 
             <a href="{{ route('wishlist.index') }}" class="relative btn-ghost !p-2 !rounded-lg" x-data
@@ -150,7 +148,7 @@
             <nav class="mt-4 flex flex-col text-sm">
                 <a href="{{ route('products.index') }}" class="py-2.5 font-semibold">All Parts</a>
                 <a href="{{ route('find-parts') }}" class="py-2.5 font-semibold">Find parts for my vehicle</a>
-                <a href="{{ route('plus.show') }}" class="py-2.5 font-semibold">Pan Motive Plus</a>
+                <a href="{{ route('plus.show') }}" class="py-2.5 font-semibold">PanMotive Plus</a>
                 <a href="{{ route('deals.index') }}" class="py-2.5 font-semibold text-accent">Today's Deals</a>
                 @foreach (\App\Models\Category::shopRoots() as $cat)
                     <a href="{{ route('products.index', ['category' => $cat->slug]) }}" class="py-2.5 text-muted">{{ $cat->name }}</a>

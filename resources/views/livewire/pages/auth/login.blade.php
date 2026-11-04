@@ -80,7 +80,7 @@ new #[Layout('layouts.guest')] class extends Component
 
         @if (Route::has('register'))
             <p class="text-center text-sm text-muted">
-                New to Pan Motive?
+                New to PanMotive?
                 <a href="{{ route('register') }}" wire:navigate class="font-medium text-accent hover:underline">Create an account</a>
             </p>
         @endif

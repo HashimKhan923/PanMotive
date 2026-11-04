@@ -232,7 +232,7 @@ class MarketingAutomationService
         );
 
         $body = nl2br(e($swap($automation->body)));
-        $body = str_replace(e($shopUrl), '<a href="'.$shopUrl.'" style="color:#F5A524;font-weight:600">'.$shopUrl.'</a>', $body);
+        $body = str_replace(e($shopUrl), '<a href="'.$shopUrl.'" style="color:#C8161D;font-weight:600">'.$shopUrl.'</a>', $body);
         $body .= '<img src="'.route('am.open', $token).'" width="1" height="1" alt="" style="display:none">';
 
         return [

@@ -5,7 +5,7 @@
 @section('content')
 <div>
     <h1 class="text-2xl font-bold">Returns</h1>
-    <p class="mt-1 text-sm text-muted">Approve a return to send the buyer your instructions, mark it received when it arrives, then refund. Respond within 48 hours or it escalates to Pan Motive.</p>
+    <p class="mt-1 text-sm text-muted">Approve a return to send the buyer your instructions, mark it received when it arrives, then refund. Respond within 48 hours or it escalates to PanMotive.</p>
 
     @if ($errors->has('return'))
         <div class="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-400">{{ $errors->first('return') }}</div>
@@ -56,13 +56,13 @@
                         @if ($rma->resolution_note) <p class="mt-1 text-xs text-muted">Your note: {{ $rma->resolution_note }}</p> @endif
                     </div>
                     <div class="text-right">
-                        <span class="pill capitalize {{ match ($s) { 'refunded' => '!bg-emerald-500/10 !text-emerald-600', 'rejected' => '!bg-rose-500/10 !text-rose-600', 'requested' => '!bg-accent/15 !text-accent', default => '' } }}">{{ $s }}</span>
+                        <span class="pill capitalize {{ match ($s) { 'refunded' => '!bg-emerald-500/10 !text-emerald-600', 'rejected' => '!bg-rose-500/10 !text-rose-600', 'requested' => '!bg-amber-500/15 !text-amber-700 dark:!text-amber-400', default => '' } }}">{{ $s }}</span>
                         @php($h = $rma->hoursToRespond())
                         @if ($rma->escalated_at)
-                            <p class="mt-1 text-xs font-semibold text-rose-500">Escalated {{ $rma->escalated_at->diffForHumans() }} · Pan Motive reviewing</p>
+                            <p class="mt-1 text-xs font-semibold text-rose-500">Escalated {{ $rma->escalated_at->diffForHumans() }} · PanMotive reviewing</p>
                         @elseif ($h !== null)
                             <p class="mt-1 text-xs font-semibold {{ $h <= 0 ? 'text-rose-500' : ($h <= 12 ? 'text-amber-600' : 'text-muted') }}">
-                                {{ $h <= 0 ? 'Overdue — escalating to Pan Motive' : "Respond within {$h}h" }}
+                                {{ $h <= 0 ? 'Overdue — escalating to PanMotive' : "Respond within {$h}h" }}
                             </p>
                         @endif
                         @if (in_array($s, ['requested', 'approved', 'received'], true))

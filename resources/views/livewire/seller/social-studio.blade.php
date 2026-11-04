@@ -192,6 +192,6 @@
                 </div>
             @endforeach
         </div>
-        <p class="mt-4 text-xs text-muted">Auto-posting turns on per platform once Pan Motive's app for it is approved. Until then, share kits get your post out in two taps — with the same tracked links and sales reporting.</p>
+        <p class="mt-4 text-xs text-muted">Auto-posting turns on per platform once PanMotive's app for it is approved. Until then, share kits get your post out in two taps — with the same tracked links and sales reporting.</p>
     @endif
 </div>

@@ -112,7 +112,7 @@ class Reviews extends Component
         $this->validate(['reportReason' => 'required', 'reportNote' => 'nullable|string|max:1000'], ['reportReason.required' => 'Choose a reason.']);
         $service->report($this->owned((int) $this->reportingId), $this->reportReason, $this->reportNote ?: null);
         $this->reportingId = null;
-        $this->dispatch('toast', message: 'Reported — Pan Motive will review it. The review stays up meanwhile.');
+        $this->dispatch('toast', message: 'Reported — PanMotive will review it. The review stays up meanwhile.');
     }
 
     public function render(AiClient $ai)

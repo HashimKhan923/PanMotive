@@ -124,7 +124,7 @@ class SellerController extends Controller
 
         $sellerProfile->user->notify(new AccountNotice(
             $hold ? 'Your payouts are on hold' : 'Your payouts are active again',
-            $hold ? "Pan Motive has paused your payouts. Reason: {$data['reason']}. Your earnings are safe and you can contact Help & support." : 'The hold on your payouts has been lifted. Delivered orders will be paid out as normal.'
+            $hold ? "PanMotive has paused your payouts. Reason: {$data['reason']}. Your earnings are safe and you can contact Help & support." : 'The hold on your payouts has been lifted. Delivered orders will be paid out as normal.'
         ));
 
         if (! $hold) {

@@ -3,7 +3,7 @@
 @section('title', 'Broadcast email')
 
 @section('content')
-<x-admin.header title="Broadcast email" subtitle="Email from Pan Motive to your buyers and sellers. Save a draft, send yourself a test, then send it." />
+<x-admin.header title="Broadcast email" subtitle="Email from PanMotive to your buyers and sellers. Save a draft, send yourself a test, then send it." />
 
 <div class="grid gap-4 xl:grid-cols-3">
     <div class="xl:col-span-2">

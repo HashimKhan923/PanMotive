@@ -117,7 +117,7 @@
             @if (\App\Support\SellerContext::can('marketing') && ! $blocked)
                 <section class="card p-6" x-data="{ open: false }">
                     <h2 class="font-bold">Send a private coupon</h2>
-                    <p class="mt-1 text-xs text-muted">A one-time code only {{ \Illuminate\Support\Str::before($buyer->name, ' ') }} can use on your items, delivered to their Pan Motive inbox. Great for thank-yous and win-backs.</p>
+                    <p class="mt-1 text-xs text-muted">A one-time code only {{ \Illuminate\Support\Str::before($buyer->name, ' ') }} can use on your items, delivered to their PanMotive inbox. Great for thank-yous and win-backs.</p>
                     <button x-show="!open" @click="open = true" class="btn-ghost btn-sm mt-3 w-full"><x-ui.icon name="tag" class="w-4 h-4" /> Create coupon</button>
                     <form x-show="open" x-cloak wire:submit="sendCoupon" class="mt-3 space-y-3">
                         <div class="grid grid-cols-[1fr_96px] gap-2">

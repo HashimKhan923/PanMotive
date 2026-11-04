@@ -4,7 +4,7 @@
 @section('content')
 <div class="container-x max-w-2xl py-10">
     <h1 class="text-2xl font-bold">Affiliate dashboard</h1>
-    <p class="mt-1 text-sm text-muted">Your links and earnings across stores. Commission is paid to your Pan Motive credit once orders are delivered.</p>
+    <p class="mt-1 text-sm text-muted">Your links and earnings across stores. Commission is paid to your PanMotive credit once orders are delivered.</p>
 
     <div class="mt-6 space-y-4">
         @forelse ($affiliates as $a)

@@ -42,13 +42,17 @@ export default {
                 'brand-fg': withVar('--c-brand-fg'),
                 accent: withVar('--c-accent'),
                 'accent-fg': withVar('--c-accent-fg'),
+                chart: withVar('--c-chart'),
+            },
+            textColor: {
+                accent: withVar('--c-accent-ink'),
             },
             borderColor: {
                 DEFAULT: withVar('--c-line'),
             },
             boxShadow: {
-                card: '0 1px 2px rgb(15 23 42 / 0.04), 0 8px 24px -12px rgb(15 23 42 / 0.12)',
-                'card-hover': '0 2px 4px rgb(15 23 42 / 0.06), 0 16px 40px -16px rgb(15 23 42 / 0.22)',
+                card: '0 1px 2px rgb(23 24 29 / 0.04), 0 8px 24px -12px rgb(23 24 29 / 0.12)',
+                'card-hover': '0 2px 4px rgb(23 24 29 / 0.06), 0 16px 40px -16px rgb(23 24 29 / 0.22)',
             },
             keyframes: {
                 'fade-up': {

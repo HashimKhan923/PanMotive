@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', 'Pan Motive') }}</title>
+    <title>{{ config('app.name', 'PanMotive') }}</title>
 
     <script @nonce>
         try {
@@ -18,6 +18,8 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -26,11 +28,8 @@
         {{-- brand panel --}}
         <div class="relative hidden overflow-hidden bg-brand p-12 text-brand-fg lg:flex lg:flex-col lg:justify-between">
             <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/20 blur-3xl"></div>
-            <a href="/" wire:navigate class="relative flex items-center gap-2">
-                <span class="grid h-10 w-10 place-items-center rounded-xl bg-accent text-accent-fg">
-                    <x-ui.icon name="wrench" class="w-6 h-6" />
-                </span>
-                <span class="text-xl font-extrabold tracking-tight">Pan<span class="text-accent">Motive</span></span>
+            <a href="/" wire:navigate class="relative flex items-center" aria-label="PanMotive home">
+                <x-ui.logo class="h-10 w-auto" />
             </a>
             <div class="relative">
                 <h1 class="text-3xl font-bold leading-tight">Every part. Every vehicle. Fast.</h1>
@@ -40,16 +39,13 @@
                     <span class="inline-flex items-center gap-2"><x-ui.icon name="truck" class="w-4 h-4 text-accent" /> Fast US shipping</span>
                 </div>
             </div>
-            <p class="relative text-xs text-white/40">&copy; {{ date('Y') }} Pan Motive</p>
+            <p class="relative text-xs text-white/40">&copy; {{ date('Y') }} PanMotive</p>
         </div>
 
         {{-- form panel --}}
         <div class="flex flex-col items-center justify-center px-6 py-12">
-            <a href="/" wire:navigate class="mb-8 flex items-center gap-2 lg:hidden">
-                <span class="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-fg">
-                    <x-ui.icon name="wrench" class="w-5 h-5" />
-                </span>
-                <span class="text-lg font-extrabold tracking-tight">Pan<span class="text-accent">Motive</span></span>
+            <a href="/" wire:navigate class="mb-8 flex items-center lg:hidden" aria-label="PanMotive home">
+                <x-ui.logo variant="stacked" class="h-20 w-auto" />
             </a>
 
             <div class="w-full max-w-md">

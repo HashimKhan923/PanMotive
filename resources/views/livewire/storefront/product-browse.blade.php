@@ -43,7 +43,7 @@
     @endif
 
     @if ($fallbackNotice)
-        <p class="mt-4 rounded-xl bg-accent/10 px-4 py-2.5 text-sm text-accent">
+        <p class="mt-4 rounded-xl bg-surface-2 px-4 py-2.5 text-sm text-fg">
             <x-ui.icon name="sparkles" class="mr-1 inline w-4 h-4" /> {{ $fallbackNotice }}
         </p>
     @endif

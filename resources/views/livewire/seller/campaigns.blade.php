@@ -2,7 +2,7 @@
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
             <h1 class="text-2xl font-bold">Campaigns</h1>
-            <p class="mt-1 text-sm text-muted">Email{{ $smsAvailable ? ' &amp; SMS' : '' }} to your own customers, followers and cart-abandoners — sent from Pan Motive, with an unsubscribe link in every email.</p>
+            <p class="mt-1 text-sm text-muted">Email{{ $smsAvailable ? ' &amp; SMS' : '' }} to your own customers, followers and cart-abandoners — sent from PanMotive, with an unsubscribe link in every email.</p>
             <p class="mt-1 text-xs {{ $sentThisWeek >= $weeklyLimit ? 'text-amber-600' : 'text-muted' }}">{{ $sentThisWeek }} of {{ $weeklyLimit }} campaigns sent this week.</p>
         </div>
         <button wire:click="newCampaign" class="btn-accent btn-sm"><x-ui.icon name="plus" class="w-4 h-4" /> New campaign</button>

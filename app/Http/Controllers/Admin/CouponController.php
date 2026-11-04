@@ -25,7 +25,7 @@ class CouponController extends Controller
                 ->latest()->paginate(25)->withQueryString(),
             'owner' => $owner,
             'tabs' => [
-                'platform' => ['Pan Motive pays', Coupon::whereNull('seller_id')->count()],
+                'platform' => ['PanMotive pays', Coupon::whereNull('seller_id')->count()],
                 'seller' => ['Sellers pay', Coupon::whereNotNull('seller_id')->count()],
             ],
             'categories' => Category::whereNull('parent_id')->orderBy('name')->get(['id', 'name']),
@@ -52,7 +52,7 @@ class CouponController extends Controller
         $coupon = Coupon::create($data + ['is_active' => true]);
         $this->audit('Created coupon', $coupon, $data);
 
-        return back()->with('success', "{$coupon->code} is live. Pan Motive pays for this discount.");
+        return back()->with('success', "{$coupon->code} is live. PanMotive pays for this discount.");
     }
 
     public function toggle(Coupon $coupon)

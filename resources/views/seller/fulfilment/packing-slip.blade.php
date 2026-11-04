@@ -6,7 +6,7 @@
 <div class="flex items-start justify-between">
     <div>
         <p class="text-lg font-bold">{{ auth()->user()->sellerProfile->business_name }}</p>
-        <p class="text-xs text-slate-500">via Pan Motive</p>
+        <p class="text-xs text-slate-500">via PanMotive</p>
     </div>
     <div class="text-right">
         <p class="text-sm font-semibold">Packing slip</p>
@@ -43,5 +43,5 @@
     </tbody>
 </table>
 
-<p class="mt-8 text-xs text-slate-400">Thank you for your order. Questions? Message the seller through Pan Motive.</p>
+<p class="mt-8 text-xs text-slate-400">Thank you for your order. Questions? Message the seller through PanMotive.</p>
 @endsection

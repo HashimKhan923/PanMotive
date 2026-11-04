@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use League\Csv\Reader;
 
 /**
- * Imports a product CSV for a seller. Auto-detects the Pan Motive native format
+ * Imports a product CSV for a seller. Auto-detects the PanMotive native format
  * and Shopify's product export, and falls back to fuzzy column matching for
  * anything else. Categories are auto-detected (keyword + fuzzy, with an optional
  * AI clean-up pass); a default is only used when nothing matches. Every row

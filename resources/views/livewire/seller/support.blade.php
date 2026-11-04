@@ -10,7 +10,7 @@
                     @if ($active->orderItem) · Order {{ $active->orderItem->order->order_number }} @endif
                 </p>
             </div>
-            <span class="pill ml-auto {{ $active->status === 'answered' ? '!bg-accent/15 !text-accent' : ($active->status === 'resolved' ? '!bg-emerald-500/10 !text-emerald-600' : '') }}">{{ $active->statusLabel() }}</span>
+            <span class="pill ml-auto {{ $active->status === 'answered' ? '!bg-sky-500/10 !text-sky-600' : ($active->status === 'resolved' ? '!bg-emerald-500/10 !text-emerald-600' : '') }}">{{ $active->statusLabel() }}</span>
         </div>
 
         <div class="mt-6 space-y-3">
@@ -18,7 +18,7 @@
                 <div class="flex {{ $m->author_role === 'seller' ? 'justify-end' : '' }}">
                     <div class="max-w-[85%] rounded-2xl px-4 py-3 text-sm {{ $m->author_role === 'seller' ? 'bg-accent/10' : 'border border-line bg-surface' }}">
                         <p class="text-xs font-semibold {{ $m->author_role === 'support' ? 'text-accent' : 'text-muted' }}">
-                            {{ $m->author_role === 'support' ? 'Pan Motive Support' : ($m->user?->name ?? 'You') }} · {{ $m->created_at->format('M j, g:i A') }}
+                            {{ $m->author_role === 'support' ? 'PanMotive Support' : ($m->user?->name ?? 'You') }} · {{ $m->created_at->format('M j, g:i A') }}
                         </p>
                         <p class="mt-1 whitespace-pre-line">{{ $m->body }}</p>
                     </div>
@@ -42,7 +42,7 @@
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
                 <h1 class="text-2xl font-bold">Help &amp; support</h1>
-                <p class="mt-1 text-sm text-muted">Quick answers below — or message the Pan Motive seller support team directly.</p>
+                <p class="mt-1 text-sm text-muted">Quick answers below — or message the PanMotive seller support team directly.</p>
             </div>
             <button wire:click="$toggle('composing')" class="btn-accent btn-sm"><x-ui.icon name="message" class="w-4 h-4" /> Contact support</button>
         </div>

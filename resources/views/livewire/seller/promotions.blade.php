@@ -101,7 +101,7 @@
                             <p class="text-xs text-muted">{{ $e->items_count }} {{ Str::plural('listing', $e->items_count) }} · {{ $e->starts_at->format('M j, g:i A') }} – {{ $e->ends_at->format('M j, g:i A') }}</p>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ match ($st) { 'active' => 'bg-emerald-500/10 text-emerald-600', 'scheduled' => 'bg-accent/10 text-accent', default => 'bg-surface-2 text-muted' } }}">{{ ucfirst($st) }}</span>
+                            <span class="rounded-full px-2 py-0.5 text-xs font-semibold {{ match ($st) { 'active' => 'bg-emerald-500/10 text-emerald-600', 'scheduled' => 'bg-sky-500/10 text-sky-600', default => 'bg-surface-2 text-muted' } }}">{{ ucfirst($st) }}</span>
                             @if (in_array($st, ['active', 'scheduled'], true))
                                 <button wire:click="cancelSale({{ $e->id }})" wire:confirm="End this sale now? Prices go back to normal." class="text-sm text-muted hover:text-rose-500">{{ $st === 'active' ? 'End now' : 'Cancel' }}</button>
                             @endif

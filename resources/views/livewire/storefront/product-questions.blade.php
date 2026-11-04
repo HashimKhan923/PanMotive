@@ -44,7 +44,7 @@
                                 <div class="min-w-0">
                                     <p class="text-sm">{{ $answer->body }}</p>
                                     <p class="mt-1 text-xs text-muted">
-                                        {{ $answer->user?->name ?? $answer->author_name ?? 'Pan Motive' }}
+                                        {{ $answer->user?->name ?? $answer->author_name ?? 'PanMotive' }}
                                         @if ($answer->is_seller)
                                             <span class="pill ml-1 !bg-accent/10 !text-accent">Seller</span>
                                         @endif

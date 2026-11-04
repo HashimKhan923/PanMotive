@@ -4,7 +4,7 @@
 
 @section('content')
 <x-admin.header title="Coupons" subtitle="Discounts across the site. You can also switch off a seller's coupon if it breaks policy.">
-    <x-admin.action :url="route('admin.coupons.store')" label="New coupon" tone="primary" icon="plus" confirm="Create coupon" body="Pan Motive pays for this discount, not the seller.">
+    <x-admin.action :url="route('admin.coupons.store')" label="New coupon" tone="primary" icon="plus" confirm="Create coupon" body="PanMotive pays for this discount, not the seller.">
         <div><label class="label">Code</label><input name="code" class="input text-sm uppercase" minlength="3" maxlength="30" required></div>
         <div class="grid grid-cols-2 gap-2">
             <div><label class="label">Type</label><select name="type" class="input text-sm"><option value="percentage">Percent off</option><option value="fixed">Dollars off</option></select></div>

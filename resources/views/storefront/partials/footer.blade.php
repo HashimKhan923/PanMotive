@@ -2,8 +2,7 @@
     <div class="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-5">
         <div class="lg:col-span-2">
             <div class="flex items-center gap-2">
-                <span class="grid h-8 w-8 place-items-center rounded-lg bg-accent text-accent-fg"><x-ui.icon name="wrench" class="w-4 h-4" /></span>
-                <span class="text-base font-extrabold tracking-tight">Pan<span class="text-accent">Motive</span></span>
+                <x-ui.logo class="h-8 w-auto" />
             </div>
             <p class="mt-3 max-w-sm text-sm text-muted">
                 The US marketplace for automotive parts — genuine and aftermarket, matched to your exact vehicle,

@@ -1,4 +1,4 @@
-# Pan Motive — Security & Launch Checklist (Phase 9)
+# PanMotive — Security & Launch Checklist (Phase 9)
 
 Code that ships in this phase is committed. This file tracks the **process, config,
 and legal** steps that can't be generated — they need a human, a deployed

@@ -10,7 +10,7 @@
             <h1 class="mt-4 text-2xl font-bold">You're unsubscribed</h1>
             <p class="mt-2 text-sm text-muted">
                 @if (! empty($all) || ! $store)
-                    You won't get marketing emails from any store on Pan Motive.
+                    You won't get marketing emails from any store on PanMotive.
                 @else
                     You won't get marketing emails from <strong>{{ $store }}</strong> any more.
                 @endif
@@ -25,7 +25,7 @@
         @else
             <h1 class="mt-4 text-2xl font-bold">Unsubscribe{{ $store ? ' from '.$store : '' }}?</h1>
             <p class="mt-2 text-sm text-muted">
-                {{ $store ? "You'll stop getting promotions and news from {$store}." : "You'll stop getting promotions from stores on Pan Motive." }}
+                {{ $store ? "You'll stop getting promotions and news from {$store}." : "You'll stop getting promotions from stores on PanMotive." }}
                 Order updates and receipts aren't affected.
             </p>
             <form method="POST" action="{{ request()->fullUrl() }}" class="mt-6 space-y-3">

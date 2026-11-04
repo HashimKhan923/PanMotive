@@ -38,7 +38,7 @@ class AdsController extends Controller
         $adCampaign->update(['status' => $adCampaign->status === 'active' ? 'paused' : 'active']);
         $this->audit($adCampaign->status === 'paused' ? 'Paused ad campaign' : 'Resumed ad campaign', $adCampaign, $data);
 
-        $this->tell($adCampaign->seller, 'Your ad campaign was '.($adCampaign->status === 'paused' ? 'paused' : 'resumed'), "Pan Motive changed \"{$adCampaign->name}\". Reason: {$data['reason']}.");
+        $this->tell($adCampaign->seller, 'Your ad campaign was '.($adCampaign->status === 'paused' ? 'paused' : 'resumed'), "PanMotive changed \"{$adCampaign->name}\". Reason: {$data['reason']}.");
 
         return back()->with('success', 'Campaign '.($adCampaign->status === 'paused' ? 'paused.' : 'resumed.'));
     }
@@ -50,7 +50,7 @@ class AdsController extends Controller
         $boost->update(['status' => 'ended', 'ends_at' => now()]);
         $this->audit('Ended boost', $boost, $data);
 
-        $this->tell($boost->seller, 'Your boost was ended', 'Pan Motive ended a boost on your listing. Reason: '.$data['reason'].'.');
+        $this->tell($boost->seller, 'Your boost was ended', 'PanMotive ended a boost on your listing. Reason: '.$data['reason'].'.');
 
         return back()->with('success', 'Boost ended. The fee is not refunded automatically.');
     }

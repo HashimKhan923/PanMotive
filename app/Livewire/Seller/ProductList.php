@@ -260,7 +260,7 @@ class ProductList extends Component
                 fputcsv($out, [$r->title, $r->sku, $r->part_number, $r->oem_number, $r->condition, $r->price, $r->sale_price, $r->quantity, $r->status]);
             }
             fclose($out);
-        }, 'pan-motive-catalog-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
+        }, 'panmotive-catalog-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
     }
 
     private function baseQuery()

@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/** A message from Pan Motive about someone's account: suspension, payout hold, listing removal and so on. */
+/** A message from PanMotive about someone's account: suspension, payout hold, listing removal and so on. */
 class AccountNotice extends Notification implements ShouldQueue
 {
     use Queueable;

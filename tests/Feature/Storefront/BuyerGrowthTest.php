@@ -51,7 +51,7 @@ class BuyerGrowthTest extends TestCase
         ]);
     }
 
-    /* ---------------- Pan Motive Plus ---------------- */
+    /* ---------------- PanMotive Plus ---------------- */
 
     public function test_join_plus_debits_wallet_and_sets_expiry(): void
     {

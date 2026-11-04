@@ -1,7 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', $sellerProfile->business_name . ' — Seller on ' . config('app.name'))
-@section('meta_description', Str::limit(strip_tags($sellerProfile->bio ?: 'Auto parts from ' . $sellerProfile->business_name . ' on Pan Motive.'), 155))
+@section('meta_description', Str::limit(strip_tags($sellerProfile->bio ?: 'Auto parts from ' . $sellerProfile->business_name . ' on PanMotive.'), 155))
 
 @php
     $theme = $sellerProfile->theme ?? [];
@@ -94,7 +94,7 @@
                                     <form method="POST" action="{{ route('loyalty.redeem', $sellerProfile) }}">
                                         @csrf
                                         <input type="hidden" name="points" value="{{ $loyaltyAccount->points }}">
-                                        <button class="btn-accent btn-sm">Redeem to Pan Motive credit</button>
+                                        <button class="btn-accent btn-sm">Redeem to PanMotive credit</button>
                                     </form>
                                 @else
                                     <span class="text-xs text-muted">{{ number_format($minRedeem) }} points minimum to redeem</span>
@@ -128,7 +128,7 @@
     @php($storeSale = \App\Models\SaleEvent::where('seller_id', $sellerProfile->user_id)->whereIn('status', ['scheduled', 'active'])
         ->where('starts_at', '<=', now())->where('ends_at', '>', now())->orderBy('ends_at')->first())
     @if ($storeSale)
-        <div class="pm-grain relative mt-6 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-rose-500 via-orange-500 to-accent px-5 py-4 text-white" data-reveal="scale"
+        <div class="pm-grain relative mt-6 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-[#9e1015] px-5 py-4 text-white" data-reveal="scale"
              x-data="{ left: {{ max(0, $storeSale->ends_at->getTimestamp() - now()->getTimestamp()) }} }"
              x-init="setInterval(() => left = Math.max(0, left - 1), 1000)">
             <div>

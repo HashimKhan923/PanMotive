@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** An email from Pan Motive itself to its buyers and/or sellers. */
+/** An email from PanMotive itself to its buyers and/or sellers. */
 class AdminBroadcast extends Model
 {
     public const AUDIENCES = ['buyers' => 'All buyers', 'sellers' => 'All sellers', 'everyone' => 'Everyone'];
@@ -22,7 +22,7 @@ class AdminBroadcast extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /** Suspended accounts never get mail, and marketing skips anyone who unsubscribed from Pan Motive email. */
+    /** Suspended accounts never get mail, and marketing skips anyone who unsubscribed from PanMotive email. */
     public static function audienceQuery(string $audience, string $kind): Builder
     {
         return User::query()

@@ -51,7 +51,7 @@
                             <td class="py-2.5">
                                 <span class="font-medium">{{ $s['label'] }}</span>
                                 <div class="mt-1 h-1.5 w-40 overflow-hidden rounded-full bg-surface-2">
-                                    <div class="h-full rounded-full bg-accent" style="width: {{ round($s['revenue'] / $srcMax * 100) }}%"></div>
+                                    <div class="h-full rounded-full bg-chart" style="width: {{ round($s['revenue'] / $srcMax * 100) }}%"></div>
                                 </div>
                             </td>
                             <td class="py-2.5 text-right">{{ $s['source'] === 'organic' ? '—' : number_format($s['clicks']) }}</td>
@@ -116,7 +116,7 @@
                                         @php($v = $c['retention'][$o] ?? 0)
                                         <td class="py-1.5">
                                             <span class="inline-block w-full rounded px-1 py-0.5"
-                                                  style="background: rgb(var(--c-accent) / {{ $v > 0 ? min(1, $v / 100 + 0.08) : 0 }}); color: {{ $v > 55 ? '#0f172a' : 'inherit' }}">
+                                                  style="background: rgb(var(--c-chart) / {{ $v > 0 ? min(1, $v / 100 + 0.08) : 0 }}); color: {{ $v > 55 ? 'rgb(var(--c-bg))' : 'inherit' }}">
                                                 {{ $o === 0 ? '100%' : ($v > 0 ? $v.'%' : '·') }}
                                             </span>
                                         </td>

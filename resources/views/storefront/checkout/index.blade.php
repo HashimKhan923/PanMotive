@@ -7,7 +7,7 @@
     <h1 class="text-2xl font-bold sm:text-3xl">Checkout</h1>
 
     @if (session('status'))
-        <p class="mt-4 rounded-xl bg-accent/10 px-4 py-3 text-sm text-accent">{{ session('status') }}</p>
+        <p class="mt-4 rounded-xl bg-surface-2 px-4 py-3 text-sm text-fg">{{ session('status') }}</p>
     @endif
 
     @if ($lines->isEmpty())

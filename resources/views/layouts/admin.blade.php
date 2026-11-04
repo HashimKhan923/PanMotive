@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="robots" content="noindex">
-    <title>@yield('title', $title ?? 'Admin') &middot; {{ config('app.name', 'Pan Motive') }} Admin</title>
+    <title>@yield('title', $title ?? 'Admin') &middot; {{ config('app.name', 'PanMotive') }} Admin</title>
 
     <script @nonce>
         try {
@@ -17,6 +17,8 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/admin.js'])
     @livewireStyles
     @stack('head')
@@ -31,10 +33,10 @@
     <aside class="adm-sidebar fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
            :class="mobileNav ? '!translate-x-0' : ''" style="view-transition-name: adm-sidebar">
         <a href="{{ route('admin.dashboard') }}" class="flex h-16 shrink-0 items-center gap-2.5 px-5">
-            <span class="adm-logo grid h-9 w-9 place-items-center rounded-xl text-accent-fg"><x-ui.icon name="wrench" class="w-4.5 h-4.5" /></span>
+            <x-ui.logo variant="mark" class="h-7 w-auto shrink-0" />
             <span class="leading-tight">
-                <span class="block text-[15px] font-extrabold tracking-tight">Pan<span class="text-accent">Motive</span></span>
-                <span class="block text-[10px] font-semibold uppercase tracking-[.18em] text-muted">Command center</span>
+                <x-ui.logo variant="word" class="block h-3 w-auto" />
+                <span class="mt-1 block text-[10px] font-semibold uppercase tracking-[.18em] text-muted">Command center</span>
             </span>
         </a>
 

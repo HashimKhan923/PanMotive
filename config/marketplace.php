@@ -136,7 +136,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Pan Motive Plus — buyer membership
+    | PanMotive Plus — buyer membership
     |--------------------------------------------------------------------------
     */
 
@@ -183,7 +183,7 @@ return [
     | Offsite Ads (Etsy model)
     |--------------------------------------------------------------------------
     |
-    | Pan Motive advertises sellers' listings on Facebook/Instagram, Google etc.
+    | PanMotive advertises sellers' listings on Facebook/Instagram, Google etc.
     | from its own ad accounts. Sellers pay nothing up front — only a fee on an
     | order placed within `attribution_days` of a buyer clicking one of their
     | ads. Sellers above `large_seller_threshold` (sales, trailing 12 months)
@@ -197,7 +197,7 @@ return [
         'frequency_cap_hours' => (int) env('MARKETING_FREQUENCY_CAP_HOURS', 24), // per buyer, per store
         'campaigns_per_week' => (int) env('MARKETING_CAMPAIGNS_PER_WEEK', 3),    // per store
         // Placeholder until the real registered address is set in .env.
-        'postal_address' => env('MARKETING_POSTAL_ADDRESS') ?: 'Pan Motive, Inc. · 2100 Commerce St · Dallas, TX 75201 · USA',
+        'postal_address' => env('MARKETING_POSTAL_ADDRESS') ?: 'PanMotive, Inc. · 2100 Commerce St · Dallas, TX 75201 · USA',
         'announcement_cooldown_hours' => 24,
         'affiliate_hold_days' => (int) env('AFFILIATE_HOLD_DAYS', 30), // commission payable once the return window has passed
     ],

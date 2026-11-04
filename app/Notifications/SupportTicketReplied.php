@@ -21,7 +21,7 @@ class SupportTicketReplied extends Notification
     {
         return [
             'type' => 'support',
-            'title' => "Pan Motive support replied — {$this->ticket->ticket_number}",
+            'title' => "PanMotive support replied — {$this->ticket->ticket_number}",
             'body' => $this->ticket->subject,
             'url' => route('seller.support.index', ['ticket' => $this->ticket->id]),
             'ticket_id' => $this->ticket->id,

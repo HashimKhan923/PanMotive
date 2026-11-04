@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h1 class="text-xl font-bold">Hi {{ Str::of(auth()->user()->name)->before(' ') }} 👋</h1>
-        <p class="mt-1 text-sm text-muted">Your Pan Motive account at a glance.</p>
+        <p class="mt-1 text-sm text-muted">Your PanMotive account at a glance.</p>
     </x-slot>
 
     @php
@@ -88,7 +88,7 @@
                         <a href="{{ route('marketing.preferences') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Marketing preferences <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
                         <a href="{{ route('wallet.index') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Wallet &amp; referrals <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
                         <a href="{{ route('subscriptions.index') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Subscribe &amp; Save <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
-                        <a href="{{ route('plus.show') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Pan Motive Plus <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
+                        <a href="{{ route('plus.show') }}" class="flex items-center justify-between py-2.5 hover:text-accent">PanMotive Plus <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
                         <a href="{{ route('track.form') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Track an order <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
                     </nav>
                 </div>
@@ -111,7 +111,7 @@
                                     </li>
                                 @endforeach
                             </ul>
-                            <p class="mt-3 text-xs text-muted">Redeem points on each store's page for Pan Motive credit.</p>
+                            <p class="mt-3 text-xs text-muted">Redeem points on each store's page for PanMotive credit.</p>
                         @else
                             <p class="mt-2 text-sm text-muted">You're an approved affiliate. Share your links from the affiliate dashboard.</p>
                         @endif
@@ -119,7 +119,7 @@
                 @endif
 
                 <div class="card bg-brand p-6 text-brand-fg">
-                    <h3 class="font-bold">Sell on Pan Motive</h3>
+                    <h3 class="font-bold">Sell on PanMotive</h3>
                     <p class="mt-1 text-sm text-white/70">Turn your inventory into sales with escrow-backed payouts.</p>
                     <a href="{{ route('seller.onboarding.start') }}" class="btn-accent btn-sm mt-4">Get started</a>
                 </div>

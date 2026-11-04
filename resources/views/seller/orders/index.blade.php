@@ -119,7 +119,7 @@
                         <td class="px-4 py-3">{{ $item->quantity }}</td>
                         <td class="px-4 py-3 font-semibold {{ in_array($s, ['cancelled', 'refunded']) ? 'text-muted line-through' : '' }}">${{ number_format($item->seller_payout_amount, 2) }}</td>
                         <td class="px-4 py-3">
-                            <span class="pill {{ match ($s) { 'paid' => '!bg-accent/15 !text-accent', 'cancelled', 'refunded' => '!bg-rose-500/10 !text-rose-600', 'return_requested', 'disputed' => '!bg-amber-500/15 !text-amber-700 dark:!text-amber-400', default => '' } }}">
+                            <span class="pill {{ match ($s) { 'paid' => '!bg-emerald-500/10 !text-emerald-600', 'cancelled', 'refunded' => '!bg-rose-500/10 !text-rose-600', 'return_requested', 'disputed' => '!bg-amber-500/15 !text-amber-700 dark:!text-amber-400', default => '' } }}">
                                 {{ $s === 'paid' ? 'New — to accept' : $item->status->label() }}
                             </span>
                         </td>

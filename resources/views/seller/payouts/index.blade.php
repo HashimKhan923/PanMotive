@@ -54,7 +54,7 @@
     <details class="card mt-4 p-5 text-sm">
         <summary class="cursor-pointer font-semibold">Fees on delivered orders: ${{ number_format(array_sum($fees), 2) }}</summary>
         <div class="mt-3 grid gap-2 sm:grid-cols-5">
-            <div><p class="text-xs text-muted">Pan Motive commission</p><p class="font-semibold">${{ number_format($fees['platform'], 2) }}</p></div>
+            <div><p class="text-xs text-muted">PanMotive commission</p><p class="font-semibold">${{ number_format($fees['platform'], 2) }}</p></div>
             <div><p class="text-xs text-muted">Offsite Ads</p><p class="font-semibold">${{ number_format($fees['offsite'], 2) }}</p></div>
             <div><p class="text-xs text-muted">Affiliate commissions</p><p class="font-semibold">${{ number_format($fees['affiliate'], 2) }}</p></div>
             <div><p class="text-xs text-muted">Shipping labels</p><p class="font-semibold">${{ number_format($fees['labels'], 2) }}</p></div>

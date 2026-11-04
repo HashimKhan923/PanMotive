@@ -234,19 +234,19 @@ class ProductSeeder extends Seeder
         $w = 800;
         $h = 800;
         $im = imagecreatetruecolor($w, $h);
-        [$r, $g, $b] = [[15, 23, 42], [30, 41, 59], [51, 65, 85], [11, 27, 52]][crc32($category) % 4];
+        [$r, $g, $b] = [[23, 24, 29], [35, 37, 43], [51, 53, 60], [14, 15, 18]][crc32($category) % 4];
         imagefill($im, 0, 0, imagecolorallocate($im, $r, $g, $b));
-        $amber = imagecolorallocate($im, 245, 165, 36);
+        $red = imagecolorallocate($im, 221, 30, 37);
         $white = imagecolorallocate($im, 255, 255, 255);
 
         imagesetthickness($im, 8);
-        imagearc($im, $w / 2, $h / 2 - 40, 320, 320, 0, 360, $amber);
-        imagefilledellipse($im, $w / 2, $h / 2 - 40, 90, 90, $amber);
+        imagearc($im, $w / 2, $h / 2 - 40, 320, 320, 0, 360, $red);
+        imagefilledellipse($im, $w / 2, $h / 2 - 40, 90, 90, $red);
 
         $label = strtoupper(substr($category, 0, 18));
         imagestring($im, 5, (int) (($w - strlen($label) * 9) / 2), $h - 120, $label, $white);
         $sub = substr($title, 0, 28);
-        imagestring($im, 3, (int) (($w - strlen($sub) * 7) / 2), $h - 90, $sub, $amber);
+        imagestring($im, 3, (int) (($w - strlen($sub) * 7) / 2), $h - 90, $sub, $red);
 
         ob_start();
         imagepng($im);

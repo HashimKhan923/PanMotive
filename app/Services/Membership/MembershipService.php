@@ -7,7 +7,7 @@ use App\Services\Marketing\WalletService;
 use Illuminate\Support\Carbon;
 
 /**
- * Pan Motive Plus. Payment here draws down wallet credit; a Stripe subscription
+ * PanMotive Plus. Payment here draws down wallet credit; a Stripe subscription
  * is the drop-in replacement for charge() when card billing is wired up.
  */
 class MembershipService
@@ -41,7 +41,7 @@ class MembershipService
      */
     public function join(User $user, bool $autoRenew = true): Carbon
     {
-        $this->wallet->debit($user, $this->price(), 'Pan Motive Plus membership');
+        $this->wallet->debit($user, $this->price(), 'PanMotive Plus membership');
 
         $from = $this->isActive($user) ? $user->plus_until : now();
         $until = $from->copy()->addMonths($this->termMonths());

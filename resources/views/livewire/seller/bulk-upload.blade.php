@@ -63,7 +63,7 @@
             </p>
             <ul class="mt-2 space-y-1 text-sm">
                 <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-accent" /> <span><strong>Shopify</strong> product export (Handle, Title, Variant Price, Variant Inventory Qty, Image Src, …) — variants and image URLs included</span></li>
-                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-accent" /> <span><strong>Pan Motive template</strong> — <code class="rounded bg-surface-2 px-1 text-xs">title, category_id, sku, part_number, oem_number, condition, price, quantity, description</code></span></li>
+                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-accent" /> <span><strong>PanMotive template</strong> — <code class="rounded bg-surface-2 px-1 text-xs">title, category_id, sku, part_number, oem_number, condition, price, quantity, description</code></span></li>
                 <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-accent" /> <span>Any CSV with a <code class="rounded bg-surface-2 px-1 text-xs">title</code>/<code class="rounded bg-surface-2 px-1 text-xs">name</code> and <code class="rounded bg-surface-2 px-1 text-xs">price</code> column</span></li>
             </ul>
             <p class="mt-3 text-sm text-muted">

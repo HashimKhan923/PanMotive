@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', $title ?? 'Seller Portal') &middot; {{ config('app.name', 'Pan Motive') }}</title>
+    <title>@yield('title', $title ?? 'Seller Portal') &middot; {{ config('app.name', 'PanMotive') }}</title>
 
     <script @nonce>
         try {
@@ -18,6 +18,8 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     {{-- The seller portal is a working tool: content is always visible, never gated behind scroll-reveal animation. --}}
@@ -119,10 +121,7 @@
     <aside class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-line bg-surface transition-transform lg:sticky lg:top-0 lg:h-screen lg:self-start lg:translate-x-0"
            :class="sidebar ? 'translate-x-0' : '-translate-x-full'">
         <div class="flex h-16 items-center gap-2 border-b border-line px-5">
-            <span class="grid h-8 w-8 place-items-center rounded-lg bg-accent text-accent-fg">
-                <x-ui.icon name="wrench" class="w-4.5 h-4.5" />
-            </span>
-            <span class="font-extrabold tracking-tight">Pan<span class="text-accent">Motive</span></span>
+            <x-ui.logo class="h-7 w-auto" />
             <span class="ml-1 rounded bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted">Seller</span>
         </div>
 
@@ -207,7 +206,7 @@
                 </p>
                 @if ($sellerProfile && $sellerProfile->rating_count > 0)
                     <p class="flex items-center gap-1 text-xs text-muted">
-                        <x-ui.icon name="star" class="w-3 h-3 fill-current text-accent" />
+                        <x-ui.icon name="star" class="w-3 h-3 fill-current text-amber-500" />
                         {{ number_format($sellerProfile->rating, 1) }} · {{ $sellerProfile->rating_count }} ratings
                     </p>
                 @endif

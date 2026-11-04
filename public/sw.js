@@ -1,9 +1,9 @@
-/* Pan Motive service worker — hand-rolled (see Phase 8 notes).
+/* PanMotive service worker — hand-rolled (see Phase 8 notes).
    - App shell / navigations: network-first with an offline fallback.
    - Product images (/storage/... , /images/...): cache-first, capped + expiring.
    - Built assets (/build/...): stale-while-revalidate. */
 
-const VERSION = 'pm-v1';
+const VERSION = 'pm-v2';
 const SHELL_CACHE = `${VERSION}-shell`;
 const IMAGE_CACHE = `${VERSION}-images`;
 const ASSET_CACHE = `${VERSION}-assets`;
@@ -84,10 +84,10 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
     if (!event.data) return;
     let data = {};
-    try { data = event.data.json(); } catch (e) { data = { title: 'Pan Motive', body: event.data.text() }; }
+    try { data = event.data.json(); } catch (e) { data = { title: 'PanMotive', body: event.data.text() }; }
 
     event.waitUntil(
-        self.registration.showNotification(data.title || 'Pan Motive', {
+        self.registration.showNotification(data.title || 'PanMotive', {
             body: data.body || '',
             icon: data.icon || '/pwa-192x192.png',
             badge: '/pwa-192x192.png',

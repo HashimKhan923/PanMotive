@@ -64,7 +64,7 @@
             <div class="mt-4 flex items-end gap-px" style="height:160px;">
                 @foreach ($series as $p)
                     <div class="group relative flex-1">
-                        <div class="w-full rounded-t bg-accent/70 group-hover:bg-accent" style="height: {{ max(2, round($p['total'] / $max * 150)) }}px"></div>
+                        <div class="w-full rounded-t bg-chart/70 group-hover:bg-accent" style="height: {{ max(2, round($p['total'] / $max * 150)) }}px"></div>
                         <div class="pointer-events-none absolute -top-12 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-brand px-2 py-1 text-[10px] text-brand-fg group-hover:block">
                             {{ \Illuminate\Support\Carbon::parse($p['date'])->format('M j') }} · ${{ number_format($p['total'], 0) }}<br>{{ $p['orders'] }} orders · {{ $p['views'] }} views
                         </div>
@@ -116,7 +116,7 @@
                         <div>
                             <div class="flex justify-between text-xs"><span>{{ $c->name }}</span><span class="text-muted">${{ number_format($c->revenue, 2) }}</span></div>
                             <div class="mt-1 h-2 overflow-hidden rounded-full bg-surface-2">
-                                <div class="h-full rounded-full bg-accent" style="width: {{ round($c->revenue / $catMax * 100) }}%"></div>
+                                <div class="h-full rounded-full bg-chart" style="width: {{ round($c->revenue / $catMax * 100) }}%"></div>
                             </div>
                         </div>
                     @endforeach

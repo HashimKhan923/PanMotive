@@ -86,7 +86,7 @@
                     <div>
                         <label class="label" for="ss-rwin">Return window</label>
                         <select id="ss-rwin" wire:model="return_window_days" class="input">
-                            <option value="30">30 days (Pan Motive minimum)</option>
+                            <option value="30">30 days (PanMotive minimum)</option>
                             <option value="60">60 days</option>
                             <option value="90">90 days</option>
                         </select>
@@ -155,7 +155,7 @@
                 <input type="checkbox" wire:model.live="loyalty_enabled" class="rounded border-line text-accent focus:ring-accent">
                 <span class="font-bold">Store loyalty points</span>
             </label>
-            <p class="mt-1 text-sm text-muted">Buyers earn points on delivered orders and redeem them for Pan Motive credit.</p>
+            <p class="mt-1 text-sm text-muted">Buyers earn points on delivered orders and redeem them for PanMotive credit.</p>
             @if ($loyalty_enabled)
                 <div class="mt-4 grid gap-4 sm:grid-cols-3">
                     <div>

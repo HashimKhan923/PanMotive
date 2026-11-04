@@ -49,7 +49,7 @@ class FinanceController extends Controller
             'sales' => (float) Order::whereBetween('created_at', [$from, $to])->whereNotIn('status', ['placed', 'cancelled'])->sum(DB::raw('total + credits_used')),
             'refunded' => (float) OrderItem::where('status', OrderStatus::Refunded)->whereBetween('updated_at', [$from, $to])->sum('line_total'),
             'paidOut' => (float) OrderItem::whereBetween('payout_released_at', [$from, $to])->sum('seller_payout_amount'),
-            // What Pan Motive holds that belongs to someone else, right now.
+            // What PanMotive holds that belongs to someone else, right now.
             'owedSellers' => (float) OrderItem::whereNull('payout_released_at')
                 ->whereIn('status', [OrderStatus::Paid, OrderStatus::SellerAccepted, OrderStatus::Shipped, OrderStatus::OutForDelivery, OrderStatus::Delivered])->sum('seller_payout_amount'),
             'walletOwed' => (float) User::sum('wallet_balance'),

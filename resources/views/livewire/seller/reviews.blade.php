@@ -114,7 +114,7 @@
 
                 @if ($reportingId === $review->id)
                     <form wire:submit="submitReport" class="mt-3 space-y-2 rounded-xl border border-line p-3">
-                        <p class="text-sm font-semibold">Ask Pan Motive to review this review</p>
+                        <p class="text-sm font-semibold">Ask PanMotive to review this review</p>
                         <p class="text-xs text-muted">Honest negative reviews stay up. We remove reviews that break the rules.</p>
                         <select wire:model="reportReason" class="input h-9 text-sm" aria-label="Reason">
                             <option value="">Choose a reason…</option>

@@ -2,7 +2,7 @@
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
             <h1 class="text-2xl font-bold">Marketing</h1>
-            <p class="mt-1 text-sm text-muted">Promote your listings, build an audience and track what works — all on Pan Motive.</p>
+            <p class="mt-1 text-sm text-muted">Promote your listings, build an audience and track what works — all on PanMotive.</p>
         </div>
         <a href="{{ route('seller.ad-credit.index') }}" class="rounded-xl border border-line px-4 py-2 text-right transition hover:border-accent">
             <p class="text-xs text-muted">Ad credit</p>

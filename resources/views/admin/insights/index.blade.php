@@ -35,7 +35,7 @@
                         </span>
                     </div>
                     <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2">
-                        <div class="adm-bar h-full rounded-full bg-accent" style="width: {{ min(100, round($step['value'] / $first * 100, 1)) }}%; animation-delay: {{ $i * 90 }}ms"></div>
+                        <div class="adm-bar h-full rounded-full bg-chart" style="width: {{ min(100, round($step['value'] / $first * 100, 1)) }}%; animation-delay: {{ $i * 90 }}ms"></div>
                     </div>
                 </li>
             @endforeach

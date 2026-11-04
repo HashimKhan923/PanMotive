@@ -74,7 +74,7 @@
                     <span class="font-semibold">{{ $shippingFree ? 'FREE' : '$' . number_format($shipping, 2) }}</span>
                 </div>
                 @if (! $shippingFree && $freeThreshold > 0 && $subtotal < $freeThreshold)
-                    <p class="rounded-lg bg-accent/10 px-3 py-2 text-xs text-accent">
+                    <p class="rounded-lg bg-surface-2 px-3 py-2 text-xs text-fg">
                         Add ${{ number_format($freeThreshold - $subtotal, 2) }} more from a seller to unlock free shipping.
                     </p>
                 @endif

@@ -1,12 +1,12 @@
 {
-    "name": "Pan Motive",
-    "short_name": "Pan Motive",
+    "name": "PanMotive",
+    "short_name": "PanMotive",
     "description": "Auto parts for every vehicle",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
-    "theme_color": "#0f172a",
-    "background_color": "#0f172a",
+    "theme_color": "#17181D",
+    "background_color": "#FFFFFF",
     "icons": [
         { "src": "/pwa-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
         { "src": "/pwa-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }

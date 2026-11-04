@@ -10,7 +10,7 @@
     @if ($product?->moderation_note)
         <div class="mt-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-600 dark:text-rose-300" role="alert">
             <x-ui.icon name="alert" class="mt-0.5 w-4 h-4 shrink-0" />
-            <span>Pan Motive took this listing down: {{ $product->moderation_note }}. Fix the problem and publish it, and our team will review it before it goes live.</span>
+            <span>PanMotive took this listing down: {{ $product->moderation_note }}. Fix the problem and publish it, and our team will review it before it goes live.</span>
         </div>
     @endif
 

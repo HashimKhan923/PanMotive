@@ -107,7 +107,7 @@
                 @php($saleEvent = $product->activeSaleEvent())
                 @php($dealEnds = $product->isOnDeal() ? $product->deal_ends_at : null)
                 @if ($dealEnds)
-                    <div class="pm-grain relative mt-3 flex flex-wrap items-center justify-between gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-rose-500 to-accent px-4 py-2.5 text-white"
+                    <div class="pm-grain relative mt-3 flex flex-wrap items-center justify-between gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-accent to-[#9e1015] px-4 py-2.5 text-white"
                          x-data="{ left: {{ max(0, $dealEnds->getTimestamp() - now()->getTimestamp()) }},
                                    get d() { return Math.floor(this.left / 86400) }, get h() { return Math.floor(this.left % 86400 / 3600) },
                                    get m() { return Math.floor(this.left % 3600 / 60) }, get s() { return this.left % 60 } }"

@@ -15,6 +15,6 @@ class LoyaltyController extends Controller
 
         $value = $loyalty->redeemToWallet(auth()->user(), $sellerProfile->user_id, $points);
 
-        return back()->with('success', "Redeemed {$points} points for \${$value} in Pan Motive credit.");
+        return back()->with('success', "Redeemed {$points} points for \${$value} in PanMotive credit.");
     }
 }

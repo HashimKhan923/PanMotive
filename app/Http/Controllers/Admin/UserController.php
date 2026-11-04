@@ -157,7 +157,7 @@ class UserController extends Controller
             return back()->withErrors(['amount' => 'That is more than their $'.number_format((float) $user->wallet_balance, 2).' balance.']);
         }
 
-        $wallet->credit($user, $data['direction'] === 'add' ? $amount : -$amount, 'admin_adjustment', 'Pan Motive adjustment: '.$data['reason']);
+        $wallet->credit($user, $data['direction'] === 'add' ? $amount : -$amount, 'admin_adjustment', 'PanMotive adjustment: '.$data['reason']);
         $this->audit('Adjusted wallet', $user, $data);
 
         return back()->with('success', 'Wallet is now $'.number_format((float) $user->fresh()->wallet_balance, 2).'.');

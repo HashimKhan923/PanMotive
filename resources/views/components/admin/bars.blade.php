@@ -19,7 +19,7 @@
                     <span class="shrink-0 tabular-nums text-muted">{{ $prefix }}{{ number_format((float) $row['value'], $decimals) }}</span>
                 </div>
                 <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface-2" title="{{ $row['label'] }}: {{ $prefix }}{{ number_format((float) $row['value'], $decimals) }}">
-                    <div class="adm-bar h-full rounded-full bg-accent" style="width: {{ round((float) $row['value'] / $max * 100, 1) }}%; animation-delay: {{ $i * 70 }}ms"></div>
+                    <div class="adm-bar h-full rounded-full bg-chart" style="width: {{ round((float) $row['value'] / $max * 100, 1) }}%; animation-delay: {{ $i * 70 }}ms"></div>
                 </div>
             </li>
         @endforeach
