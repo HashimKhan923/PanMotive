@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Written by the browser so a refresh can render the right theme straight away.
+        $middleware->encryptCookies(except: ['pm-theme']);
+
         $middleware->alias([
             'seller' => EnsureUserIsSeller::class,
             'seller.approved' => EnsureSellerApproved::class,

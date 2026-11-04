@@ -58,6 +58,7 @@ window.addEventListener('alpine:init', () => {
             this.dark = !this.dark;
             document.documentElement.classList.toggle('dark', this.dark);
             try { localStorage.setItem('pm-theme', this.dark ? 'dark' : 'light'); } catch (e) {}
+            document.cookie = 'pm-theme=' + (this.dark ? 'dark' : 'light') + ';path=/;max-age=31536000;SameSite=Lax';
         },
     });
 

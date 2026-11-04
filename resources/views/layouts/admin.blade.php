@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="js">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="js{{ request()->cookie('pm-theme') !== 'light' ? ' dark' : '' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,7 @@
     <meta name="robots" content="noindex">
     <title>@yield('title', $title ?? 'Admin') &middot; {{ config('app.name', 'Panmotive') }} Admin</title>
 
-    <script @nonce>
-        try {
-            var t = localStorage.getItem('pm-theme');
-            if (t === 'dark' || !t) document.documentElement.classList.add('dark');
-        } catch (e) {}
-    </script>
+    @include('layouts.partials.theme-init', ['defaultDark' => true])
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
@@ -97,6 +92,7 @@
                 <button type="button" x-data @click="
                             const d = document.documentElement.classList.toggle('dark');
                             try { localStorage.setItem('pm-theme', d ? 'dark' : 'light'); } catch (e) {}
+                            document.cookie = 'pm-theme=' + (d ? 'dark' : 'light') + ';path=/;max-age=31536000;SameSite=Lax';
                         " class="grid h-9 w-9 place-items-center rounded-lg text-muted transition hover:bg-surface-2 hover:text-fg" aria-label="Switch light or dark theme">
                     <x-ui.icon name="moon" class="w-6 h-6" />
                 </button>
