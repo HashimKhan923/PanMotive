@@ -162,6 +162,44 @@ class BulkProductImportTest extends TestCase
         $this->assertNotSame($variants[0]->media_id, $variants[1]->media_id);
     }
 
+    public function test_every_product_in_a_long_import_gets_its_photos(): void
+    {
+        $pngBytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');
+        Http::fake(['*' => Http::response($pngBytes, 200, ['Content-Type' => 'image/png'])]);
+
+        $seller = $this->seller();
+        $c = $this->cats();
+
+        // Slow imports used to run out a shared timer, and every later product silently got no photos.
+        $result = app(ProductCsvImporter::class)->import(
+            $seller->id, base_path('tests/Fixtures/hrs_variant_export.csv'), $c['default'], withImages: true, useAi: false
+        );
+
+        $this->assertGreaterThan(5, $result['created']);
+        $this->assertSame(0, Product::where('seller_id', $seller->id)->doesntHave('media')->count());
+    }
+
+    public function test_one_dead_photo_link_keeps_the_products_other_photos(): void
+    {
+        $pngBytes = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=');
+        Http::fake([
+            'dead.example/*' => Http::response('', 404),
+            '*' => Http::response($pngBytes, 200, ['Content-Type' => 'image/png']),
+        ]);
+
+        $seller = $this->seller();
+        $product = Product::create([
+            'seller_id' => $seller->id, 'category_id' => $this->cats()['default'], 'title' => 'Mirror', 'slug' => 'mirror',
+            'price' => 10, 'quantity' => 1, 'status' => 'draft',
+        ]);
+        $variant = $product->variants()->create(['label' => 'Blue', 'options' => ['Option' => 'Blue'], 'quantity' => 1, 'is_active' => true, 'sort_order' => 0]);
+
+        \App\Jobs\FetchProductImages::dispatchSync($product->id, ['https://dead.example/a.png', 'https://ok.example/b.png'], ['Blue' => 'https://ok.example/b.png']);
+
+        $this->assertSame(1, $product->getMedia('images')->count());
+        $this->assertSame($product->getFirstMedia('images')->id, $variant->fresh()->media_id);
+    }
+
     public function test_native_template_still_works_and_bad_rows_are_reported(): void
     {
         $seller = $this->seller();

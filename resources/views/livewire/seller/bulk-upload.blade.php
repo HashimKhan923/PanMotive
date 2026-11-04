@@ -23,6 +23,10 @@
                 </div>
             </div>
 
+            @if ($result['created'] > 0 && $withImages)
+                <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted">Photos are downloading in the background. They'll appear on your products over the next few minutes.</p>
+            @endif
+
             @if ($result['created'] === 0 && !empty($result['headers']))
                 <div class="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
                     <p class="font-semibold">Nothing imported — we couldn't find a product-name column.</p>

@@ -2,6 +2,7 @@
 
 namespace App\Services\Seller;
 
+use App\Jobs\FetchProductImages;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
@@ -28,12 +29,6 @@ class ProductCsvImporter
     private array $categoryMap = [];
     private int $uncategorised = 0;
 
-    /** Wall-clock deadline for the whole import — image fetching stops once we're past it. */
-    private float $deadline;
-
-    /** Seconds an inline import is allowed to spend fetching remote images before it stops trying. */
-    private const IMAGE_TIME_BUDGET = 35.0;
-
     public function __construct(
         private CategoryResolver $categories,
         private \App\Support\Html\DescriptionSanitizer $sanitizer,
@@ -50,7 +45,6 @@ class ProductCsvImporter
         $this->useAi = $useAi;
         $this->categoryMap = [];
         $this->uncategorised = 0;
-        $this->deadline = microtime(true) + self::IMAGE_TIME_BUDGET;
 
         $raw = (string) file_get_contents($absolutePath);
         // Strip UTF-8 BOM (Excel/Shopify love adding one — it corrupts the first header).
@@ -214,10 +208,8 @@ class ProductCsvImporter
                     'status' => 'draft',
                 ]);
 
-                // Images first: attachVariants needs to know which media id each
-                // variant's own photo landed as, to link them.
-                $imageMap = $this->attachImages($product, $rows);
-                $this->attachVariants($product, $rows, $imageMap);
+                $variantPhotos = $this->attachVariants($product, $rows);
+                $this->fetchImages($product, $this->shopifyImageUrls($rows), $variantPhotos);
 
                 $created++;
             } catch (\Throwable $e) {
@@ -228,9 +220,10 @@ class ProductCsvImporter
         return ['format' => 'shopify', 'created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised];
     }
 
-    /** @param array<string,int> $imageMap URL => media id, from attachImages() */
-    private function attachVariants(Product $product, array $rows, array $imageMap = []): void
+    /** @return array<string,string> variant label => the URL of its own photo, for FetchProductImages */
+    private function attachVariants(Product $product, array $rows): array
     {
+        $photos = [];
         $seen = [];
         $sort = 0;
 
@@ -256,10 +249,14 @@ class ProductCsvImporter
                 'Variant Image Src', 'Variant Image URL',
             ));
 
+            $label = Str::limit($label, 120, '');
+            if ($variantImageUrl !== '') {
+                $photos[$label] = $variantImageUrl;
+            }
+
             $product->variants()->create([
-                'label' => Str::limit($label, 120, ''),
+                'label' => $label,
                 'options' => [$optKey => $optValue],
-                'media_id' => $imageMap[$variantImageUrl] ?? null,
                 'sku' => $this->get($row, 'Variant SKU', 'SKU') ?: null,
                 'price' => $this->money($this->get($row, 'Variant Price', 'Price')),
                 'quantity' => $this->qty($this->get($row, 'Variant Inventory Qty', 'Inventory Quantity', 'Qty', 'Stock')),
@@ -267,6 +264,8 @@ class ProductCsvImporter
                 'sort_order' => $sort++,
             ]);
         }
+
+        return $photos;
     }
 
     private function weightToLbs(?string $value, ?string $unit): ?float
@@ -286,22 +285,33 @@ class ProductCsvImporter
     }
 
     /**
-     * Pulls every distinct photo for this product — not just the one "primary"
-     * image column, but also each variant's own image, which real exports carry
-     * in a separate column (Shopify: "Variant Image"; other export tools:
-     * "Linked Variant Image Link", etc.) and which used to be silently ignored.
+     * Photos download after the page has answered, or right away inside a background import.
+     * They used to share a time limit with the whole import, so a slow one left later products
+     * with no photos and no warning.
      *
-     * @return array<string,int> every attached URL => its new media id, so
-     *                            attachVariants() can link each variant to its photo.
+     * @param  array<int,string>  $urls
+     * @param  array<string,string>  $variantPhotos
      */
-    private function attachImages(Product $product, array $rows): array
+    private function fetchImages(Product $product, array $urls, array $variantPhotos = []): void
     {
-        // Fetching stalled or the shared time budget for this whole import ran out —
-        // stop trying rather than risk the request hitting max_execution_time.
-        if (! $this->withImages || microtime(true) > $this->deadline) {
-            return [];
+        if (! $this->withImages || $urls === []) {
+            return;
         }
 
+        app()->runningInConsole()
+            ? FetchProductImages::dispatchSync($product->id, $urls, $variantPhotos)
+            : FetchProductImages::dispatchAfterResponse($product->id, $urls, $variantPhotos);
+    }
+
+    /**
+     * Every distinct photo for this product — not just the one "primary" image column, but also
+     * each variant's own image, which real exports carry in a separate column (Shopify: "Variant
+     * Image"; other export tools: "Linked Variant Image Link", etc.).
+     *
+     * @return array<int,string>
+     */
+    private function shopifyImageUrls(array $rows): array
+    {
         $urls = [];
         foreach ($rows as $row) {
             foreach ([
@@ -315,22 +325,7 @@ class ProductCsvImporter
             }
         }
 
-        $map = [];
-        foreach (array_slice(array_keys($urls), 0, 10) as $url) {
-            if (microtime(true) > $this->deadline) {
-                break;
-            }
-
-            try {
-                $media = $product->addMediaFromUrl($url)->toMediaCollection('images');
-                $map[$url] = $media->id;
-            } catch (\Throwable) {
-                // A dead/slow image URL should never fail the whole import — TimeoutDownloader
-                // already bounds each fetch to a few seconds; this just skips it.
-            }
-        }
-
-        return $map;
+        return array_keys($urls);
     }
 
     /**
@@ -338,13 +333,11 @@ class ProductCsvImporter
      * come from either a single delimited column ("Images": "url1, url2, url3")
      * or several numbered columns ("Image 1", "Image 2", ...) — support both,
      * plus the common single-image column names as a fallback.
+     *
+     * @return array<int,string>
      */
-    private function attachFlatImages(Product $product, array $row): void
+    private function flatImageUrls(array $row): array
     {
-        if (! $this->withImages || microtime(true) > $this->deadline) {
-            return;
-        }
-
         $urls = [];
 
         $delimited = (string) $this->get($row, 'images', 'image urls', 'image_urls', 'photos', 'photo urls', 'gallery', 'gallery images', 'additional images', 'additional_images');
@@ -367,17 +360,7 @@ class ProductCsvImporter
             $urls[$single] = true;
         }
 
-        foreach (array_slice(array_keys($urls), 0, 10) as $url) {
-            if (microtime(true) > $this->deadline) {
-                return;
-            }
-
-            try {
-                $product->addMediaFromUrl($url)->toMediaCollection('images');
-            } catch (\Throwable) {
-                // Dead/slow URL — never fail the whole import over one bad photo link.
-            }
-        }
+        return array_keys($urls);
     }
 
     /* -------------------------- Native / generic -------------------------- */
@@ -436,7 +419,7 @@ class ProductCsvImporter
                     'description' => $this->cleanHtml($this->get($row, 'description', 'body', 'body (html)', 'body html', 'details', 'long description', 'short description', 'notes')),
                     'status' => 'draft',
                 ]);
-                $this->attachFlatImages($product, $row);
+                $this->fetchImages($product, $this->flatImageUrls($row));
                 $created++;
             } catch (\Throwable $e) {
                 $errors[] = "Row {$line}: ".$this->short($e);
