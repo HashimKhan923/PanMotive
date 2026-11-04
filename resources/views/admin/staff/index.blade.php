@@ -15,7 +15,7 @@
 
 <x-admin.card title="Team" flush>
     <table class="adm-table">
-        <thead><tr><th>Person</th><th>Role</th><th>Two-factor</th><th></th></tr></thead>
+        <thead><tr><th>Person</th><th>Role</th><th></th></tr></thead>
         <tbody>
             @foreach ($staff as $member)
                 <tr>
@@ -28,7 +28,6 @@
                             </select>
                         </form>
                     </td>
-                    <td><x-admin.status :value="$member->hasTwoFactorEnabled() ? 'on' : 'off'" :label="$member->hasTwoFactorEnabled() ? 'On' : 'Off'" /></td>
                     <td class="text-right">
                         @unless ($member->is(auth()->user()))
                             <x-admin.action :url="route('admin.staff.remove', $member)" method="DELETE" label="Remove" tone="danger" size="xs" :body="$member->name.' loses all staff access. Their account stays.'" />

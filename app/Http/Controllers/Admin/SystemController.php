@@ -135,7 +135,6 @@ class SystemController extends Controller
             ['Real email sending', ! in_array(config('mail.default'), ['log', 'array'], true), 'Emails are only written to a log file right now.'],
             ['Sales tax collected', (bool) config('marketplace.sales_tax.collecting'), 'US marketplaces must normally collect it.'],
             ['Terms and Privacy pages published', \App\Models\Page::where('is_published', true)->count() >= 2, 'Add them in Content → Pages.'],
-            ['Every staff member has 2FA', ! \App\Models\User::role(['super_admin', 'support_agent', 'finance', 'catalog_manager'])->whereNull('two_factor_confirmed_at')->exists(), 'Protects the console if a password leaks.'],
         ];
     }
 }

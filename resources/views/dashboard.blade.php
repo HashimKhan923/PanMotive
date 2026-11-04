@@ -84,7 +84,6 @@
                     <nav class="mt-3 flex flex-col text-sm">
                         <a href="{{ route('profile') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Profile &amp; password <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
                         <a href="{{ route('messages.index') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Messages <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
-                        <a href="{{ route('two-factor.setup') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Two-factor security <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
                         <a href="{{ route('marketing.preferences') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Marketing preferences <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
                         <a href="{{ route('wallet.index') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Wallet &amp; referrals <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>
                         <a href="{{ route('subscriptions.index') }}" class="flex items-center justify-between py-2.5 hover:text-accent">Subscribe &amp; Save <x-ui.icon name="chevron-right" class="w-4 h-4" /></a>

@@ -12,10 +12,6 @@
     @endif
     @if ($me->can('users.manage') && (! $isStaff || $me->can('staff.manage')))
         <x-admin.action :url="route('admin.users.password-reset', $user)" label="Send password reset" icon="mail" :body="'A reset link goes to '.$user->email.'.'" confirm="Send link" />
-        @if ($user->hasTwoFactorEnabled())
-            <x-admin.action :url="route('admin.users.reset-2fa', $user)" label="Reset 2FA" icon="shield" reason
-                            body="Only do this after confirming who they are. It removes a security protection until they set it up again." tone="danger" />
-        @endif
         @if ($user->is_active === false)
             <x-admin.action :url="route('admin.users.unban', $user)" label="Restore account" tone="primary" body="They will be able to sign in again." />
         @elseif (! $user->is($me))
@@ -152,7 +148,6 @@
             <dl class="space-y-2 text-[13px]">
                 <div class="flex justify-between gap-3"><dt class="text-muted">Joined</dt><dd>{{ $user->created_at->format('M j, Y') }}</dd></div>
                 <div class="flex justify-between gap-3"><dt class="text-muted">Email verified</dt><dd>{{ $user->email_verified_at ? 'Yes' : 'No' }}</dd></div>
-                <div class="flex justify-between gap-3"><dt class="text-muted">Two-factor</dt><dd>{{ $user->hasTwoFactorEnabled() ? 'On' : 'Off' }}</dd></div>
                 <div class="flex justify-between gap-3"><dt class="text-muted">Roles</dt><dd class="capitalize">{{ $user->roles->pluck('name')->map(fn ($r) => str_replace('_', ' ', $r))->implode(', ') ?: 'Buyer' }}</dd></div>
             </dl>
         </x-admin.card>

@@ -122,17 +122,6 @@ class UserController extends Controller
             $status === Password::RESET_LINK_SENT ? 'Password reset link sent.' : 'A link was sent very recently. Please wait a minute and try again.');
     }
 
-    public function resetTwoFactor(Request $request, User $user)
-    {
-        $this->guardStaff($user);
-        $data = $request->validate(['reason' => 'required|string|max:255']);
-
-        $user->forceFill(['two_factor_secret' => null, 'two_factor_recovery_codes' => null, 'two_factor_confirmed_at' => null])->save();
-        $this->audit('Reset two-factor sign-in', $user, ['reason' => $data['reason']]);
-
-        return back()->with('success', 'Two-factor sign-in was reset. They will set it up again at next login.');
-    }
-
     public function setPlus(Request $request, User $user)
     {
         $data = $request->validate(['until' => 'nullable|date|after:today', 'reason' => 'required|string|max:255']);

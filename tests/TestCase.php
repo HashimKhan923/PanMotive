@@ -17,9 +17,8 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Give a user a confirmed 2FA secret so the RequireTwoFactor enrolment gate
-     * lets them into the seller/admin portals. (The login OTP challenge is a
-     * separate flow, tested on its own.)
+     * Fill the old 2FA columns, as on accounts set up before 2FA was removed.
+     * Nothing reads them now; login and the portals must work either way.
      */
     protected function withTwoFactor(User $user): User
     {

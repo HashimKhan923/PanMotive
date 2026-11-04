@@ -17,7 +17,7 @@ class EnforcePlatformAccess
     private const STAFF_ROLES = ['super_admin', 'support_agent', 'finance', 'catalog_manager'];
 
     /** Reachable during maintenance, or the admin couldn't sign in to turn it off. */
-    private const ALWAYS_OPEN = ['login', 'logout', 'two-factor*', 'admin', 'admin/*', 'webhooks/*', 'livewire/*', 'up', 'impersonate/stop'];
+    private const ALWAYS_OPEN = ['login', 'logout', 'admin', 'admin/*', 'webhooks/*', 'livewire/*', 'up', 'impersonate/stop'];
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -38,7 +38,7 @@ class EnforcePlatformAccess
         }
 
         if ($impersonating && $request->isMethodSafe() === false
-            && $request->routeIs('checkout.*', 'plus.*', 'password.*', 'profile.*', 'two-factor.*', 'wallet.*', 'subscriptions.*')) {
+            && $request->routeIs('checkout.*', 'plus.*', 'password.*', 'profile.*', 'wallet.*', 'subscriptions.*')) {
             return back()->with('error', 'You are viewing as this person. Spending or changing their account is blocked.');
         }
 

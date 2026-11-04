@@ -10,8 +10,6 @@ environment, or a signature.
 
 | Item | Where | Prod action |
 |---|---|---|
-| Mandatory 2FA for seller/admin roles | `RequireTwoFactor` middleware, applied in `routes/seller.php` + `routes/admin.php` | None — active as soon as roles exist |
-| Per-login OTP challenge | login Volt component → `two-factor.challenge` | Confirm authenticator + recovery-code flow on staging |
 | Named rate limiters | `AppServiceProvider::configureRateLimiters()` | `throttle:checkout` on checkout routes; in-component caps on `SupportChat`, `BulkUpload` |
 | CSP | `App\Support\AppCspPolicy`, `config/csp.php` | `CSP_ENABLED=true` on staging → watch `CSP_REPORT_URI` → `CSP_ENFORCE=true` → prod |
 | Payout job hardening | `ReleaseSellerPayout`: transfer → cashback → mark-released; `failed()` → AdminAlert | None |
@@ -25,7 +23,7 @@ environment, or a signature.
 
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] `APP_KEY` generated **and backed up in a password manager / KMS** — losing it makes
-      `SellerProfile.ein_encrypted`, 2FA secrets, and recovery codes permanently unrecoverable.
+      `SellerProfile.ein_encrypted` permanently unrecoverable.
 - [ ] `SESSION_DOMAIN=.panmotive.com` (subdomain SSO: storefront ⇄ `sell.` ⇄ `admin.`
       share one session). Leave `null` for local `php artisan serve`.
 - [ ] `SESSION_SECURE_COOKIE=true`, `SESSION_ENCRYPT=true`

@@ -4,7 +4,6 @@ use App\Http\Middleware\EnforcePlatformAccess;
 use App\Http\Middleware\EnsureSellerApproved;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EnsureUserIsSeller;
-use App\Http\Middleware\RequireTwoFactor;
 use App\Http\Middleware\ResolveSellerActor;
 use App\Http\Middleware\SellerAbility;
 use App\Http\Middleware\SellerApiToken;
@@ -27,7 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'seller.actor' => ResolveSellerActor::class,
             'seller.can' => SellerAbility::class,
             'admin' => EnsureUserIsAdmin::class,
-            '2fa' => RequireTwoFactor::class,
             'seller.api' => SellerApiToken::class,
         ]);
 

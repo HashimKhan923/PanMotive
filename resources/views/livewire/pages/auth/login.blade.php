@@ -20,17 +20,6 @@ new #[Layout('layouts.guest')] class extends Component
 
         $user = auth()->user();
 
-        // If 2FA is enabled, don't complete the login — hand off to the OTP
-        // challenge, which finishes Auth::login() once the code checks out.
-        if ($user->hasTwoFactorEnabled()) {
-            $remember = $this->form->remember;
-            auth()->logout();
-            Session::put(['2fa.user' => $user->id, '2fa.remember' => $remember]);
-            $this->redirect(route('two-factor.challenge'), navigate: false);
-
-            return;
-        }
-
         Session::regenerate();
 
         // Staff go to the console, which is on its own subdomain in production, so no SPA navigation.

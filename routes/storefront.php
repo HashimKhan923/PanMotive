@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\CheckoutController;
@@ -26,10 +25,6 @@ use Illuminate\Support\Facades\Route;
 | Public marketplace + authenticated buyer area + auth screens.
 */
 
-// Two-factor login challenge — pre-authentication (session-gated on '2fa.user').
-Route::get('/two-factor/challenge', [TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
-Route::post('/two-factor/challenge', [TwoFactorController::class, 'verifyChallenge'])
-    ->middleware('throttle:6,1')->name('two-factor.verify');
 
 // Catalog
 Route::get('/', fn () => view('storefront.home'))->name('home');
@@ -91,9 +86,6 @@ Route::middleware('auth')->group(function () {
     Route::view('dashboard', 'dashboard')->middleware('verified')->name('dashboard');
     Route::view('profile', 'profile')->name('profile');
 
-    Route::get('/two-factor/setup', [TwoFactorController::class, 'setup'])->name('two-factor.setup');
-    Route::post('/two-factor/confirm', [TwoFactorController::class, 'confirm'])->middleware('throttle:6,1')->name('two-factor.confirm');
-    Route::delete('/two-factor', [TwoFactorController::class, 'disable'])->name('two-factor.disable');
 
     Route::get('/wallet', [WalletController::class, 'index'])->name('wallet.index');
 

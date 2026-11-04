@@ -42,7 +42,7 @@ use Illuminate\Support\Facades\Route;
 | (EnsureUserIsAdmin) gates on role; each section below adds its permission.
 */
 
-Route::middleware(['auth', 'admin', '2fa'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/insights', [InsightsController::class, 'index'])->middleware('can:finance.view')->name('admin.insights.index');
     Route::get('/search', SearchController::class)->middleware('throttle:60,1')->name('admin.search');
@@ -57,7 +57,6 @@ Route::middleware(['auth', 'admin', '2fa'])->group(function () {
         Route::post('/users/{user}/ban', [UserController::class, 'ban'])->name('admin.users.ban');
         Route::post('/users/{user}/unban', [UserController::class, 'unban'])->name('admin.users.unban');
         Route::post('/users/{user}/password-reset', [UserController::class, 'sendPasswordReset'])->name('admin.users.password-reset');
-        Route::post('/users/{user}/reset-2fa', [UserController::class, 'resetTwoFactor'])->name('admin.users.reset-2fa');
         Route::post('/users/{user}/plus', [UserController::class, 'setPlus'])->name('admin.users.plus');
     });
     Route::post('/users/{user}/wallet', [UserController::class, 'adjustWallet'])->middleware('can:wallet.adjust')->name('admin.users.wallet');

@@ -74,17 +74,6 @@ class User extends Authenticatable
         ];
     }
 
-    public function hasTwoFactorEnabled(): bool
-    {
-        return ! is_null($this->two_factor_secret) && ! is_null($this->two_factor_confirmed_at);
-    }
-
-    /** Roles that must have 2FA before touching the seller/admin portals. */
-    public function requiresTwoFactor(): bool
-    {
-        return $this->hasAnyRole(['seller', 'super_admin', 'support_agent', 'finance', 'catalog_manager']);
-    }
-
     public function sellerProfile(): HasOne
     {
         return $this->hasOne(SellerProfile::class);

@@ -20,7 +20,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Volt\Volt;
-use PragmaRX\Google2FA\Google2FA;
 use RuntimeException;
 use Stripe\Transfer;
 use Tests\TestCase;
@@ -28,8 +27,6 @@ use Tests\TestCase;
 class SecurityTest extends TestCase
 {
     use RefreshDatabase;
-
-    private const SECRET = 'JBSWY3DPEHPK3PXP';
 
     protected function setUp(): void
     {
@@ -39,9 +36,26 @@ class SecurityTest extends TestCase
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
     }
 
-    // ---------- 2FA enrolment gate ----------
+    // ---------- direct login, no second step ----------
 
-    public function test_seller_without_2fa_is_forced_to_setup(): void
+    public function test_admin_logs_in_directly_with_email_and_password(): void
+    {
+        $admin = User::factory()->create(['email' => 'boss@example.com', 'password' => bcrypt('password')]);
+        $admin->assignRole('super_admin');
+        // Accounts that had set up an authenticator before it was removed must not get stuck.
+        $this->withTwoFactor($admin);
+
+        Volt::test('pages.auth.login')
+            ->set('form.email', 'boss@example.com')
+            ->set('form.password', 'password')
+            ->call('login')
+            ->assertRedirect(route('admin.dashboard'));
+
+        $this->assertAuthenticatedAs($admin);
+        $this->get(route('admin.dashboard'))->assertOk();
+    }
+
+    public function test_seller_reaches_the_portal_directly(): void
     {
         $user = User::factory()->create();
         $user->assignRole('seller');
@@ -49,98 +63,27 @@ class SecurityTest extends TestCase
             'user_id' => $user->id, 'business_name' => 'S', 'business_type' => 'llc', 'status' => 'approved',
         ]);
 
-        $this->actingAs($user)
-            ->get(route('seller.dashboard'))
-            ->assertRedirect(route('two-factor.setup'));
+        $this->actingAs($user)->get(route('seller.dashboard'))->assertOk();
     }
 
-    public function test_plain_buyer_is_not_forced_into_2fa(): void
+    public function test_wrong_password_is_still_refused(): void
     {
-        $this->actingAs(User::factory()->create())
-            ->get(route('dashboard'))
-            ->assertOk();
-    }
-
-    // ---------- 2FA enrolment flow ----------
-
-    public function test_user_can_enrol_in_2fa_with_a_valid_totp(): void
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)
-            ->withSession(['2fa.pending_secret' => self::SECRET])
-            ->post(route('two-factor.confirm'), ['code' => app(Google2FA::class)->getCurrentOtp(self::SECRET)])
-            ->assertRedirect(route('two-factor.setup'))
-            ->assertSessionHas('recovery_codes');
-
-        $user->refresh();
-        $this->assertNotNull($user->two_factor_confirmed_at);
-        $this->assertNotNull($user->two_factor_secret);
-        $this->assertCount(8, $user->two_factor_recovery_codes);
-    }
-
-    public function test_enrolment_rejects_a_bad_code(): void
-    {
-        $user = User::factory()->create();
-
-        $this->actingAs($user)
-            ->withSession(['2fa.pending_secret' => self::SECRET])
-            ->from(route('two-factor.setup'))
-            ->post(route('two-factor.confirm'), ['code' => '000000'])
-            ->assertRedirect(route('two-factor.setup'))
-            ->assertSessionHasErrors('code');
-
-        $this->assertNull($user->fresh()->two_factor_confirmed_at);
-    }
-
-    // ---------- 2FA login challenge ----------
-
-    public function test_login_with_2fa_enabled_stops_at_the_challenge(): void
-    {
-        $user = User::factory()->create(['email' => '2fa@example.com', 'password' => bcrypt('password')]);
-        $this->withTwoFactor($user);
+        User::factory()->create(['email' => 'boss@example.com', 'password' => bcrypt('password')]);
 
         Volt::test('pages.auth.login')
-            ->set('form.email', '2fa@example.com')
-            ->set('form.password', 'password')
+            ->set('form.email', 'boss@example.com')
+            ->set('form.password', 'wrong')
             ->call('login')
-            ->assertRedirect(route('two-factor.challenge'));
+            ->assertHasErrors('form.email');
 
         $this->assertGuest();
-        $this->assertSame($user->id, session('2fa.user'));
     }
 
-    public function test_challenge_completes_login_with_a_valid_code(): void
+    public function test_two_factor_pages_are_gone(): void
     {
-        $user = User::factory()->create();
-        $user->forceFill([
-            'two_factor_secret' => self::SECRET,
-            'two_factor_recovery_codes' => ['recover-me-01'],
-            'two_factor_confirmed_at' => now(),
-        ])->save();
-
-        $this->withSession(['2fa.user' => $user->id])
-            ->post(route('two-factor.verify'), ['code' => app(Google2FA::class)->getCurrentOtp(self::SECRET)])
-            ->assertRedirect(route('dashboard'));
-
-        $this->assertAuthenticatedAs($user);
-    }
-
-    public function test_recovery_code_works_once(): void
-    {
-        $user = User::factory()->create();
-        $user->forceFill([
-            'two_factor_secret' => self::SECRET,
-            'two_factor_recovery_codes' => ['recover-me-01', 'recover-me-02'],
-            'two_factor_confirmed_at' => now(),
-        ])->save();
-
-        $this->withSession(['2fa.user' => $user->id])
-            ->post(route('two-factor.verify'), ['code' => 'recover-me-01'])
-            ->assertRedirect(route('dashboard'));
-
-        $this->assertAuthenticatedAs($user);
-        $this->assertSame(['recover-me-02'], $user->fresh()->two_factor_recovery_codes);
+        foreach (['two-factor.setup', 'two-factor.challenge', 'two-factor.verify', 'two-factor.confirm', 'two-factor.disable', 'admin.users.reset-2fa'] as $name) {
+            $this->assertFalse(\Illuminate\Support\Facades\Route::has($name), $name);
+        }
     }
 
     // ---------- rate limiting ----------
