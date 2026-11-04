@@ -80,7 +80,7 @@
             <div>
                 <div class="flex items-center justify-between">
                     <span class="label mb-0">Creatives</span>
-                    <button type="button" wire:click="addCreative" class="text-xs font-medium text-accent">+ Add creative</button>
+                    <button type="button" wire:click="addCreative" class="text-xs font-medium text-fg">+ Add creative</button>
                 </div>
                 <div class="mt-2 space-y-3">
                     @foreach ($creatives as $i => $cr)
@@ -148,7 +148,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="chart" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="chart" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">No ad campaigns yet</p>
                 <p class="mt-1 text-sm text-muted">Target buyers by category, vehicle or keyword and only pay for clicks.</p>
             </div>

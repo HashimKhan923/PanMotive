@@ -13,7 +13,7 @@
         $stats['to_ship'] > 0 ? ['route' => route('seller.orders.index', ['status' => 'seller_accepted']), 'label' => $stats['to_ship'] . ' ' . Str::plural('order', $stats['to_ship']) . ' ready to ship', 'icon' => 'truck'] : null,
         $stats['open_returns'] > 0 ? ['route' => route('seller.returns.index'), 'label' => $stats['open_returns'] . ' open return ' . Str::plural('request', $stats['open_returns']), 'icon' => 'refresh'] : null,
         ($stats['unanswered_questions'] ?? 0) > 0 ? ['route' => route('seller.questions.index'), 'label' => $stats['unanswered_questions'] . ' shopper ' . Str::plural('question', $stats['unanswered_questions']) . ' to answer', 'icon' => 'help'] : null,
-        ($stats['support_replies'] ?? 0) > 0 ? ['route' => route('seller.support.index'), 'label' => 'PanMotive support replied to ' . $stats['support_replies'] . ' ' . Str::plural('request', $stats['support_replies']), 'icon' => 'message'] : null,
+        ($stats['support_replies'] ?? 0) > 0 ? ['route' => route('seller.support.index'), 'label' => 'Panmotive support replied to ' . $stats['support_replies'] . ' ' . Str::plural('request', $stats['support_replies']), 'icon' => 'message'] : null,
         $stats['out_of_stock'] > 0 ? ['route' => route('seller.products.index', ['stock' => 'out']), 'label' => $stats['out_of_stock'] . ' active ' . Str::plural('listing', $stats['out_of_stock']) . ' out of stock', 'icon' => 'alert'] : null,
         $stats['low_stock'] > 0 ? ['route' => route('seller.products.index', ['stock' => 'low']), 'label' => $stats['low_stock'] . ' ' . Str::plural('listing', $stats['low_stock']) . ' low on stock', 'icon' => 'alert'] : null,
     ])->filter()->values();
@@ -30,7 +30,7 @@
 
     @unless ($payoutReady)
         <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-accent/30 bg-accent/10 px-5 py-4">
-            <x-ui.icon name="alert" class="w-5 h-5 text-accent" />
+            <x-ui.icon name="alert" class="w-6 h-6 text-fg" />
             <p class="text-sm font-medium">Finish connecting your payout account to receive funds when orders are delivered.</p>
             <a href="{{ route('seller.onboarding.start') }}" class="btn-accent btn-sm ml-auto">Finish setup</a>
         </div>
@@ -75,7 +75,7 @@
                 <x-ui.icon name="dollar" class="w-4 h-4" />
             </div>
             <p class="mt-2 text-2xl font-bold">${{ number_format($stats['released_payout'], 2) }}</p>
-            <a href="{{ route('seller.payouts.index') }}" class="mt-1 inline-block text-xs font-medium text-accent hover:underline">View payouts</a>
+            <a href="{{ route('seller.payouts.index') }}" class="mt-1 inline-block text-xs font-medium text-fg underline underline-offset-2">View payouts</a>
         </div>
         <div class="card p-5">
             <div class="flex items-center justify-between text-muted">
@@ -84,7 +84,7 @@
             </div>
             <p class="mt-2 text-2xl font-bold">{{ number_format($stats['active_listings']) }}</p>
             <p class="mt-1 text-xs text-muted">
-                @if ($stats['rating']) <x-ui.icon name="star" class="mr-0.5 inline w-3 h-3 fill-current text-amber-500" /> {{ number_format($stats['rating'], 1) }} ({{ $stats['rating_count'] }}) @else No ratings yet @endif
+                @if ($stats['rating']) <x-ui.icon name="star" class="mr-0.5 inline w-4 h-4 fill-current text-fg" /> {{ number_format($stats['rating'], 1) }} ({{ $stats['rating_count'] }}) @else No ratings yet @endif
             </p>
         </div>
     </div>
@@ -142,7 +142,7 @@
         <div class="card p-6">
             <div class="flex items-center justify-between">
                 <h2 class="font-bold">Recent orders</h2>
-                <a href="{{ route('seller.orders.index') }}" class="text-sm font-medium text-accent hover:underline">All orders</a>
+                <a href="{{ route('seller.orders.index') }}" class="text-sm font-medium text-fg underline underline-offset-2">All orders</a>
             </div>
             @if ($recentOrders->isEmpty())
                 <p class="mt-6 text-sm text-muted">No orders yet.</p>

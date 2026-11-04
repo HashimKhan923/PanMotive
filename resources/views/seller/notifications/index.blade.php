@@ -34,7 +34,7 @@
             </a>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="bell" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="bell" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">Nothing yet</p>
                 <p class="mt-1 text-sm text-muted">Order, payout, review and message alerts show up here.</p>
             </div>

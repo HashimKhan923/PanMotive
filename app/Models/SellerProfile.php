@@ -182,7 +182,7 @@ class SellerProfile extends Model
 
     public function themeAccent(): string
     {
-        return $this->theme['accent'] ?? '#DD1E25';
+        return $this->theme['accent'] ?? '#E51B2B';
     }
 
     public function loyaltyEnabled(): bool

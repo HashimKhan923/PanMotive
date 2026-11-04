@@ -5,7 +5,7 @@
 @section('content')
 <div class="container-x max-w-lg py-12 lg:py-16">
     <div class="text-center" data-reveal>
-        <span class="pill !bg-accent/15 !text-accent"><x-ui.icon name="truck" class="w-3.5 h-3.5" /> Order tracking</span>
+        <span class="pill !bg-surface-2 !text-fg"><x-ui.icon name="truck" class="w-4 h-4" /> Order tracking</span>
         <h1 class="mt-3 text-2xl font-bold sm:text-3xl">Where's my order?</h1>
         <p class="mt-1 text-sm text-muted">Enter your order number and the email used at checkout.</p>
     </div>
@@ -26,7 +26,7 @@
         </div>
         <button class="btn-accent w-full">Track order</button>
         @auth
-            <p class="text-center text-xs text-muted">Signed in? <a href="{{ route('orders.index') }}" class="text-accent hover:underline">See all your orders</a>.</p>
+            <p class="text-center text-xs text-muted">Signed in? <a href="{{ route('orders.index') }}" class="text-fg underline underline-offset-2">See all your orders</a>.</p>
         @endauth
     </form>
 </div>

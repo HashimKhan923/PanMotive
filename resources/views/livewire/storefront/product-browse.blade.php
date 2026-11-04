@@ -3,14 +3,14 @@
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
             <nav class="text-xs text-muted">
-                <a href="{{ route('home') }}" class="hover:text-accent">Home</a> <span class="mx-1">/</span>
-                <a href="{{ route('products.index') }}" class="hover:text-accent">Shop</a>
+                <a href="{{ route('home') }}" class="pm-tap relative hover:text-accent">Home</a> <span class="mx-1">/</span>
+                <a href="{{ route('products.index') }}" class="pm-tap relative hover:text-accent">Shop</a>
                 @if ($parentCategory)
                     <span class="mx-1">/</span> <a href="{{ route('products.index', ['category' => $parentCategory->slug]) }}" class="hover:text-accent">{{ $parentCategory->name }}</a>
                 @endif
             </nav>
             <h1 class="mt-1 text-2xl font-bold sm:text-3xl">
-                {{ $category ? ($selectedCategory?->name ?? 'Category not found') : 'All Parts' }}
+                {{ $category ? ($selectedCategory?->name ?? 'Category not found') : 'All parts' }}
             </h1>
             <p class="mt-1 text-sm text-muted">{{ number_format($results->total()) }} {{ Str::plural('result', $results->total()) }}</p>
         </div>
@@ -36,7 +36,7 @@
                 <button type="button" wire:click="removeFilter('{{ $chip['filter'] }}')" wire:key="chip-{{ $chip['filter'] }}"
                         class="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium hover:border-accent hover:text-accent"
                         aria-label="Remove filter {{ $chip['label'] }}">
-                    {{ $chip['label'] }} <x-ui.icon name="x" class="w-3 h-3" />
+                    {{ $chip['label'] }} <x-ui.icon name="x" class="w-4 h-4" />
                 </button>
             @endforeach
         </div>
@@ -60,7 +60,7 @@
             <div class="absolute left-0 top-0 h-full w-80 max-w-[85vw] overflow-y-auto bg-surface p-5">
                 <div class="mb-4 flex items-center justify-between">
                     <span class="font-bold">Filters</span>
-                    <button @click="filters = false" class="btn-ghost !p-2"><x-ui.icon name="x" class="w-5 h-5" /></button>
+                    <button @click="filters = false" class="btn-ghost !p-2"><x-ui.icon name="x" class="w-6 h-6" /></button>
                 </div>
                 @include('livewire.storefront.partials.filters')
             </div>
@@ -92,7 +92,7 @@
                     <x-product-card :product="$product" />
                 @empty
                     <div class="col-span-full card grid place-items-center p-16 text-center">
-                        <x-ui.icon name="search" class="w-10 h-10 text-muted" />
+                        <x-ui.icon name="search" class="w-12 h-12 text-muted" />
                         <p class="mt-3 font-semibold">No parts match your filters</p>
                         <p class="mt-1 text-sm text-muted">Try a different search or clear the filters.</p>
                         <button wire:click="clearFilters" class="btn-outline btn-sm mt-4">Clear all filters</button>

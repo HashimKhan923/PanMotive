@@ -62,7 +62,7 @@ class StoreLoyaltyService
         }
     }
 
-    /** Convert store points into PanMotive wallet credit. */
+    /** Convert store points into Panmotive wallet credit. */
     public function redeemToWallet(User $user, int $sellerId, int $points): float
     {
         $profile = User::find($sellerId)?->sellerProfile;

@@ -1,13 +1,13 @@
 @extends('layouts.storefront')
 
-@section('title', "Today's Deals — " . config('app.name'))
+@section('title', "Today's deals — " . config('app.name'))
 @section('meta_description', 'Live discounts on brake kits, filters, sensors and more — verified sellers, escrow-protected checkout, cashback on delivery.')
 
 @section('content')
 <div class="container-x py-8 lg:py-12">
     <div class="flex items-center gap-3" data-reveal>
-        <span class="pill !bg-accent/15 !text-accent"><x-ui.icon name="sparkles" class="w-3.5 h-3.5" /> Live deals</span>
-        <h1 class="text-2xl font-bold sm:text-3xl">Today's Deals</h1>
+        <span class="pill !bg-surface-2 !text-fg"><x-ui.icon name="sparkles" class="w-4 h-4" /> Live deals</span>
+        <h1 class="text-2xl font-bold sm:text-3xl">Today's deals</h1>
     </div>
     <p class="mt-1 text-sm text-muted" data-reveal>Prices drop while stock lasts. {{ $deals->total() }} parts on sale right now.</p>
 
@@ -20,13 +20,13 @@
                 <span class="text-xs font-semibold uppercase tracking-widest text-accent">Deal of the day</span>
                 <a href="{{ route('products.show', $dealOfDay->slug) }}" class="mt-2 text-xl font-bold leading-tight hover:underline sm:text-2xl">{{ $dealOfDay->title }}</a>
                 <div class="mt-3 flex items-end gap-3">
-                    <span class="text-3xl font-extrabold">${{ number_format($dealOfDay->sale_price, 2) }}</span>
-                    <span class="text-white/50 line-through">${{ number_format($dealOfDay->price, 2) }}</span>
+                    <span class="text-3xl font-bold">${{ number_format($dealOfDay->sale_price, 2) }}</span>
+                    <span class="text-white/80 line-through">${{ number_format($dealOfDay->price, 2) }}</span>
                     <span class="pill !bg-accent !text-accent-fg">-{{ $pct }}%</span>
                 </div>
                 @if ($dealOfDay->deal_ends_at)
                     <div class="mt-4" x-data="countdown('{{ $dealOfDay->deal_ends_at->toIso8601String() }}')" x-init="start()">
-                        <p class="text-xs text-white/60">Ends in</p>
+                        <p class="text-xs text-white/80">Ends in</p>
                         <p class="mt-1 font-mono text-lg font-bold" x-text="display"></p>
                     </div>
                 @endif

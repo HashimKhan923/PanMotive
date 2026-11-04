@@ -44,7 +44,7 @@ class SendAdminBroadcast implements ShouldQueue
                         (string) $broadcast->preview,
                         (string) $broadcast->body,
                         $broadcast->kind === 'marketing' ? $consent->unsubscribeUrl($user, null) : null,
-                        'PanMotive',
+                        'Panmotive',
                         true,
                     ));
                     $sent++;

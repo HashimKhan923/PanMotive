@@ -18,8 +18,8 @@
         <div class="flex items-center gap-3 border-b border-line bg-brand px-4 py-3 text-brand-fg">
             <span class="grid h-8 w-8 place-items-center rounded-full bg-accent text-accent-fg"><x-ui.icon name="sparkles" class="w-4 h-4" /></span>
             <div class="leading-tight">
-                <p class="text-sm font-semibold">PanMotive Support</p>
-                <p class="text-[11px] text-white/60">Orders, returns, shipping &amp; fitment</p>
+                <p class="text-sm font-semibold">Panmotive Support</p>
+                <p class="text-[11px] text-white/80">Orders, returns, shipping &amp; fitment</p>
             </div>
         </div>
         <div class="flex-1 space-y-2 overflow-y-auto p-3 text-sm">
@@ -30,7 +30,7 @@
                     </span>
                 </div>
             @empty
-                <p class="text-muted">Hi! Ask about an order, a return, shipping times or whether a part fits your vehicle.</p>
+                <p class="text-muted">Ask about an order, a return, shipping times or whether a part fits your vehicle.</p>
             @endforelse
             @if ($thinking)
                 <div class="text-left"><span class="inline-block rounded-2xl bg-surface-2 px-3 py-2 text-muted">Typing…</span></div>

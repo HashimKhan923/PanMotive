@@ -30,7 +30,7 @@
         @foreach ($tabs as $key => $label)
             <button wire:click="$set('status', '{{ $key }}')"
                     class="-mb-px border-b-2 px-3 py-2 font-medium transition
-                           {{ $status === $key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">
+                           {{ $status === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">
                 {{ $label }}
                 @if ($key !== '' && ($counts[$key] ?? 0) > 0)
                     <span class="ml-1 rounded-full bg-surface-2 px-1.5 text-xs">{{ $counts[$key] }}</span>
@@ -65,9 +65,9 @@
         <div class="mt-4 rounded-xl border border-accent/30 bg-accent/10 px-4 py-2.5 text-sm">
             <div class="flex items-center gap-3">
                 <span class="font-medium">{{ count($selected) }} selected</span>
-                <button wire:click="bulk('activate')" class="font-medium text-accent hover:underline">Activate</button>
-                <button wire:click="bulk('archive')" class="font-medium text-accent hover:underline">Archive</button>
-                <button wire:click="$toggle('showBulkPrice')" class="font-medium text-accent hover:underline">Adjust price</button>
+                <button wire:click="bulk('activate')" class="font-medium text-fg">Activate</button>
+                <button wire:click="bulk('archive')" class="font-medium text-fg">Archive</button>
+                <button wire:click="$toggle('showBulkPrice')" class="font-medium text-fg">Adjust price</button>
                 <button wire:click="bulk('delete')" wire:confirm="Permanently delete the selected listing(s)? Listings with order history are skipped automatically. This can't be undone." class="font-medium text-rose-500 hover:underline">Delete</button>
                 <button wire:click="$set('selected', [])" class="ml-auto text-muted hover:text-fg">Clear</button>
             </div>
@@ -115,7 +115,7 @@
                                     @if ($product->hasMedia('images') && $thumb)
                                         <img src="{{ $thumb }}" alt="" class="h-full w-full object-cover" loading="lazy">
                                     @else
-                                        <x-ui.icon name="image" class="w-5 h-5 text-muted" />
+                                        <x-ui.icon name="image" class="w-6 h-6 text-muted" />
                                     @endif
                                 </div>
                                 <div class="min-w-0">
@@ -189,7 +189,7 @@
                     </tr>
                 @empty
                     <tr><td colspan="7" class="px-4 py-16 text-center">
-                        <x-ui.icon name="box" class="mx-auto w-10 h-10 text-muted" />
+                        <x-ui.icon name="box" class="mx-auto w-12 h-12 text-muted" />
                         <p class="mt-3 font-semibold">No products here yet</p>
                         <p class="mt-1 text-sm text-muted">{{ $search || $status || $stock ? 'Try clearing your filters.' : 'Create your first listing to start selling.' }}</p>
                         <a href="{{ route('seller.products.create') }}" class="btn-accent btn-sm mt-4">New product</a>

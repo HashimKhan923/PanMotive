@@ -41,7 +41,7 @@ class ReturnService
             throw new RuntimeException('That step isn\'t available for a return that\'s '.$rma->status.'.');
         }
         if ($action === 'reject' && blank($note)) {
-            throw new RuntimeException('Tell the buyer why the return is declined — they\'ll see it and can escalate to PanMotive.');
+            throw new RuntimeException('Tell the buyer why the return is declined — they\'ll see it and can escalate to Panmotive.');
         }
 
         $item = $rma->orderItem;

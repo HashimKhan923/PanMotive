@@ -59,8 +59,8 @@ class NewMessageReceived extends Notification
             $mail->line('Buyers expect an answer within '.config('marketplace.messages.response_target_hours', 24).' hours — your response time shows on your seller scorecard.');
         }
 
-        return $mail->action('Reply on PanMotive', $this->url($notifiable))
-            ->line('For your safety, keep conversations and payments on PanMotive.');
+        return $mail->action('Reply on Panmotive', $this->url($notifiable))
+            ->line('For your safety, keep conversations and payments on Panmotive.');
     }
 
     public function toArray(object $notifiable): array

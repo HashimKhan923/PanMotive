@@ -28,11 +28,11 @@ class MembershipController extends Controller
         try {
             $until = $this->membership->join(auth()->user(), $request->boolean('auto_renew', true));
         } catch (RuntimeException $e) {
-            return back()->withErrors(['plus' => 'Not enough PanMotive credit to start membership. Top up your wallet first.']);
+            return back()->withErrors(['plus' => 'Not enough Panmotive credit to start membership. Top up your wallet first.']);
         }
 
         return redirect()->route('plus.show')
-            ->with('success', 'Welcome to PanMotive Plus! Active through '.$until->format('M j, Y').'.');
+            ->with('success', 'Welcome to Panmotive Plus! Active through '.$until->format('M j, Y').'.');
     }
 
     public function cancel()

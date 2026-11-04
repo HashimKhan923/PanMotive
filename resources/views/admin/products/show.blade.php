@@ -6,7 +6,7 @@
 <x-admin.header :title="$product->title" :subtitle="($product->seller?->sellerProfile?->business_name ?? 'Unknown seller').' · '.($product->category?->name ?? 'No category')" :back="route('admin.products.index')">
     <x-admin.status :value="$product->status === 'archived' ? 'removed' : $product->status" />
     @if ($product->status === 'active')
-        <a href="{{ \App\Support\AdminNav::site('products.show', $product->slug) }}" target="_blank" rel="noopener" class="btn-outline btn-sm">View on site <x-ui.icon name="external" class="w-3.5 h-3.5" /></a>
+        <a href="{{ \App\Support\AdminNav::site('products.show', $product->slug) }}" target="_blank" rel="noopener" class="btn-outline btn-sm">View on site <x-ui.icon name="external" class="w-4 h-4" /></a>
     @else
         <x-admin.action :url="route('admin.products.moderate', $product)" label="Approve & publish" tone="primary" body="This listing goes live for shoppers.">
             <input type="hidden" name="decision" value="approve">

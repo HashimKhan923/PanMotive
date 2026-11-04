@@ -3,7 +3,7 @@
         <span class="grid mx-auto h-11 w-11 place-items-center rounded-xl bg-accent text-accent-fg">
             <x-ui.icon name="store" class="w-6 h-6" />
         </span>
-        <h1 class="mt-3 text-2xl font-bold">Become a PanMotive seller</h1>
+        <h1 class="mt-3 text-2xl font-bold">Become a Panmotive seller</h1>
         <p class="mt-1 text-sm text-muted">Three quick steps and you can start listing parts.</p>
     </div>
 
@@ -13,7 +13,7 @@
                 <div class="flex items-center gap-2">
                     <span class="grid h-7 w-7 place-items-center rounded-full text-xs font-bold
                                  {{ $step > $i + 1 ? 'bg-accent text-accent-fg' : ($step === $i + 1 ? 'bg-brand text-brand-fg' : 'bg-surface-2 text-muted') }}">
-                        @if ($step > $i + 1) <x-ui.icon name="check" class="w-3.5 h-3.5" /> @else {{ $i + 1 }} @endif
+                        @if ($step > $i + 1) <x-ui.icon name="check" class="w-4 h-4" /> @else {{ $i + 1 }} @endif
                     </span>
                     <span class="text-sm font-medium {{ $step === $i + 1 ? 'text-fg' : 'text-muted' }}">{{ $label }}</span>
                 </div>
@@ -66,7 +66,7 @@
             </form>
         @elseif ($step === 3)
             <div class="space-y-4 text-center">
-                <x-ui.icon name="dollar" class="mx-auto w-10 h-10 text-accent" />
+                <x-ui.icon name="dollar" class="mx-auto w-12 h-12 text-fg" />
                 <p class="text-sm text-muted">Last step — connect a payout account so you get paid when your orders are delivered. Funds are held in escrow until then.</p>
                 <button wire:click="connectStripe" class="btn-brand">Connect payout account (Stripe)</button>
                 <p class="text-xs text-muted">You can also do this later from Store settings.</p>

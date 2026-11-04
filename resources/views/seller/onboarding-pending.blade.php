@@ -1,6 +1,6 @@
 <x-seller-layout>
     <div class="mx-auto max-w-xl py-16 text-center">
-        <span class="grid mx-auto h-12 w-12 place-items-center rounded-2xl bg-accent/15 text-accent">
+        <span class="grid mx-auto h-12 w-12 place-items-center rounded-2xl bg-surface-2 text-fg">
             <x-ui.icon name="clock" class="w-6 h-6" />
         </span>
         <h1 class="mt-4 text-2xl font-bold">Your application is under review</h1>

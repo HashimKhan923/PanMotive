@@ -137,7 +137,7 @@ export function flyToCart(sourceEl, cartIconSelector = '#cart-icon') {
     flyer.setAttribute('aria-hidden', 'true');
     flyer.style.cssText =
         `position:fixed;left:0;top:0;width:${size}px;height:${size}px;margin:0;z-index:9999;pointer-events:none;` +
-        `border-radius:18px;object-fit:cover;box-shadow:0 24px 48px -12px rgba(0,0,0,.45);will-change:transform,opacity;` +
+        `border-radius:18px;object-fit:cover;box-shadow:0 24px 48px -12px rgba(21,25,30,.45);will-change:transform,opacity;` +
         `transform:translate(${s.left + (s.width - size) / 2}px, ${s.top + (s.height - size) / 2}px)`;
     document.body.appendChild(flyer);
 

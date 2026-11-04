@@ -57,7 +57,7 @@ new #[Layout('layouts.guest')] class extends Component
                 {{ __('Remember me') }}
             </label>
             @if (Route::has('password.request'))
-                <a class="text-sm font-medium text-accent hover:underline" href="{{ route('password.request') }}" wire:navigate>
+                <a class="text-sm font-medium text-fg underline underline-offset-2" href="{{ route('password.request') }}" wire:navigate>
                     {{ __('Forgot password?') }}
                 </a>
             @endif
@@ -69,8 +69,8 @@ new #[Layout('layouts.guest')] class extends Component
 
         @if (Route::has('register'))
             <p class="text-center text-sm text-muted">
-                New to PanMotive?
-                <a href="{{ route('register') }}" wire:navigate class="font-medium text-accent hover:underline">Create an account</a>
+                New to Panmotive?
+                <a href="{{ route('register') }}" wire:navigate class="font-medium text-fg underline underline-offset-2">Create an account</a>
             </p>
         @endif
     </form>

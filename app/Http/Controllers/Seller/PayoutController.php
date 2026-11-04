@@ -20,7 +20,7 @@ class PayoutController extends Controller
         // Everything that can stop money reaching the bank, in the order the seller should fix it.
         $blockers = [];
         if ($profile?->payouts_held) {
-            $blockers[] = ['title' => 'Payouts are on hold', 'body' => 'PanMotive has paused your payouts: '.$profile->payouts_held_reason.'. Your earnings are safe.', 'url' => route('seller.support.index'), 'cta' => 'Contact support'];
+            $blockers[] = ['title' => 'Payouts are on hold', 'body' => 'Panmotive has paused your payouts: '.$profile->payouts_held_reason.'. Your earnings are safe.', 'url' => route('seller.support.index'), 'cta' => 'Contact support'];
         }
         if (! $profile?->stripe_account_id || ! $profile->stripe_onboarding_complete) {
             $blockers[] = ['title' => 'Connect your payout account', 'body' => 'Set up Stripe so we can transfer your earnings to your bank.', 'url' => route('seller.onboarding.start'), 'cta' => 'Connect now'];

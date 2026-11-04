@@ -207,7 +207,7 @@ class MessagingService
 
         try {
             return trim($ai->complete(
-                "You write replies for {$store}, an auto-parts seller on the PanMotive marketplace. Be friendly, brief (2–5 sentences), "
+                "You write replies for {$store}, an auto-parts seller on the Panmotive marketplace. Be friendly, brief (2–5 sentences), "
                 .'and factual. Only state facts given in the context; if fitment or details are unknown, ask for the VIN or year/make/model. '
                 .'Never promise refunds, discounts or dates the context does not support. Never ask the buyer to pay or talk off-platform. '
                 .'Return only the reply text, no greeting placeholder or signature block.',

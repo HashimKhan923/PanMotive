@@ -41,7 +41,7 @@
                     <tr>
                         <th>Price</th>
                         @foreach ($products as $product)
-                            <td wire:key="pr-{{ $product->id }}"><x-ui.price :price="$product->price" :sale="$product->liveSalePrice()" size="text-lg" /></td>
+                            <td wire:key="pr-{{ $product->id }}"><x-ui.price :price="$product->price" :sale="$product->liveSalePrice()" :basis="$product->priceBasis()" size="text-lg" /></td>
                         @endforeach
                     </tr>
                     <tr>

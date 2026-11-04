@@ -6,7 +6,7 @@
             @click="$store.wishlist.toggle({{ $productId }})"
             :aria-pressed="$store.wishlist.has({{ $productId }})"
             class="btn-outline w-full"
-            :class="$store.wishlist.has({{ $productId }}) ? '!border-accent !text-accent' : ''">
+            :class="$store.wishlist.has({{ $productId }}) ? '!border-accent text-fg' : ''">
         <x-ui.icon name="heart" class="w-4 h-4" ::class="$store.wishlist.has({{ $productId }}) ? 'fill-current' : ''" />
         <span x-text="$store.wishlist.has({{ $productId }}) ? 'Saved' : 'Save for later'">Save for later</span>
     </button>
@@ -19,11 +19,11 @@
                 if (adding) { pop = false; $nextTick(() => pop = true); setTimeout(() => pop = false, 520); }"
             :aria-pressed="$store.wishlist.has({{ $productId }})"
             aria-label="Save for later"
-            class="relative grid place-items-center transition {{ $size === 'lg'
-                ? 'h-12 w-12 rounded-xl border border-line bg-surface hover:border-rose-400'
+            class="pm-tap relative grid place-items-center transition {{ $size === 'lg'
+                ? 'h-12 w-12 rounded-xl border border-line bg-surface hover:border-input'
                 : 'h-8 w-8 rounded-full bg-surface/90 shadow-card backdrop-blur hover:scale-110' }}"
-            :class="$store.wishlist.has({{ $productId }}) ? 'text-rose-500' : 'text-muted hover:text-fg'">
+            :class="$store.wishlist.has({{ $productId }}) ? 'text-[rgb(var(--c-accent))]' : 'text-fg'">
         <template x-if="pop"><span class="pm-burst"></span></template>
-        <x-ui.icon name="heart" class="{{ $size === 'lg' ? 'w-5 h-5' : 'w-4 h-4' }}" ::class="($store.wishlist.has({{ $productId }}) ? 'fill-current ' : '') + (pop ? 'pm-heart-pop' : '')" />
+        <x-ui.icon name="heart" class="{{ $size === 'lg' ? 'w-6 h-6' : 'w-4 h-4' }}" ::class="($store.wishlist.has({{ $productId }}) ? 'fill-current ' : '') + (pop ? 'pm-heart-pop' : '')" />
     </button>
 @endif

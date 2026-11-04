@@ -63,7 +63,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="refresh" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="refresh" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">No subscriptions yet</p>
                 <p class="mt-1 text-sm text-muted">Look for "Subscribe &amp; Save" on parts you buy regularly — brake fluid, filters, wipers.</p>
                 <a href="{{ route('products.index') }}" class="btn-accent btn-sm mt-4">Browse parts</a>

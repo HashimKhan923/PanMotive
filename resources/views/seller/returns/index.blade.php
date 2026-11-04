@@ -5,7 +5,7 @@
 @section('content')
 <div>
     <h1 class="text-2xl font-bold">Returns</h1>
-    <p class="mt-1 text-sm text-muted">Approve a return to send the buyer your instructions, mark it received when it arrives, then refund. Respond within 48 hours or it escalates to PanMotive.</p>
+    <p class="mt-1 text-sm text-muted">Approve a return to send the buyer your instructions, mark it received when it arrives, then refund. Respond within 48 hours or it escalates to Panmotive.</p>
 
     @if ($errors->has('return'))
         <div class="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-400">{{ $errors->first('return') }}</div>
@@ -59,10 +59,10 @@
                         <span class="pill capitalize {{ match ($s) { 'refunded' => '!bg-emerald-500/10 !text-emerald-600', 'rejected' => '!bg-rose-500/10 !text-rose-600', 'requested' => '!bg-amber-500/15 !text-amber-700 dark:!text-amber-400', default => '' } }}">{{ $s }}</span>
                         @php($h = $rma->hoursToRespond())
                         @if ($rma->escalated_at)
-                            <p class="mt-1 text-xs font-semibold text-rose-500">Escalated {{ $rma->escalated_at->diffForHumans() }} · PanMotive reviewing</p>
+                            <p class="mt-1 text-xs font-semibold text-rose-500">Escalated {{ $rma->escalated_at->diffForHumans() }} · Panmotive reviewing</p>
                         @elseif ($h !== null)
                             <p class="mt-1 text-xs font-semibold {{ $h <= 0 ? 'text-rose-500' : ($h <= 12 ? 'text-amber-600' : 'text-muted') }}">
-                                {{ $h <= 0 ? 'Overdue — escalating to PanMotive' : "Respond within {$h}h" }}
+                                {{ $h <= 0 ? 'Overdue — escalating to Panmotive' : "Respond within {$h}h" }}
                             </p>
                         @endif
                         @if (in_array($s, ['requested', 'approved', 'received'], true))
@@ -118,7 +118,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="refresh" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="refresh" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">No returns here</p>
                 <p class="mt-1 text-sm text-muted">Return requests from buyers will appear in this queue.</p>
             </div>

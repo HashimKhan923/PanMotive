@@ -169,8 +169,8 @@ class DisputesAndApiTest extends TestCase
         // The job signs with HMAC.
         Http::fake(['*' => Http::response('', 200)]);
         (new DeliverWebhook($endpoint->id, ['event' => 'order.created', 'data' => ['x' => 1]]))->handle();
-        Http::assertSent(fn ($req) => $req->hasHeader('X-PanMotive-Signature')
-            && $req->header('X-PanMotive-Signature')[0] === hash_hmac('sha256', $req->body(), $endpoint->secret));
+        Http::assertSent(fn ($req) => $req->hasHeader('X-Panmotive-Signature')
+            && $req->header('X-Panmotive-Signature')[0] === hash_hmac('sha256', $req->body(), $endpoint->secret));
 
         $this->assertSame('200', $endpoint->fresh()->last_status);
         \App\Services\Integrations\WebhookUrlGuard::$resolver = null;

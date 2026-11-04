@@ -4,7 +4,7 @@
 
 @section('content')
 <x-admin.header title="Good {{ now()->hour < 12 ? 'morning' : (now()->hour < 18 ? 'afternoon' : 'evening') }}, {{ \Illuminate\Support\Str::before(auth()->user()->name, ' ') }}"
-                subtitle="Here is how PanMotive is doing, and what needs you today.">
+                subtitle="Here is how Panmotive is doing, and what needs you today.">
     <div class="flex rounded-xl border border-line bg-surface p-1" role="group" aria-label="Date range">
         @foreach ([7 => '7 days', 30 => '30 days', 90 => '90 days', 365 => '1 year'] as $value => $label)
             <a href="{{ route('admin.dashboard', ['days' => $value]) }}" @class(['adm-tab !py-1 !text-xs', 'is-active' => $days === $value])>{{ $label }}</a>
@@ -78,7 +78,7 @@
                     @foreach ($queue as $row)
                         <li>
                             <a href="{{ $row['url'] }}" class="group flex items-center gap-3 rounded-xl p-2 transition hover:bg-surface-2">
-                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent"><x-ui.icon :name="$row['icon']" class="w-4 h-4" /></span>
+                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg"><x-ui.icon :name="$row['icon']" class="w-4 h-4" /></span>
                                 <span class="min-w-0 flex-1">
                                     <span class="block truncate text-[13px] font-semibold group-hover:text-accent">{{ $row['label'] }}</span>
                                     <span class="block truncate text-xs text-muted">{{ $row['hint'] }}</span>

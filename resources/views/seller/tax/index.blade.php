@@ -56,13 +56,13 @@
     </div>
 
     <div class="card mt-4 p-6 text-sm" data-reveal>
-        <h2 class="font-bold">Expenses on PanMotive in {{ $year }}</h2>
+        <h2 class="font-bold">Expenses on Panmotive in {{ $year }}</h2>
         <div class="mt-3 divide-y divide-line">
             <div class="flex justify-between py-2"><span>Commission</span><span>${{ number_format($pnl['platform_fees'], 2) }}</span></div>
             <div class="flex justify-between py-2"><span>Advertising (ad credit spent)</span><span>${{ number_format($pnl['ad_spend'], 2) }}</span></div>
             <div class="flex justify-between py-2"><span>Offsite Ads fees</span><span>${{ number_format($pnl['offsite_ad_fees'], 2) }}</span></div>
             <div class="flex justify-between py-2"><span>Affiliate commissions</span><span>${{ number_format($pnl['affiliate_fees'] ?? 0, 2) }}</span></div>
-            <div class="flex justify-between py-2"><span>Shipping labels bought on PanMotive</span><span>${{ number_format($pnl['label_fees'] ?? 0, 2) }}</span></div>
+            <div class="flex justify-between py-2"><span>Shipping labels bought on Panmotive</span><span>${{ number_format($pnl['label_fees'] ?? 0, 2) }}</span></div>
             <div class="flex justify-between py-2"><span>Instant payout fees</span><span>${{ number_format($pnl['instant_payout_fees'], 2) }}</span></div>
             <div class="flex justify-between py-2 font-bold"><span>Net earnings</span><span>${{ number_format($pnl['net_earnings'], 2) }}</span></div>
         </div>
@@ -73,8 +73,8 @@
     <div class="mt-4 rounded-2xl border border-line bg-surface-2 p-5 text-sm" data-reveal>
         <p class="font-semibold">Sales tax</p>
         <p class="mt-1 text-muted">{{ config('marketplace.sales_tax.collecting')
-            ? 'PanMotive collects and remits sales tax on your orders as the marketplace facilitator — you don\'t need to.'
-            : 'PanMotive does not yet calculate sales tax at checkout. Until it does, sales-tax collection isn\'t handled for you — talk to a tax professional about your obligations.' }}</p>
+            ? 'Panmotive collects and remits sales tax on your orders as the marketplace facilitator — you don\'t need to.'
+            : 'Panmotive does not yet calculate sales tax at checkout. Until it does, sales-tax collection isn\'t handled for you — talk to a tax professional about your obligations.' }}</p>
     </div>
 
     {{-- Monthly statements --}}

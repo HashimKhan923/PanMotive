@@ -1,7 +1,7 @@
 <div class="max-w-5xl">
     <div class="flex flex-wrap items-center gap-3">
-        <a href="{{ route('seller.customers.index') }}" class="btn-ghost !p-2" aria-label="Back to customers"><x-ui.icon name="arrow-left" class="w-5 h-5" /></a>
-        <span class="grid h-12 w-12 place-items-center rounded-full bg-accent/15 text-lg font-bold text-accent">{{ strtoupper(mb_substr($buyer->name, 0, 1)) }}</span>
+        <a href="{{ route('seller.customers.index') }}" class="btn-ghost !p-2" aria-label="Back to customers"><x-ui.icon name="arrow-left" class="w-6 h-6" /></a>
+        <span class="grid h-12 w-12 place-items-center rounded-full bg-surface-2 text-lg font-bold text-fg">{{ strtoupper(mb_substr($buyer->name, 0, 1)) }}</span>
         <div>
             <h1 class="text-2xl font-bold">{{ $buyer->name }}</h1>
             <p class="text-sm text-muted">
@@ -91,7 +91,7 @@
                         @endforeach
                         @foreach ($questions as $q)
                             <li class="flex items-center justify-between gap-2"><span>Asked: “{{ Str::limit($q->body, 70) }}” <span class="text-muted">on {{ $q->product?->title }}</span></span>
-                                <a href="{{ route('seller.questions.index') }}" class="text-xs font-medium text-accent hover:underline">Q&amp;A</a></li>
+                                <a href="{{ route('seller.questions.index') }}" class="text-xs font-medium text-fg underline underline-offset-2">Q&amp;A</a></li>
                         @endforeach
                     </ul>
                 </section>
@@ -117,7 +117,7 @@
             @if (\App\Support\SellerContext::can('marketing') && ! $blocked)
                 <section class="card p-6" x-data="{ open: false }">
                     <h2 class="font-bold">Send a private coupon</h2>
-                    <p class="mt-1 text-xs text-muted">A one-time code only {{ \Illuminate\Support\Str::before($buyer->name, ' ') }} can use on your items, delivered to their PanMotive inbox. Great for thank-yous and win-backs.</p>
+                    <p class="mt-1 text-xs text-muted">A one-time code only {{ \Illuminate\Support\Str::before($buyer->name, ' ') }} can use on your items, delivered to their Panmotive inbox. Great for thank-yous and win-backs.</p>
                     <button x-show="!open" @click="open = true" class="btn-ghost btn-sm mt-3 w-full"><x-ui.icon name="tag" class="w-4 h-4" /> Create coupon</button>
                     <form x-show="open" x-cloak wire:submit="sendCoupon" class="mt-3 space-y-3">
                         <div class="grid grid-cols-[1fr_96px] gap-2">

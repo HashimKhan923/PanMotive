@@ -4,7 +4,7 @@
 @section('content')
 <div class="max-w-xl">
     <div class="flex items-center gap-3">
-        <a href="{{ route('seller.orders.show', $items->first()) }}" class="btn-ghost !p-2" aria-label="Back to order"><x-ui.icon name="arrow-left" class="w-5 h-5" /></a>
+        <a href="{{ route('seller.orders.show', $items->first()) }}" class="btn-ghost !p-2" aria-label="Back to order"><x-ui.icon name="arrow-left" class="w-6 h-6" /></a>
         <h1 class="text-2xl font-bold">Buy a shipping label</h1>
     </div>
 

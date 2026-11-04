@@ -47,7 +47,7 @@ class AccountHealth extends Component
         $this->validate(['claimResponse' => 'required|string|min:10|max:3000']);
         $health->respondToClaim($this->ownedClaim($this->claimId), $this->claimResponse);
         $this->claimId = null;
-        $this->dispatch('toast', message: 'Response sent. PanMotive will review if the buyer stays unsatisfied.');
+        $this->dispatch('toast', message: 'Response sent. Panmotive will review if the buyer stays unsatisfied.');
     }
 
     public function refundClaim(int $id, AccountHealthService $health): void

@@ -404,6 +404,16 @@ class Product extends Model implements HasMedia
             ->useFallbackUrl('/images/product-placeholder.svg', 'webp');
     }
 
+    /** The word shown after a price: each, pair or set. Read from the title, because listings have no field for it. */
+    public function priceBasis(): string
+    {
+        return match (true) {
+            (bool) preg_match('/\b(pair|pairs)\b/i', $this->title) => 'pair',
+            (bool) preg_match('/\b(set|sets|kit|kits|\d+-pack|pack of \d+)\b/i', $this->title) => 'set',
+            default => 'each',
+        };
+    }
+
     public function registerMediaConversions(?Media $media = null): void
     {
         $this->addMediaConversion('webp')

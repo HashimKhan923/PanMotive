@@ -32,7 +32,7 @@
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
              @click="remove(toast.id)"
-             class="pointer-events-auto relative flex min-w-[220px] max-w-md cursor-pointer items-center gap-2.5 overflow-hidden rounded-2xl bg-brand py-3 pl-3 pr-4 text-sm font-medium text-brand-fg shadow-[0_18px_40px_-12px_rgb(0_0_0/.45)] ring-1 ring-white/10"
+             class="pointer-events-auto relative flex min-w-[220px] max-w-md cursor-pointer items-center gap-2.5 overflow-hidden rounded-2xl bg-brand py-3 pl-3 pr-4 text-sm font-medium text-brand-fg shadow-[0_18px_40px_-12px_rgb(21_25_30/.45)] ring-1 ring-white/10"
              :class="toast.kind === 'error' ? '!bg-rose-600' : ''">
             <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full"
                   :class="toast.kind === 'error' ? 'bg-white/20' : 'bg-accent text-accent-fg'">

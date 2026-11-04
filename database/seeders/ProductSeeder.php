@@ -234,9 +234,9 @@ class ProductSeeder extends Seeder
         $w = 800;
         $h = 800;
         $im = imagecreatetruecolor($w, $h);
-        [$r, $g, $b] = [[23, 24, 29], [35, 37, 43], [51, 53, 60], [14, 15, 18]][crc32($category) % 4];
+        [$r, $g, $b] = [[21, 25, 30], [34, 40, 48], [21, 25, 30], [34, 40, 48]][crc32($category) % 4];
         imagefill($im, 0, 0, imagecolorallocate($im, $r, $g, $b));
-        $red = imagecolorallocate($im, 221, 30, 37);
+        $red = imagecolorallocate($im, 229, 27, 43);
         $white = imagecolorallocate($im, 255, 255, 255);
 
         imagesetthickness($im, 8);

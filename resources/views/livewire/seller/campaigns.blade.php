@@ -2,7 +2,7 @@
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
             <h1 class="text-2xl font-bold">Campaigns</h1>
-            <p class="mt-1 text-sm text-muted">Email{{ $smsAvailable ? ' &amp; SMS' : '' }} to your own customers, followers and cart-abandoners — sent from PanMotive, with an unsubscribe link in every email.</p>
+            <p class="mt-1 text-sm text-muted">Email{{ $smsAvailable ? ' &amp; SMS' : '' }} to your own customers, followers and cart-abandoners — sent from Panmotive, with an unsubscribe link in every email.</p>
             <p class="mt-1 text-xs {{ $sentThisWeek >= $weeklyLimit ? 'text-amber-600' : 'text-muted' }}">{{ $sentThisWeek }} of {{ $weeklyLimit }} campaigns sent this week.</p>
         </div>
         <button wire:click="newCampaign" class="btn-accent btn-sm"><x-ui.icon name="plus" class="w-4 h-4" /> New campaign</button>
@@ -136,7 +136,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="mail" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="mail" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">No campaigns yet</p>
                 <p class="mt-1 text-sm text-muted">Bring back cart-abandoners or tell followers about a restock.</p>
             </div>

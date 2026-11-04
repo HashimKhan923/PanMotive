@@ -54,7 +54,7 @@
                             @foreach ($roles as $role => $roleLabel)
                                 <td class="text-center">
                                     @if ($role === 'super_admin')
-                                        <x-ui.icon name="check" class="mx-auto w-4 h-4 text-accent" />
+                                        <x-ui.icon name="check" class="mx-auto w-4 h-4 text-fg" />
                                     @else
                                         <input type="checkbox" name="permissions[{{ $role }}][]" value="{{ $key }}" @checked(in_array($key, $matrix[$role] ?? [], true))
                                                class="rounded text-accent focus:ring-accent" aria-label="{{ $roleLabel }}: {{ $label }}">

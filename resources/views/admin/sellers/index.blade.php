@@ -39,7 +39,7 @@
                         <td class="whitespace-nowrap text-muted">{{ $s->created_at->format('M j, Y') }}</td>
                         <td class="text-right">
                             @if ($s->status === 'pending')
-                                <x-admin.action :url="route('admin.sellers.approve', $s)" label="Approve" tone="primary" size="xs" :body="'Approve '.$s->business_name.' to sell on PanMotive?'" />
+                                <x-admin.action :url="route('admin.sellers.approve', $s)" label="Approve" tone="primary" size="xs" :body="'Approve '.$s->business_name.' to sell on Panmotive?'" />
                             @endif
                         </td>
                     </tr>

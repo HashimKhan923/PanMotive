@@ -40,7 +40,7 @@
         <div class="mt-4 flex flex-wrap gap-2">
             @foreach ($packages as $p)
                 <button type="button" wire:click="pick({{ $p }})"
-                        class="rounded-xl border-2 px-5 py-3 text-lg font-bold transition {{ (float) $amount === (float) $p ? 'border-accent bg-accent/10 text-accent' : 'border-line hover:border-accent/50' }}">
+                        class="rounded-xl border-2 px-5 py-3 text-lg font-bold transition {{ (float) $amount === (float) $p ? 'border-accent bg-surface-2 text-fg' : 'border-line hover:border-accent/50' }}">
                     ${{ $p }}
                 </button>
             @endforeach
@@ -60,7 +60,7 @@
         @error('amount') <p class="mt-2 text-sm text-rose-500">{{ $message }}</p> @enderror
 
         <p class="mt-3 flex items-center gap-1.5 text-xs text-muted">
-            <x-ui.icon name="shield" class="w-3.5 h-3.5" />
+            <x-ui.icon name="shield" class="w-4 h-4" />
             You'll pay on Stripe's secure page. Credit appears here as soon as the payment clears. Ad credit is non-refundable and doesn't expire.
         </p>
 

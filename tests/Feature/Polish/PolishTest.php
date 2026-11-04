@@ -34,14 +34,14 @@ class PolishTest extends TestCase
     {
         // Static files under public/ are served by the web server, not the
         // Laravel router — assert them on disk.
-        foreach (['manifest.json', 'sw.js', 'offline.html', 'pwa-192x192.png', 'pwa-512x512.png'] as $file) {
+        foreach (['manifest.json', 'sw.js', 'offline.html', 'pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-192x192.png', 'pwa-maskable-512x512.png'] as $file) {
             $this->assertFileExists(public_path($file));
         }
 
         $manifest = json_decode(file_get_contents(public_path('manifest.json')), true);
-        $this->assertSame('PanMotive', $manifest['name']);
+        $this->assertSame('Panmotive', $manifest['name']);
         $this->assertSame('standalone', $manifest['display']);
-        $this->assertCount(2, $manifest['icons']);
+        $this->assertCount(4, $manifest['icons']);
 
         $this->assertStringContainsString("self.addEventListener('push'", file_get_contents(public_path('sw.js')));
     }

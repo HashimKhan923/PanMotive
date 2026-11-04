@@ -10,7 +10,7 @@
     {{-- what's in the way --}}
     @forelse ($blockers as $b)
         <div class="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-accent/30 bg-accent/10 px-5 py-4">
-            <x-ui.icon name="alert" class="w-5 h-5 text-accent" />
+            <x-ui.icon name="alert" class="w-6 h-6 text-fg" />
             <div class="text-sm">
                 <p class="font-medium">{{ $b['title'] }}</p>
                 <p class="text-muted">{{ $b['body'] }}</p>
@@ -19,7 +19,7 @@
         </div>
     @empty
         <div class="mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-4">
-            <x-ui.icon name="check" class="w-5 h-5 text-emerald-600" />
+            <x-ui.icon name="check" class="w-6 h-6 text-emerald-600" />
             <div class="text-sm">
                 <p class="font-medium">Payouts are on</p>
                 <p class="text-muted">Stripe account {{ $profile?->stripe_account_id }}</p>
@@ -54,13 +54,13 @@
     <details class="card mt-4 p-5 text-sm">
         <summary class="cursor-pointer font-semibold">Fees on delivered orders: ${{ number_format(array_sum($fees), 2) }}</summary>
         <div class="mt-3 grid gap-2 sm:grid-cols-5">
-            <div><p class="text-xs text-muted">PanMotive commission</p><p class="font-semibold">${{ number_format($fees['platform'], 2) }}</p></div>
+            <div><p class="text-xs text-muted">Panmotive commission</p><p class="font-semibold">${{ number_format($fees['platform'], 2) }}</p></div>
             <div><p class="text-xs text-muted">Offsite Ads</p><p class="font-semibold">${{ number_format($fees['offsite'], 2) }}</p></div>
             <div><p class="text-xs text-muted">Affiliate commissions</p><p class="font-semibold">${{ number_format($fees['affiliate'], 2) }}</p></div>
             <div><p class="text-xs text-muted">Shipping labels</p><p class="font-semibold">${{ number_format($fees['labels'], 2) }}</p></div>
             <div><p class="text-xs text-muted">Instant payout fees</p><p class="font-semibold">${{ number_format($fees['instant'], 2) }}</p></div>
         </div>
-        <a href="{{ route('seller.finance.ledger') }}" class="mt-3 inline-block text-xs font-medium text-accent hover:underline">Full ledger &amp; P&amp;L →</a>
+        <a href="{{ route('seller.finance.ledger') }}" class="mt-3 inline-block text-xs font-medium text-fg underline underline-offset-2">Full ledger &amp; P&amp;L →</a>
     </details>
 
     {{-- in escrow --}}

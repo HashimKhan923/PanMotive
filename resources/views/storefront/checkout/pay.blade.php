@@ -13,7 +13,7 @@
             Pay ${{ number_format($order->total, 2) }}
         </button>
         <p id="payment-message" class="mt-2 text-sm text-rose-500"></p>
-        <p class="mt-4 text-center text-xs text-muted"><x-ui.icon name="shield" class="mr-1 inline w-3.5 h-3.5" /> Secured by Stripe</p>
+        <p class="mt-4 text-center text-xs text-muted"><x-ui.icon name="shield" class="mr-1 inline w-4 h-4" /> Secured by Stripe</p>
     </div>
 </div>
 

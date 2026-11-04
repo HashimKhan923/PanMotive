@@ -23,7 +23,7 @@
                         <div class="mt-2 flex flex-wrap gap-2">
                             @foreach (['business' => ['business_doc_path', 'Business document'], 'id' => ['id_doc_path', 'Photo ID'], 'address' => ['address_proof_path', 'Address proof']] as $type => [$col, $label])
                                 @if ($v->$col)
-                                    <a href="{{ route('admin.verifications.document', [$v, $type]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-0.5 text-[11px] font-semibold hover:border-accent hover:text-accent"><x-ui.icon name="external" class="w-3 h-3" /> View {{ strtolower($label) }}</a>
+                                    <a href="{{ route('admin.verifications.document', [$v, $type]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-0.5 text-[11px] font-semibold hover:border-accent hover:text-accent"><x-ui.icon name="external" class="w-4 h-4" /> View {{ strtolower($label) }}</a>
                                 @else
                                     <x-admin.status value="off" :label="$label.' missing'" />
                                 @endif

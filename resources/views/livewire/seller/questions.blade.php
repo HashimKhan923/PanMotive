@@ -13,7 +13,7 @@
         <div class="flex gap-1 text-sm">
             @foreach (['unanswered' => 'Needs an answer', 'answered' => 'Answered', 'hidden' => 'Hidden'] as $key => $label)
                 <button wire:click="$set('filter', '{{ $key }}')"
-                        class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $filter === $key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">
+                        class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $filter === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">
                     {{ $label }}
                     @if ($counts[$key] > 0)
                         <span class="ml-1 rounded-full px-1.5 text-xs {{ $key === 'unanswered' ? 'bg-accent text-accent-fg' : 'bg-surface-2' }}">{{ $counts[$key] }}</span>
@@ -93,7 +93,7 @@
                         <div class="mb-1.5 flex flex-wrap gap-1.5">
                             @if ($savedReplies->isNotEmpty())
                                 <div x-data="{ open: false }" class="relative">
-                                    <button type="button" @click="open = !open" class="btn-ghost btn-sm text-xs"><x-ui.icon name="list" class="w-3.5 h-3.5" /> Saved reply</button>
+                                    <button type="button" @click="open = !open" class="btn-ghost btn-sm text-xs"><x-ui.icon name="list" class="w-4 h-4" /> Saved reply</button>
                                     <div x-show="open" x-cloak @click.outside="open = false" class="absolute left-0 top-full z-20 mt-1 w-72 rounded-xl border border-line bg-surface p-1 shadow-lg">
                                         @foreach ($savedReplies as $r)
                                             <button type="button" wire:click="useReply({{ $q->id }}, {{ $r->id }})" @click="open = false" class="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2">
@@ -106,7 +106,7 @@
                             @endif
                             @if ($aiEnabled)
                                 <button type="button" wire:click="suggestAnswer({{ $q->id }})" wire:loading.attr="disabled" wire:target="suggestAnswer({{ $q->id }})" class="btn-ghost btn-sm text-xs">
-                                    <x-ui.icon name="sparkles" class="w-3.5 h-3.5" />
+                                    <x-ui.icon name="sparkles" class="w-4 h-4" />
                                     <span wire:loading.remove wire:target="suggestAnswer({{ $q->id }})">Suggest from listing</span>
                                     <span wire:loading wire:target="suggestAnswer({{ $q->id }})">Thinking…</span>
                                 </button>
@@ -123,7 +123,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="help" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="help" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">{{ $filter === 'unanswered' ? "You're all caught up" : 'Nothing here' }}</p>
                 <p class="mt-1 text-sm text-muted">{{ $filter === 'unanswered' ? 'New shopper questions will appear here, and you\'ll get a notification.' : 'Try another tab.' }}</p>
             </div>
@@ -133,6 +133,6 @@
     <div class="mt-4">{{ $questions->links() }}</div>
 
     @if ($savedReplies->isEmpty() && \App\Support\SellerContext::can('messages'))
-        <p class="mt-6 text-xs text-muted">Tip: create saved replies in <a href="{{ route('seller.messages.index') }}" class="text-accent hover:underline">Messages → Saved replies</a> and reuse them here.</p>
+        <p class="mt-6 text-xs text-muted">Tip: create saved replies in <a href="{{ route('seller.messages.index') }}" class="text-fg underline underline-offset-2">Messages → Saved replies</a> and reuse them here.</p>
     @endif
 </div>

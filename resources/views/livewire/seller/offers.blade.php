@@ -5,7 +5,7 @@
     <div class="mt-6 flex gap-1 border-b border-line text-sm">
         @foreach (['open' => 'Open', 'accepted' => 'Accepted', 'closed' => 'Closed'] as $key => $label)
             <button wire:click="$set('filter', '{{ $key }}')"
-                    class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $filter === $key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">{{ $label }}</button>
+                    class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $filter === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">{{ $label }}</button>
         @endforeach
     </div>
 
@@ -57,7 +57,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="tag" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="tag" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">No offers here</p>
                 <p class="mt-1 text-sm text-muted">Turn on "Accept offers" on a listing to let buyers negotiate.</p>
             </div>

@@ -18,7 +18,7 @@
     <div class="flex items-center justify-between gap-2">
         <p class="truncate text-xs font-medium text-muted">{{ $label }}</p>
         @if ($icon)
-            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-accent/10 text-accent"><x-ui.icon :name="$icon" class="w-3.5 h-3.5" /></span>
+            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-surface-2 text-fg"><x-ui.icon :name="$icon" class="w-4 h-4" /></span>
         @endif
     </div>
     <p class="mt-1.5 truncate text-2xl font-bold tabular-nums tracking-tight"

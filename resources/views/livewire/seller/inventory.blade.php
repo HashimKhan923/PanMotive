@@ -99,7 +99,7 @@
                 @forelse ($locations as $loc)
                     <div class="card flex flex-wrap items-center justify-between gap-3 p-4" wire:key="loc-{{ $loc->id }}">
                         <div>
-                            <p class="font-semibold">{{ $loc->name }} @if ($loc->is_default)<span class="pill ml-1 !bg-accent/10 !text-accent">Default</span>@endif</p>
+                            <p class="font-semibold">{{ $loc->name }} @if ($loc->is_default)<span class="pill ml-1 !bg-surface-2 !text-fg">Default</span>@endif</p>
                             <p class="text-xs text-muted">{{ $loc->code ? $loc->code.' · ' : '' }}{{ number_format((int) ($unitsByLocation[$loc->id] ?? 0)) }} units here</p>
                         </div>
                         <div class="flex gap-2">

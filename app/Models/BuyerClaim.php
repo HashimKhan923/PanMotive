@@ -54,7 +54,7 @@ class BuyerClaim extends Model
 
     /**
      * Claims that count against the store's record: not denied, not withdrawn, and not ones the
-     * seller resolved themselves by refunding before PanMotive had to step in.
+     * seller resolved themselves by refunding before Panmotive had to step in.
      */
     public function scopeCountingAgainstSeller(Builder $q): Builder
     {

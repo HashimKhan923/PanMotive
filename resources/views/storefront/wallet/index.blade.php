@@ -6,10 +6,10 @@
 <div class="container-x max-w-2xl py-10">
     <div class="relative overflow-hidden rounded-3xl bg-brand p-7 text-brand-fg" data-reveal="scale">
         <div class="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-accent/25 blur-3xl"></div>
-        <p class="relative text-sm text-white/60">Available credit</p>
-        <p class="relative mt-1 text-4xl font-extrabold">${{ number_format(auth()->user()->wallet_balance, 2) }}</p>
-        <p class="relative mt-2 inline-flex items-center gap-1.5 text-xs text-white/60">
-            <x-ui.icon name="sparkles" class="w-3.5 h-3.5 text-accent" />
+        <p class="relative text-sm text-white/80">Available credit</p>
+        <p class="relative mt-1 text-4xl font-bold">${{ number_format(auth()->user()->wallet_balance, 2) }}</p>
+        <p class="relative mt-2 inline-flex items-center gap-1.5 text-xs text-white/80">
+            <x-ui.icon name="sparkles" class="w-4 h-4 text-fg" />
             {{ ucfirst(auth()->user()->loyalty_tier) }} tier · {{ rtrim(rtrim(number_format(app(\App\Services\Marketing\LoyaltyService::class)->cashbackRate(auth()->user()), 1), '0'), '.') }}% cashback on every order
         </p>
     </div>

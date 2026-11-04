@@ -34,8 +34,8 @@
 
     <div class="container-x py-6 lg:py-10">
         <nav class="text-xs text-muted" data-reveal>
-            <a href="{{ route('home') }}" class="hover:text-accent">Home</a> <span class="mx-1.5">/</span>
-            <a href="{{ route('products.index') }}" class="hover:text-accent">Shop</a>
+            <a href="{{ route('home') }}" class="pm-tap relative hover:text-accent">Home</a> <span class="mx-1.5">/</span>
+            <a href="{{ route('products.index') }}" class="pm-tap relative hover:text-accent">Shop</a>
             @if ($product->category)
                 <span class="mx-1.5">/</span>
                 <a href="{{ route('products.index', ['category' => $product->category->slug]) }}" class="hover:text-accent">{{ $product->category->name }}</a>
@@ -100,14 +100,14 @@
                             ${{ number_format($lo, 2) }}@if ($hi > $lo) <span class="text-muted">– ${{ number_format($hi, 2) }}</span>@endif
                         </span>
                     @else
-                        <x-ui.price :price="$product->price" :sale="$product->liveSalePrice()" size="text-[26px] tracking-tight" />
+                        <x-ui.price :price="$product->price" :sale="$product->liveSalePrice()" :basis="$product->priceBasis()" size="text-[26px] tracking-tight" />
                     @endif
                 </div>
 
                 @php($saleEvent = $product->activeSaleEvent())
                 @php($dealEnds = $product->isOnDeal() ? $product->deal_ends_at : null)
                 @if ($dealEnds)
-                    <div class="pm-grain relative mt-3 flex flex-wrap items-center justify-between gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-accent to-[#9e1015] px-4 py-2.5 text-white"
+                    <div class="pm-grain relative mt-3 flex flex-wrap items-center justify-between gap-2 overflow-hidden rounded-xl bg-gradient-to-r from-accent to-accent-pressed px-4 py-2.5 text-white"
                          x-data="{ left: {{ max(0, $dealEnds->getTimestamp() - now()->getTimestamp()) }},
                                    get d() { return Math.floor(this.left / 86400) }, get h() { return Math.floor(this.left % 86400 / 3600) },
                                    get m() { return Math.floor(this.left % 3600 / 60) }, get s() { return this.left % 60 } }"
@@ -152,7 +152,7 @@
                 @php($etaFrom = now()->addWeekdays(max(0, $handling) + 2))
                 @php($etaTo = now()->addWeekdays(max(0, $handling) + 5))
                 <p class="mt-1.5 inline-flex items-center gap-1.5 text-sm">
-                    <x-ui.icon name="clock" class="w-4 h-4 text-accent" />
+                    <x-ui.icon name="clock" class="w-4 h-4 text-fg" />
                     <span>Get it <strong>{{ $etaFrom->format('D, M j') }} – {{ $etaTo->format('D, M j') }}</strong></span>
                     <span class="text-xs text-muted">(estimate)</span>
                 </p>
@@ -162,7 +162,7 @@
 
                 @if ($sp?->isOnVacation())
                     <p class="mt-2 inline-flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
-                        <x-ui.icon name="clock" class="mt-0.5 w-3.5 h-3.5 shrink-0" />
+                        <x-ui.icon name="clock" class="mt-0.5 w-4 h-4 shrink-0" />
                         {{ $sp->vacation_message ?: 'This seller is away — dispatch may be delayed.' }}
                         @if ($sp->vacation_until) (back {{ $sp->vacation_until->format('M j') }}) @endif
                         @if ($sp->salesPaused()) <strong>Not taking new orders until then.</strong> @endif
@@ -187,7 +187,7 @@
                     <div class="mt-3 rounded-2xl border border-line bg-surface p-4" x-data="{ open: false }">
                         <button type="button" @click="open = !open" class="flex w-full items-center justify-between text-sm font-semibold">
                             <span class="inline-flex items-center gap-2">
-                                <x-ui.icon name="refresh" class="w-4 h-4 text-accent" />
+                                <x-ui.icon name="refresh" class="w-4 h-4 text-fg" />
                                 Subscribe &amp; Save {{ $snsPct }}%
                             </span>
                             <x-ui.icon name="chevron-down" class="w-4 h-4 transition" ::class="open && 'rotate-180'" />
@@ -211,7 +211,7 @@
                                 </form>
                                 <p class="mt-2 text-xs text-muted">Locks in {{ $snsPct }}% off every delivery. Skip or cancel anytime.</p>
                             @else
-                                <p class="text-xs text-muted"><a href="{{ route('login') }}" class="text-accent hover:underline">Sign in</a> to set up recurring delivery and save {{ $snsPct }}% on every order.</p>
+                                <p class="text-xs text-muted"><a href="{{ route('login') }}" class="text-fg underline underline-offset-2">Sign in</a> to set up recurring delivery and save {{ $snsPct }}% on every order.</p>
                             @endauth
                         </div>
                     </div>
@@ -221,7 +221,7 @@
                     <x-ui.compare-btn :product-id="$product->id" />
                     @livewire('storefront.message-seller', ['product' => $product], key('msg-'.$product->id))
                     <a href="{{ route('track.form') }}" class="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-fg">
-                        <x-ui.icon name="truck" class="w-3.5 h-3.5" /> Track an order
+                        <x-ui.icon name="truck" class="w-4 h-4" /> Track an order
                     </a>
                 </div>
 
@@ -230,13 +230,13 @@
                         <div class="min-w-0">
                             <a href="{{ route('sellers.show', $sp) }}" class="font-semibold hover:text-accent">{{ $sp->business_name }}</a>
                             @if ($sp->hasBadge())
-                                <span class="pill ml-1 !bg-accent/10 !text-accent">{{ $sp->tierLabel() }}</span>
+                                <span class="pill ml-1 !bg-surface-2 !text-fg">{{ $sp->tierLabel() }}</span>
                             @endif
                             @if ($sp->rating_count > 0)
                                 <span class="ml-1 text-xs text-muted">{{ number_format($sp->rating, 1) }}★ ({{ $sp->rating_count }})</span>
                             @endif
                             @if ($reply = $sp->responseLabel())
-                                <p class="mt-0.5 inline-flex items-center gap-1 text-xs text-muted"><x-ui.icon name="message" class="w-3.5 h-3.5" /> {{ $reply }}</p>
+                                <p class="mt-0.5 inline-flex items-center gap-1 text-xs text-muted"><x-ui.icon name="message" class="w-4 h-4" /> {{ $reply }}</p>
                             @endif
                         </div>
                         @livewire('storefront.follow-store', ['sellerId' => $product->seller_id], key('follow-'.$product->id))
@@ -287,10 +287,10 @@
                 @endif
 
                 <div class="mt-6 grid grid-cols-2 gap-3 rounded-2xl border border-line bg-surface p-4 text-xs text-muted">
-                    <span class="inline-flex items-center gap-2"><x-ui.icon name="shield" class="w-4 h-4 text-accent" /> Escrow-protected payment</span>
-                    <span class="inline-flex items-center gap-2"><x-ui.icon name="sparkles" class="w-4 h-4 text-accent" /> Cashback on delivery</span>
-                    <span class="inline-flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> {{ max((int) config('marketplace.returns.window_days', 30), (int) ($sp?->return_window_days ?? 30)) }}-day returns{{ $sp?->return_shipping === 'seller' ? ' · free' : '' }}</span>
-                    <span class="inline-flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> Verified seller</span>
+                    <span class="inline-flex items-center gap-2"><x-ui.icon name="shield" class="w-4 h-4 text-fg" /> Escrow-protected payment</span>
+                    <span class="inline-flex items-center gap-2"><x-ui.icon name="sparkles" class="w-4 h-4 text-fg" /> Cashback on delivery</span>
+                    <span class="inline-flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-fg" /> {{ max((int) config('marketplace.returns.window_days', 30), (int) ($sp?->return_window_days ?? 30)) }}-day returns{{ $sp?->return_shipping === 'seller' ? ' · free' : '' }}</span>
+                    <span class="inline-flex items-center gap-2"><x-ui.icon name="check" class="w-4 h-4 text-fg" /> Verified seller</span>
                 </div>
             </div>
         </div>
@@ -305,7 +305,7 @@
                         @if (is_array($product->bullet_points) && count($product->bullet_points))
                             <ul class="mt-4 space-y-1.5 text-sm">
                                 @foreach ($product->bullet_points as $bp)
-                                    <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-accent" /> {{ $bp }}</li>
+                                    <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> {{ $bp }}</li>
                                 @endforeach
                             </ul>
                         @endif

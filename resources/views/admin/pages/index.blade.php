@@ -4,7 +4,7 @@
 
 @section('content')
 <x-admin.header title="Pages" subtitle="About, Terms, Privacy, Returns policy and anything else shoppers should be able to read.">
-    <a href="{{ route('admin.pages.create') }}" class="btn-accent btn-sm"><x-ui.icon name="plus" class="w-3.5 h-3.5" /> New page</a>
+    <a href="{{ route('admin.pages.create') }}" class="btn-accent btn-sm"><x-ui.icon name="plus" class="w-4 h-4" /> New page</a>
 </x-admin.header>
 
 <x-admin.card flush>

@@ -86,7 +86,7 @@
     <div class="space-y-4">
         @if ($user->sellerProfile && $me->can('sellers.approve'))
             <a href="{{ route('admin.sellers.show', $user->sellerProfile) }}" class="adm-card flex items-center gap-3 p-4">
-                <span class="grid h-10 w-10 place-items-center rounded-xl bg-accent/10 text-accent"><x-ui.icon name="store" class="w-5 h-5" /></span>
+                <span class="grid h-10 w-10 place-items-center rounded-xl bg-surface-2 text-fg"><x-ui.icon name="store" class="w-6 h-6" /></span>
                 <span class="min-w-0 flex-1">
                     <span class="block truncate text-sm font-semibold">{{ $user->sellerProfile->business_name }}</span>
                     <span class="text-xs text-muted">Open seller account</span>

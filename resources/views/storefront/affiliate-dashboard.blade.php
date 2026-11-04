@@ -4,7 +4,7 @@
 @section('content')
 <div class="container-x max-w-2xl py-10">
     <h1 class="text-2xl font-bold">Affiliate dashboard</h1>
-    <p class="mt-1 text-sm text-muted">Your links and earnings across stores. Commission is paid to your PanMotive credit once orders are delivered.</p>
+    <p class="mt-1 text-sm text-muted">Your links and earnings across stores. Commission is paid to your Panmotive credit once orders are delivered.</p>
 
     <div class="mt-6 space-y-4">
         @forelse ($affiliates as $a)
@@ -31,7 +31,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="sparkles" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="sparkles" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">You're not an affiliate yet</p>
                 <p class="mt-1 text-sm text-muted">Visit a store with an affiliate program and apply from its page.</p>
             </div>

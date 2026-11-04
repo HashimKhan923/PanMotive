@@ -19,11 +19,11 @@
     <div class="mt-6 overflow-hidden rounded-2xl bg-brand p-6 text-brand-fg sm:p-8" data-reveal="scale">
         <div class="flex flex-wrap items-center justify-between gap-6">
             <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-white/50">Your tier</p>
-                <p class="mt-1 flex items-center gap-2 text-3xl font-extrabold {{ str_replace('text-', 'text-', $tierTone) }}">
-                    <x-ui.icon name="shield" class="w-7 h-7" /> {{ $m['tier_label'] }}
+                <p class="text-xs font-semibold uppercase tracking-widest text-white/80">Your tier</p>
+                <p class="mt-1 flex items-center gap-2 text-3xl font-bold {{ str_replace('text-', 'text-', $tierTone) }}">
+                    <x-ui.icon name="shield" class="w-8 h-8" /> {{ $m['tier_label'] }}
                 </p>
-                <p class="mt-1 text-sm text-white/60">
+                <p class="mt-1 text-sm text-white/80">
                     Commission rate: <span class="font-semibold text-white">{{ rtrim(rtrim(number_format(auth()->user()->sellerProfile->commissionRate(), 2), '0'), '.') }}%</span>
                     @if ($m['next_tier']) · next: {{ $m['next_tier_label'] }} @endif
                 </p>
@@ -32,8 +32,8 @@
                 @foreach ($tierOrder as $i => $key)
                     <div class="flex flex-col items-center gap-1">
                         <span class="grid h-9 w-9 place-items-center rounded-full text-xs font-bold
-                                     {{ $i <= $tierIndex ? 'bg-accent text-accent-fg' : 'bg-white/10 text-white/50' }}">{{ $i + 1 }}</span>
-                        <span class="text-[10px] {{ $i === $tierIndex ? 'text-white' : 'text-white/40' }}">{{ $tiers[$key]['label'] }}</span>
+                                     {{ $i <= $tierIndex ? 'bg-accent text-accent-fg' : 'bg-white/10 text-white/80' }}">{{ $i + 1 }}</span>
+                        <span class="text-[10px] {{ $i === $tierIndex ? 'text-white' : 'text-white/80' }}">{{ $tiers[$key]['label'] }}</span>
                     </div>
                 @endforeach
             </div>
@@ -77,7 +77,7 @@
                     <p class="text-xs font-semibold uppercase tracking-wide text-muted">Perks at {{ $m['next_tier_label'] }}</p>
                     <ul class="mt-2 space-y-1 text-sm">
                         @foreach ($tiers[$m['next_tier']]['perks'] as $perk)
-                            <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-accent" /> {{ $perk }}</li>
+                            <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> {{ $perk }}</li>
                         @endforeach
                     </ul>
                 </div>
@@ -106,7 +106,7 @@
                 <p class="text-xs font-semibold uppercase tracking-wide text-muted">Your perks now</p>
                 <ul class="mt-2 space-y-1 text-sm">
                     @foreach (auth()->user()->sellerProfile->tierConfig()['perks'] as $perk)
-                        <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-accent" /> {{ $perk }}</li>
+                        <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> {{ $perk }}</li>
                     @endforeach
                 </ul>
             </div>

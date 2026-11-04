@@ -47,7 +47,7 @@
                 @php($count = $val === '' ? $totalForCondition : (int) ($conditionCounts[$val] ?? 0))
                 <button type="button" wire:click="$set('condition', '{{ $val }}')" @disabled($count === 0 && $condition !== $val)
                         class="rounded-lg border px-2.5 py-1 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-40
-                               {{ $condition === $val ? 'border-accent bg-accent/10 text-accent' : 'border-line text-muted hover:border-fg/30' }}">
+                               {{ $condition === $val ? 'border-accent bg-surface-2 text-fg' : 'border-line text-muted hover:border-fg/30' }}">
                     {{ $label }} <span class="tabular-nums opacity-70">{{ $count }}</span>
                 </button>
             @endforeach

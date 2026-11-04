@@ -1,6 +1,6 @@
 <div class="max-w-4xl">
     <div class="flex items-center gap-3">
-        <a href="{{ route('seller.products.index') }}" class="btn-ghost !p-2" aria-label="Back"><x-ui.icon name="arrow-left" class="w-5 h-5" /></a>
+        <a href="{{ route('seller.products.index') }}" class="btn-ghost !p-2" aria-label="Back"><x-ui.icon name="arrow-left" class="w-6 h-6" /></a>
         <h1 class="text-2xl font-bold">{{ $product ? 'Edit product' : 'New product' }}</h1>
         @if ($product)
             <span class="pill">{{ str_replace('_', ' ', $product->status) }}</span>
@@ -10,7 +10,7 @@
     @if ($product?->moderation_note)
         <div class="mt-4 flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-600 dark:text-rose-300" role="alert">
             <x-ui.icon name="alert" class="mt-0.5 w-4 h-4 shrink-0" />
-            <span>PanMotive took this listing down: {{ $product->moderation_note }}. Fix the problem and publish it, and our team will review it before it goes live.</span>
+            <span>Panmotive took this listing down: {{ $product->moderation_note }}. Fix the problem and publish it, and our team will review it before it goes live.</span>
         </div>
     @endif
 
@@ -28,7 +28,7 @@
                 <ul class="mt-3 space-y-1 text-xs">
                     @foreach ($quality['checks'] as $c)
                         <li class="flex items-center gap-2 {{ $c['ok'] ? 'text-muted' : 'text-fg' }}">
-                            <x-ui.icon name="{{ $c['ok'] ? 'check' : 'x' }}" class="w-3.5 h-3.5 {{ $c['ok'] ? 'text-emerald-500' : 'text-rose-500' }}" />
+                            <x-ui.icon name="{{ $c['ok'] ? 'check' : 'x' }}" class="w-4 h-4 {{ $c['ok'] ? 'text-emerald-500' : 'text-rose-500' }}" />
                             {{ $c['label'] }}
                         </li>
                     @endforeach
@@ -143,7 +143,7 @@
                     @else
                         <input id="pf-qty" type="number" wire:model="quantity" class="input">
                         @error('quantity') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
-                        <p class="mt-1 text-xs text-muted">Changes here are logged to the <a href="{{ route('seller.inventory.index') }}" class="text-accent hover:underline" target="_blank">movement history</a>.</p>
+                        <p class="mt-1 text-xs text-muted">Changes here are logged to the <a href="{{ route('seller.inventory.index') }}" class="text-fg underline underline-offset-2" target="_blank">movement history</a>.</p>
                     @endif
                 </div>
                 <div>
@@ -173,7 +173,7 @@
                             <option value="{{ $sp->id }}">{{ $sp->name }} ({{ $sp->handling_days }}d handling)</option>
                         @endforeach
                     </select>
-                    <p class="mt-1 text-xs text-muted"><a href="{{ route('seller.shipping.index') }}" class="text-accent hover:underline" target="_blank">Manage policies →</a></p>
+                    <p class="mt-1 text-xs text-muted"><a href="{{ route('seller.shipping.index') }}" class="text-fg underline underline-offset-2" target="_blank">Manage policies →</a></p>
                 </div>
                 <div>
                     <label class="label" for="pf-handling">Handling time override (days)</label>
@@ -268,7 +268,7 @@
                                         <button type="button" wire:click="assignVariantImage({{ $i }}, null)" x-on:click="open = false"
                                                 class="grid h-9 w-9 place-items-center rounded-lg border border-dashed border-line text-muted hover:border-accent hover:text-accent"
                                                 title="No photo">
-                                            <x-ui.icon name="x" class="w-3.5 h-3.5" />
+                                            <x-ui.icon name="x" class="w-4 h-4" />
                                         </button>
                                         @foreach ($existingImages as $media)
                                             <button type="button" wire:click="assignVariantImage({{ $i }}, {{ $media->id }})" x-on:click="open = false"
@@ -431,7 +431,7 @@
                             <img src="{{ $media->getUrl('thumb') ?: $media->getUrl() }}" alt="" class="pointer-events-none h-full w-full object-cover">
 
                             <div class="pointer-events-none absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-md bg-black/50 text-white opacity-0 transition group-hover:opacity-100">
-                                <x-ui.icon name="grip" class="w-3.5 h-3.5" />
+                                <x-ui.icon name="grip" class="w-4 h-4" />
                             </div>
 
                             @if ($i === 0)
@@ -446,7 +446,7 @@
                             <button type="button" wire:click="removeImage({{ $media->id }})"
                                     class="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/60 text-white opacity-0 transition hover:bg-rose-600 group-hover:opacity-100"
                                     aria-label="Remove photo">
-                                <x-ui.icon name="x" class="w-3.5 h-3.5" />
+                                <x-ui.icon name="x" class="w-4 h-4" />
                             </button>
                         </div>
                     @endforeach

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', $title ?? 'Seller Portal') &middot; {{ config('app.name', 'PanMotive') }}</title>
+    <title>@yield('title', $title ?? 'Seller Portal') &middot; {{ config('app.name', 'Panmotive') }}</title>
 
     <script @nonce>
         try {
@@ -16,7 +16,7 @@
     </script>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -121,7 +121,7 @@
     <aside class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-line bg-surface transition-transform lg:sticky lg:top-0 lg:h-screen lg:self-start lg:translate-x-0"
            :class="sidebar ? 'translate-x-0' : '-translate-x-full'">
         <div class="flex h-16 items-center gap-2 border-b border-line px-5">
-            <x-ui.logo class="h-7 w-auto" />
+            <x-ui.logo class="h-[21px] w-auto" />
             <span class="ml-1 rounded bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted">Seller</span>
         </div>
 
@@ -140,8 +140,8 @@
                     @foreach ($group['items'] as [$route, $label, $icon, $badge, $ability])
                         <a href="{{ route($route) }}"
                            class="flex items-center gap-3 rounded-lg px-3 py-2 font-medium transition
-                                  {{ $navItemActive($route) ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-surface-2 hover:text-fg' }}">
-                            <x-ui.icon :name="$icon" class="w-4.5 h-4.5" />
+                                  {{ $navItemActive($route) ? 'bg-surface-2 text-fg' : 'text-muted hover:bg-surface-2 hover:text-fg' }}">
+                            <x-ui.icon :name="$icon" class="w-6 h-6" />
                             <span class="flex-1">{{ $label }}</span>
                             @if ($badge > 0)
                                 <span class="rounded-full bg-accent px-1.5 text-xs font-semibold text-accent-fg">{{ $badge }}</span>
@@ -153,7 +153,7 @@
                         <button type="button" @click="toggle('{{ $group['label'] }}')"
                                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2 font-semibold transition
                                        {{ $group['active'] ? 'text-fg' : 'text-muted hover:bg-surface-2 hover:text-fg' }}">
-                            <x-ui.icon :name="$group['icon']" class="w-4.5 h-4.5" />
+                            <x-ui.icon :name="$group['icon']" class="w-6 h-6" />
                             <span class="flex-1 text-left">{{ $group['label'] }}</span>
                             @if ($group['badge'] > 0)
                                 <span x-show="! isOpen('{{ $group['label'] }}')"
@@ -169,7 +169,7 @@
                             @foreach ($group['items'] as [$route, $label, $icon, $badge, $ability])
                                 <a href="{{ route($route) }}"
                                    class="flex items-center gap-3 rounded-lg py-2 pl-10 pr-3 font-medium transition
-                                          {{ $navItemActive($route) ? 'bg-accent/10 text-accent' : 'text-muted hover:bg-surface-2 hover:text-fg' }}">
+                                          {{ $navItemActive($route) ? 'bg-surface-2 text-fg' : 'text-muted hover:bg-surface-2 hover:text-fg' }}">
                                     <span class="flex-1">{{ $label }}</span>
                                     @if ($badge > 0)
                                         <span class="rounded-full bg-accent px-1.5 text-[10px] font-bold text-accent-fg">{{ $badge }}</span>
@@ -195,18 +195,18 @@
     {{-- Main --}}
     <div class="flex min-w-0 flex-1 flex-col">
         <header class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/90 px-4 backdrop-blur lg:px-8">
-            <button @click="sidebar = true" class="btn-ghost !p-2 lg:hidden" aria-label="Menu"><x-ui.icon name="menu" class="w-5 h-5" /></button>
+            <button @click="sidebar = true" class="btn-ghost !p-2 lg:hidden" aria-label="Menu"><x-ui.icon name="menu" class="w-6 h-6" /></button>
 
             <div class="min-w-0">
                 <p class="truncate text-sm font-semibold">
                     {{ $sellerProfile?->business_name ?? 'Your store' }}
                     @if (\App\Support\SellerContext::isTeamMember())
-                        <span class="ml-1 rounded bg-accent/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-accent">{{ \App\Support\SellerContext::membership()->role }}</span>
+                        <span class="ml-1 rounded bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-fg">{{ \App\Support\SellerContext::membership()->role }}</span>
                     @endif
                 </p>
                 @if ($sellerProfile && $sellerProfile->rating_count > 0)
                     <p class="flex items-center gap-1 text-xs text-muted">
-                        <x-ui.icon name="star" class="w-3 h-3 fill-current text-amber-500" />
+                        <x-ui.icon name="star" class="w-4 h-4 fill-current text-fg" />
                         {{ number_format($sellerProfile->rating, 1) }} · {{ $sellerProfile->rating_count }} ratings
                     </p>
                 @endif
@@ -215,20 +215,20 @@
             <div class="ml-auto flex items-center gap-1">
                 @php($unreadNotes = auth()->user()?->unreadNotifications()->count() ?? 0)
                 <a href="{{ route('seller.notifications.index') }}" class="relative btn-ghost !p-2.5" aria-label="Notifications">
-                    <x-ui.icon name="bell" class="w-5 h-5" />
+                    <x-ui.icon name="bell" class="w-6 h-6" />
                     @if ($unreadNotes > 0)
                         <span class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-fg">{{ $unreadNotes }}</span>
                     @endif
                 </a>
 
                 <button type="button" @click="$store.theme.toggle()" class="btn-ghost !p-2.5" aria-label="Toggle dark mode">
-                    <x-ui.icon name="sun" class="w-5 h-5 dark:hidden" />
-                    <x-ui.icon name="moon" class="hidden w-5 h-5 dark:block" />
+                    <x-ui.icon name="sun" class="w-6 h-6 dark:hidden" />
+                    <x-ui.icon name="moon" class="hidden w-6 h-6 dark:block" />
                 </button>
 
                 <div class="relative" x-data="{ acct: false }" @click.outside="acct = false">
                     <button @click="acct = !acct" class="btn-ghost !p-2.5" aria-label="Account">
-                        <x-ui.icon name="user" class="w-5 h-5" />
+                        <x-ui.icon name="user" class="w-6 h-6" />
                     </button>
                     <div x-show="acct" x-cloak x-transition.origin.top.right
                          class="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-line bg-surface py-1 shadow-card-hover">

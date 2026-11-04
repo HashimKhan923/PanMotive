@@ -14,7 +14,7 @@
     <div class="mt-6 flex gap-1 border-b border-line text-sm">
         @foreach (['sales' => 'Sales', 'codes' => 'Coupon codes', 'private' => 'Private codes'] as $key => $label)
             <button wire:click="$set('tab', '{{ $key }}')"
-                    class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $tab === $key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">
+                    class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $tab === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">
                 {{ $label }}
                 @if ($key === 'private' && $privateCodes->isNotEmpty())<span class="ml-1 rounded-full bg-surface-2 px-1.5 text-xs">{{ $privateCodes->count() }}</span>@endif
             </button>
@@ -36,7 +36,7 @@
                         <label class="label" for="se-pct">Percent off</label>
                         <div class="flex flex-wrap gap-1.5">
                             @foreach ([10, 15, 20, 25, 30] as $pc)
-                                <button type="button" wire:click="$set('salePercent', {{ $pc }})" class="rounded-lg border px-3 py-2 text-sm {{ (float) $salePercent === (float) $pc ? 'border-accent bg-accent/10 text-accent' : 'border-line' }}">{{ $pc }}%</button>
+                                <button type="button" wire:click="$set('salePercent', {{ $pc }})" class="rounded-lg border px-3 py-2 text-sm {{ (float) $salePercent === (float) $pc ? 'border-accent bg-surface-2 text-fg' : 'border-line' }}">{{ $pc }}%</button>
                             @endforeach
                             <input id="se-pct" type="number" step="1" min="5" max="80" wire:model.live="salePercent" class="input h-10 w-20" aria-label="Custom percent">
                         </div>
@@ -118,7 +118,7 @@
             @empty
                 @unless ($showSaleForm)
                     <div class="card grid place-items-center p-16 text-center">
-                        <x-ui.icon name="tag" class="w-10 h-10 text-muted" />
+                        <x-ui.icon name="tag" class="w-12 h-12 text-muted" />
                         <p class="mt-3 font-semibold">No sales yet</p>
                         <p class="mt-1 text-sm text-muted">Put a few listings — or your whole store — on sale for a weekend. No code needed; shoppers see the discount right on the listing.</p>
                         <button wire:click="newSale" class="btn-accent btn-sm mt-4">Create a sale</button>
@@ -261,7 +261,7 @@
                     </tr>
                 @empty
                     <tr><td colspan="7" class="px-4 py-16 text-center">
-                        <x-ui.icon name="tag" class="mx-auto w-10 h-10 text-muted" />
+                        <x-ui.icon name="tag" class="mx-auto w-12 h-12 text-muted" />
                         <p class="mt-3 font-semibold">No promotions yet</p>
                         <p class="mt-1 text-sm text-muted">Create a code to run a sale on your listings.</p>
                     </td></tr>

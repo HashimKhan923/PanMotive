@@ -4,7 +4,7 @@
 
 @section('content')
 <x-admin.header title="Audit log" subtitle="Who did what, and when. Entries can't be edited or deleted.">
-    <a href="{{ route('admin.audit.export', request()->query()) }}" class="btn-outline btn-sm"><x-ui.icon name="download" class="w-3.5 h-3.5" /> Export CSV</a>
+    <a href="{{ route('admin.audit.export', request()->query()) }}" class="btn-outline btn-sm"><x-ui.icon name="download" class="w-4 h-4" /> Export CSV</a>
 </x-admin.header>
 
 <x-admin.filters :search="request('q', '')" placeholder="What happened">

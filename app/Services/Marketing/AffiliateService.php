@@ -143,7 +143,7 @@ class AffiliateService
         $conversion->affiliate?->decrement('conversions');
     }
 
-    /** Seller pays an affiliate — credited as PanMotive store credit. */
+    /** Seller pays an affiliate — credited as Panmotive store credit. */
     public function payOut(Affiliate $affiliate): float
     {
         $due = AffiliateConversion::where('affiliate_id', $affiliate->id)->where('status', 'approved')->sum('commission');

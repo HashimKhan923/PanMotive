@@ -24,7 +24,7 @@ class AdCreditGateway
                     'currency' => 'usd',
                     'unit_amount' => (int) round((float) $purchase->amount * 100),
                     'product_data' => [
-                        'name' => 'PanMotive ad credit',
+                        'name' => 'Panmotive ad credit',
                         'description' => 'Prepaid balance for sponsored listings, boosts and ad campaigns.',
                     ],
                 ],

@@ -60,7 +60,7 @@
     <div class="mt-6 flex gap-1 border-b border-line text-sm">
         @foreach (['active' => 'Active', 'paused' => 'Paused', 'cancelled' => 'Cancelled', 'all' => 'All'] as $key => $label)
             <button wire:click="$set('status', '{{ $key }}')"
-                    class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $status === $key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">
+                    class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $status === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">
                 {{ $label }} @if (isset($counts[$key]) && $counts[$key] > 0)<span class="ml-1 rounded-full bg-surface-2 px-1.5 text-xs">{{ $counts[$key] }}</span>@endif
             </button>
         @endforeach
@@ -105,7 +105,7 @@
                     </tr>
                 @empty
                     <tr><td colspan="6" class="px-4 py-16 text-center">
-                        <x-ui.icon name="refresh" class="mx-auto w-10 h-10 text-muted" />
+                        <x-ui.icon name="refresh" class="mx-auto w-12 h-12 text-muted" />
                         <p class="mt-3 font-semibold">No {{ $status === 'all' ? '' : $status }} subscriptions</p>
                         <p class="mt-1 text-sm text-muted">Buyers can subscribe from any listing with Subscribe &amp; Save turned on.</p>
                     </td></tr>

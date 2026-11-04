@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 /**
  * Maps free-text category hints from an imported CSV (Shopify "Product Category",
- * a "Type" column, tags, or just the product title) onto PanMotive's fixed
+ * a "Type" column, tags, or just the product title) onto Panmotive's fixed
  * category tree. Deterministic keyword + fuzzy matching first; an optional AI
  * pass cleans up whatever is left (batched — one call per import).
  */

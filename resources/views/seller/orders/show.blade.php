@@ -8,7 +8,7 @@
 @endphp
 <div class="max-w-3xl">
     <div class="flex items-center gap-3">
-        <a href="{{ route('seller.orders.index') }}" class="btn-ghost !p-2" aria-label="Back"><x-ui.icon name="arrow-left" class="w-5 h-5" /></a>
+        <a href="{{ route('seller.orders.index') }}" class="btn-ghost !p-2" aria-label="Back"><x-ui.icon name="arrow-left" class="w-6 h-6" /></a>
         <h1 class="text-2xl font-bold">{{ $item->order->order_number }}</h1>
         <span class="pill">{{ $item->status->label() }}</span>
         <div class="ml-auto flex gap-2">
@@ -43,7 +43,7 @@
                     <div class="flex justify-between"><dt class="text-muted">Platform fee ({{ rtrim(rtrim(number_format($item->commission_rate, 1), '0'), '.') }}%)</dt><dd>−${{ number_format($item->platform_fee_amount, 2) }}</dd></div>
                     @if ((float) $item->offsite_ad_fee > 0)
                         <div class="flex justify-between">
-                            <dt class="text-muted">Offsite Ads fee <a href="{{ route('seller.offsite-ads.index') }}" class="text-xs text-accent hover:underline">(buyer came from our ad)</a></dt>
+                            <dt class="text-muted">Offsite Ads fee <a href="{{ route('seller.offsite-ads.index') }}" class="text-xs text-fg underline underline-offset-2">(buyer came from our ad)</a></dt>
                             <dd>−${{ number_format($item->offsite_ad_fee, 2) }}</dd>
                         </div>
                     @endif
@@ -54,7 +54,7 @@
             {{-- actions --}}
             @if ($item->status->value === 'placed')
                 <div class="card flex items-start gap-3 p-6">
-                    <x-ui.icon name="clock" class="mt-0.5 w-5 h-5 shrink-0 text-muted" />
+                    <x-ui.icon name="clock" class="mt-0.5 w-6 h-6 shrink-0 text-muted" />
                     <div>
                         <p class="font-semibold">Awaiting payment</p>
                         <p class="text-sm text-muted">The buyer hasn't completed payment yet. You'll get a notification to accept as soon as it clears — don't ship anything before then.</p>
@@ -197,7 +197,7 @@
                                 <p class="font-medium">{{ $rma->rma_number }} — {{ ucfirst($rma->status) }}</p>
                                 <p class="text-xs text-muted">{{ $rma->reason }}</p>
                             </div>
-                            <a href="{{ route('seller.returns.index') }}" class="text-xs font-medium text-accent hover:underline">Manage</a>
+                            <a href="{{ route('seller.returns.index') }}" class="text-xs font-medium text-fg underline underline-offset-2">Manage</a>
                         </div>
                     @endforeach
                 </div>

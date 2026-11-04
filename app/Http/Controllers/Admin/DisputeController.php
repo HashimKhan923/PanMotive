@@ -60,7 +60,7 @@ class DisputeController extends Controller
                         $item->update(['status' => OrderStatus::Refunded]);
                         $item->statusHistory()->create([
                             'status' => OrderStatus::Refunded->value,
-                            'note' => "Claim {$buyerClaim->claim_number} granted by PanMotive — refunded \$".number_format($amount, 2),
+                            'note' => "Claim {$buyerClaim->claim_number} granted by Panmotive — refunded \$".number_format($amount, 2),
                             'changed_by' => auth()->id(),
                         ]);
                     }
@@ -129,7 +129,7 @@ class DisputeController extends Controller
         $orderItem->order->syncStatusFromLines();
         $this->audit('Approved return and refunded', $orderItem, ['amount' => $amount]);
         $this->tellBuyer($orderItem->order, 'Your return was approved', 'We refunded $'.number_format($amount, 2)." for {$orderItem->product_title}.");
-        $this->tell($orderItem->seller, 'A return was approved by PanMotive', "{$orderItem->product_title} on order {$orderItem->order->order_number} was refunded to the buyer.");
+        $this->tell($orderItem->seller, 'A return was approved by Panmotive', "{$orderItem->product_title} on order {$orderItem->order->order_number} was refunded to the buyer.");
 
         return back()->with('success', 'Return approved — buyer refunded.');
     }
@@ -187,7 +187,7 @@ class DisputeController extends Controller
 
         $orderItem->order->syncStatusFromLines();
         $this->tellBuyer($orderItem->order, 'Your refund is on its way', 'We refunded $'.number_format($amount, 2)." for {$orderItem->product_title}.");
-        $this->tell($orderItem->seller, 'A payout was reversed', "PanMotive pulled back your payout for {$orderItem->product_title} on order {$orderItem->order->order_number}. Reason: {$request->reason}");
+        $this->tell($orderItem->seller, 'A payout was reversed', "Panmotive pulled back your payout for {$orderItem->product_title} on order {$orderItem->order->order_number}. Reason: {$request->reason}");
         $this->audit('Reversed payout and refunded', $orderItem, ['reason' => $request->reason]);
 
         return back()->with('success', 'Seller payout reversed and buyer refunded.');

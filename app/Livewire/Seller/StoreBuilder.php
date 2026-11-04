@@ -14,7 +14,7 @@ class StoreBuilder extends Component
     use WithFileUploads;
 
     #[Validate('required|regex:/^#[0-9A-Fa-f]{6}$/')]
-    public string $accent = '#DD1E25';
+    public string $accent = '#E51B2B';
 
     #[Validate('nullable|string|max:80')]
     public string $heroHeadline = '';
@@ -37,7 +37,7 @@ class StoreBuilder extends Component
         $profile = auth()->user()->sellerProfile;
         $theme = $profile->theme ?? [];
 
-        $this->accent = $theme['accent'] ?? '#DD1E25';
+        $this->accent = $theme['accent'] ?? '#E51B2B';
         $this->heroHeadline = $theme['hero_headline'] ?? '';
         $this->heroSubtext = $theme['hero_subtext'] ?? '';
         $this->about = $theme['about'] ?? ($profile->bio ?? '');

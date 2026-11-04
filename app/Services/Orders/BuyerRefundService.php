@@ -54,7 +54,7 @@ class BuyerRefundService
 
         // An instant payout fronted to the seller can't be clawed back automatically.
         if (PayoutAdvance::where('order_item_id', $item->id)->where('status', 'advanced')->exists()) {
-            throw new RuntimeException('You took an instant payout on this order — contact PanMotive support to refund it.');
+            throw new RuntimeException('You took an instant payout on this order — contact Panmotive support to refund it.');
         }
 
         $amount = $this->paidForLine($item, $includeShipping);

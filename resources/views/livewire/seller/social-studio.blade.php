@@ -5,7 +5,7 @@
     <div class="mt-6 flex gap-1 border-b border-line text-sm">
         @foreach (['compose' => 'Compose', 'posts' => 'Posts', 'accounts' => 'Auto-posting'] as $key => $label)
             <button wire:click="$set('tab', '{{ $key }}')"
-                    class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $tab === $key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">{{ $label }}</button>
+                    class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $tab === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">{{ $label }}</button>
         @endforeach
     </div>
 
@@ -145,8 +145,8 @@
                                 </div>
                                 @if (in_array($t->status, ['share_kit', 'shared'], true))
                                     <div class="flex flex-wrap gap-1.5">
-                                        <button type="button" @click="copy()" class="btn-ghost btn-sm text-xs"><x-ui.icon name="copy" class="w-3.5 h-3.5" /> <span x-text="copied ? 'Copied!' : 'Copy caption + link'"></span></button>
-                                        @if ($image)<a href="{{ $image }}" download class="btn-ghost btn-sm text-xs"><x-ui.icon name="download" class="w-3.5 h-3.5" /> Image</a>@endif
+                                        <button type="button" @click="copy()" class="btn-ghost btn-sm text-xs"><x-ui.icon name="copy" class="w-4 h-4" /> <span x-text="copied ? 'Copied!' : 'Copy caption + link'"></span></button>
+                                        @if ($image)<a href="{{ $image }}" download class="btn-ghost btn-sm text-xs"><x-ui.icon name="download" class="w-4 h-4" /> Image</a>@endif
                                         @if ($share)<a href="{{ $share }}" target="_blank" rel="noopener" class="btn-accent btn-sm text-xs">Share ↗</a>@endif
                                         @if ($t->status === 'share_kit')
                                             <button wire:click="markShared({{ $t->id }})" class="btn-ghost btn-sm text-xs">I posted it</button>
@@ -159,7 +159,7 @@
                 </div>
             @empty
                 <div class="card grid place-items-center p-16 text-center">
-                    <x-ui.icon name="chart" class="w-10 h-10 text-muted" />
+                    <x-ui.icon name="chart" class="w-12 h-12 text-muted" />
                     <p class="mt-3 font-semibold">No posts yet</p>
                     <button wire:click="$set('tab', 'compose')" class="btn-accent btn-sm mt-4">Create your first post</button>
                 </div>
@@ -192,6 +192,6 @@
                 </div>
             @endforeach
         </div>
-        <p class="mt-4 text-xs text-muted">Auto-posting turns on per platform once PanMotive's app for it is approved. Until then, share kits get your post out in two taps — with the same tracked links and sales reporting.</p>
+        <p class="mt-4 text-xs text-muted">Auto-posting turns on per platform once Panmotive's app for it is approved. Until then, share kits get your post out in two taps — with the same tracked links and sales reporting.</p>
     @endif
 </div>

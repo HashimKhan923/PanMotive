@@ -139,7 +139,7 @@ class CampaignSender
 
         if ($campaign->channel === 'email') {
             $body = nl2br(e($body));
-            $body = str_replace(e($shopUrl), '<a href="'.$shopUrl.'" style="color:#C8161D;font-weight:600">'.$shopUrl.'</a>', $body);
+            $body = str_replace(e($shopUrl), '<a href="'.$shopUrl.'" style="color:#BB1220;font-weight:600">'.$shopUrl.'</a>', $body);
             $body .= '<img src="'.route('m.open', $token).'" width="1" height="1" alt="" style="display:none">';
         }
 

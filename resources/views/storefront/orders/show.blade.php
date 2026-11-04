@@ -48,7 +48,7 @@
                             <form method="POST" action="{{ route('orders.contact-seller', $item) }}">
                                 @csrf
                                 <button class="inline-flex items-center gap-1 text-xs font-medium text-muted hover:text-accent">
-                                    <x-ui.icon name="mail" class="w-3.5 h-3.5" /> Contact seller
+                                    <x-ui.icon name="mail" class="w-4 h-4" /> Contact seller
                                 </button>
                             </form>
                         @endif
@@ -82,11 +82,11 @@
                         </ol>
 
                         @if ($activeReturn->escalated_at)
-                            <p class="mt-2 text-xs font-medium text-accent">Escalated to PanMotive — a specialist is reviewing.</p>
+                            <p class="mt-2 text-xs font-medium text-accent">Escalated to Panmotive — a specialist is reviewing.</p>
                         @elseif (in_array($activeReturn->status, ['requested', 'approved'], true))
                             <form method="POST" action="{{ route('orders.return.escalate', $activeReturn) }}" class="mt-2">
                                 @csrf
-                                <button class="text-xs font-medium text-accent hover:underline">Not resolving? Escalate to PanMotive</button>
+                                <button class="text-xs font-medium text-fg">Not resolving? Escalate to Panmotive</button>
                             </form>
                         @endif
                     </div>
@@ -137,7 +137,7 @@
                             <form method="POST" action="{{ route('orders.claim', $item) }}" class="space-y-3">
                                 @csrf
                                 <h3 class="font-semibold">Buyer-protection claim</h3>
-                                <p class="text-xs text-muted">Use this when a return isn't the right fit — item never arrived, is not as described, or the seller isn't responding. PanMotive reviews if the seller doesn't resolve it in 72 hours.</p>
+                                <p class="text-xs text-muted">Use this when a return isn't the right fit — item never arrived, is not as described, or the seller isn't responding. Panmotive reviews if the seller doesn't resolve it in 72 hours.</p>
                                 <label class="label" for="cl-reason-{{ $item->id }}">Reason</label>
                                 <select id="cl-reason-{{ $item->id }}" name="reason" class="input text-sm" required>
                                     <option value="">Choose a reason…</option>

@@ -40,7 +40,7 @@ class BulkUpload extends Component
             'csvFile' => 'required|file|max:10240|extensions:csv,txt',
             'defaultCategoryId' => 'nullable|integer|exists:categories,id',
         ], [
-            'csvFile.extensions' => 'Upload a .csv file exported from Shopify or the PanMotive template.',
+            'csvFile.extensions' => 'Upload a .csv file exported from Shopify or the Panmotive template.',
         ]);
 
         $key = 'bulk-upload:'.auth()->id();

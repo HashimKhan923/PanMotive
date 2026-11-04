@@ -34,10 +34,10 @@
     {{-- segments --}}
     <div class="mt-6 flex flex-wrap gap-1 border-b border-line text-sm">
         <button wire:click="$set('segment', '')"
-                class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $segment === '' ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">All</button>
+                class="-mb-px border-b-2 px-3 py-2 font-medium transition {{ $segment === '' ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">All</button>
         @foreach ($segments as $key => $label)
             <button wire:click="$set('segment', '{{ $key }}')"
-                    class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium transition {{ $segment === $key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">{{ $label }}</button>
+                    class="-mb-px whitespace-nowrap border-b-2 px-3 py-2 font-medium transition {{ $segment === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">{{ $label }}</button>
         @endforeach
     </div>
 
@@ -81,7 +81,7 @@
                     <tr class="bg-surface" wire:key="cust-{{ $c->id }}">
                         <td class="px-4 py-3">
                             <a href="{{ route('seller.customers.show', $c->id) }}" class="flex items-center gap-3">
-                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent/15 text-sm font-bold text-accent">{{ strtoupper(mb_substr($c->name, 0, 1)) }}</span>
+                                <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-2 text-sm font-bold text-fg">{{ strtoupper(mb_substr($c->name, 0, 1)) }}</span>
                                 <span>
                                     <span class="font-medium hover:text-accent">{{ $c->name }}</span>
                                     <span class="mt-0.5 flex flex-wrap gap-1">
@@ -105,7 +105,7 @@
                     </tr>
                 @empty
                     <tr><td colspan="6" class="px-4 py-16 text-center">
-                        <x-ui.icon name="users" class="mx-auto w-10 h-10 text-muted" />
+                        <x-ui.icon name="users" class="mx-auto w-12 h-12 text-muted" />
                         <p class="mt-3 font-semibold">{{ $search || $segment || $tag ? 'No customers match' : 'No customers yet' }}</p>
                         <p class="mt-1 text-sm text-muted">{{ $search || $segment || $tag ? 'Try a different search or segment.' : 'Buyers appear here after their first paid order with you.' }}</p>
                     </td></tr>

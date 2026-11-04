@@ -5,7 +5,7 @@
 @section('content')
 <x-admin.header title="All orders" subtitle="Every order on the marketplace. Open one to refund, cancel, or see its full history.">
     @can('finance.export')
-        <a href="{{ route('admin.orders.export', request()->query()) }}" class="btn-outline btn-sm"><x-ui.icon name="download" class="w-3.5 h-3.5" /> Export CSV</a>
+        <a href="{{ route('admin.orders.export', request()->query()) }}" class="btn-outline btn-sm"><x-ui.icon name="download" class="w-4 h-4" /> Export CSV</a>
     @endcan
 </x-admin.header>
 

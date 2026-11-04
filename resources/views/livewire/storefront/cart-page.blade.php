@@ -20,7 +20,7 @@
                         @if ($group['seller']?->sellerProfile?->salesPaused())
                             {{-- Same rule checkout enforces — better to say so here than fail at the last step. --}}
                             <p class="mb-3 flex items-start gap-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
-                                <x-ui.icon name="clock" class="mt-0.5 w-3.5 h-3.5 shrink-0" />
+                                <x-ui.icon name="clock" class="mt-0.5 w-4 h-4 shrink-0" />
                                 This seller is away{{ $group['seller']->sellerProfile->vacation_until ? ' until '.$group['seller']->sellerProfile->vacation_until->format('M j') : '' }} and not taking orders — remove these items to check out, or save them for later.
                             </p>
                         @endif
@@ -55,7 +55,7 @@
                                             </div>
                                         </div>
                                         <button wire:click="moveToWishlist({{ $line['product_id'] }}{{ $v }})" class="mt-2 self-start text-xs font-medium text-muted hover:text-accent">
-                                            <x-ui.icon name="heart" class="mr-1 inline w-3 h-3" /> Move to saved
+                                            <x-ui.icon name="heart" class="mr-1 inline w-4 h-4" /> Move to saved
                                         </button>
                                     </div>
                                 </li>
@@ -84,7 +84,7 @@
                 <hr class="border-line">
                 <div class="flex justify-between"><span class="font-semibold">Estimated total</span><span class="text-lg font-bold">${{ number_format($estimatedTotal, 2) }}</span></div>
                 <a href="{{ route('checkout.index') }}" class="btn-accent w-full">Proceed to checkout <x-ui.icon name="arrow-right" class="w-4 h-4" /></a>
-                <p class="text-center text-xs text-muted"><x-ui.icon name="shield" class="mr-1 inline w-3.5 h-3.5" /> Escrow-protected — sellers paid only on delivery</p>
+                <p class="text-center text-xs text-muted"><x-ui.icon name="shield" class="mr-1 inline w-4 h-4" /> Escrow-protected — sellers paid only on delivery</p>
             </div>
         </div>
     @endif

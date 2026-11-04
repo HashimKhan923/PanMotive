@@ -40,7 +40,7 @@
                 <div class="mt-2 flex flex-wrap gap-1 text-xs">
                     @foreach (['needs_reply' => 'Needs reply', 'all' => 'Open', 'unread' => 'Unread', 'closed' => 'Archived'] as $key => $label)
                         <button wire:click="$set('filter', '{{ $key }}')"
-                                class="rounded-lg px-2.5 py-1.5 font-medium {{ $filter === $key ? 'bg-accent/10 text-accent' : 'text-muted hover:text-fg' }}">
+                                class="rounded-lg px-2.5 py-1.5 font-medium {{ $filter === $key ? 'bg-surface-2 text-fg' : 'text-muted hover:text-fg' }}">
                             {{ $label }}
                             @if (($counts[$key] ?? 0) > 0)<span class="ml-0.5 rounded-full bg-surface-2 px-1.5">{{ $counts[$key] }}</span>@endif
                         </button>
@@ -87,7 +87,7 @@
             @if (! $active)
                 <div class="grid flex-1 place-items-center p-10 text-center text-sm text-muted">
                     <div>
-                        <x-ui.icon name="mail" class="mx-auto w-10 h-10" />
+                        <x-ui.icon name="mail" class="mx-auto w-12 h-12" />
                         <p class="mt-3">Select a conversation to read and reply.</p>
                     </div>
                 </div>
@@ -151,10 +151,10 @@
                                     @empty
                                         <div class="p-3 text-xs text-muted">
                                             No saved replies yet.
-                                            <button type="button" wire:click="addStarterReplies" @click="open = false" class="mt-2 block font-medium text-accent hover:underline">Add 5 starter replies</button>
+                                            <button type="button" wire:click="addStarterReplies" @click="open = false" class="mt-2 block font-medium text-fg">Add 5 starter replies</button>
                                         </div>
                                     @endforelse
-                                    <button type="button" wire:click="editReply" @click="open = false" class="mt-1 block w-full border-t border-line px-3 py-2 text-left text-xs font-medium text-accent">Manage saved replies…</button>
+                                    <button type="button" wire:click="editReply" @click="open = false" class="mt-1 block w-full border-t border-line px-3 py-2 text-left text-xs font-medium text-fg">Manage saved replies…</button>
                                 </div>
                             </div>
                             @if ($aiEnabled)
@@ -180,7 +180,7 @@
                                         @else
                                             <div class="grid h-16 w-16 place-items-center rounded-lg bg-surface-2 text-[10px] text-muted">file</div>
                                         @endif
-                                        <button type="button" wire:click="removePhoto({{ $i }})" class="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-fg text-bg" aria-label="Remove photo"><x-ui.icon name="x" class="w-3 h-3" /></button>
+                                        <button type="button" wire:click="removePhoto({{ $i }})" class="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-fg text-bg" aria-label="Remove photo"><x-ui.icon name="x" class="w-4 h-4" /></button>
                                     </div>
                                 @endforeach
                             </div>
@@ -191,7 +191,7 @@
                                       @keydown.ctrl.enter="$wire.reply()" @keydown.meta.enter="$wire.reply()"></textarea>
                             <button class="btn-accent btn-sm self-end" wire:loading.attr="disabled" wire:target="reply,photos">Send</button>
                         </div>
-                        <p class="mt-1 text-[10px] text-muted">Ctrl+Enter to send. Keep payments and contact details on PanMotive — it protects you in disputes.</p>
+                        <p class="mt-1 text-[10px] text-muted">Ctrl+Enter to send. Keep payments and contact details on Panmotive — it protects you in disputes.</p>
                         @error('body') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         @error('photos') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         @error('photos.*') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
@@ -206,7 +206,7 @@
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wide text-muted">Buyer</p>
                     <p class="mt-1 font-semibold">{{ $active->buyer->name }}</p>
-                    <p class="text-xs text-muted">PanMotive member since {{ $active->buyer->created_at?->format('M Y') }}</p>
+                    <p class="text-xs text-muted">Panmotive member since {{ $active->buyer->created_at?->format('M Y') }}</p>
                     @if ($context['badges'])
                         <div class="mt-1.5 flex flex-wrap gap-1">
                             @foreach ($context['badges'] as $b)<span class="pill text-[10px]">{{ $b }}</span>@endforeach
@@ -260,7 +260,7 @@
                 <div class="border-t border-line pt-3" x-data="{ confirm: false }">
                     @if ($context['blocked'])
                         <p class="text-xs text-rose-500">Blocked {{ $context['blocked']->created_at->diffForHumans() }}{{ $context['blocked']->reason ? ' — '.$context['blocked']->reason : '' }}</p>
-                        <button wire:click="toggleBlock" class="mt-2 text-xs font-medium text-accent hover:underline">Unblock buyer</button>
+                        <button wire:click="toggleBlock" class="mt-2 text-xs font-medium text-fg">Unblock buyer</button>
                     @else
                         <button @click="confirm = !confirm" class="text-xs text-muted hover:text-rose-500">Block this buyer…</button>
                         <div x-show="confirm" x-cloak class="mt-2 space-y-2">
@@ -302,7 +302,7 @@
                             @empty
                                 <li class="rounded-xl border border-dashed border-line p-6 text-center text-sm text-muted">
                                     Nothing saved yet.
-                                    <button wire:click="addStarterReplies" class="mt-2 block w-full font-medium text-accent hover:underline">Add 5 starter replies</button>
+                                    <button wire:click="addStarterReplies" class="mt-2 block w-full font-medium text-fg">Add 5 starter replies</button>
                                 </li>
                             @endforelse
                         </ul>

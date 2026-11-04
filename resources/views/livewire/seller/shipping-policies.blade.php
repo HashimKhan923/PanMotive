@@ -10,7 +10,7 @@
                     <div>
                         <p class="font-semibold">
                             {{ $p->name }}
-                            @if ($p->is_default)<span class="pill ml-1 !bg-accent/10 !text-accent">Default</span>@endif
+                            @if ($p->is_default)<span class="pill ml-1 !bg-surface-2 !text-fg">Default</span>@endif
                         </p>
                         <p class="mt-1 text-xs text-muted">
                             Ships in {{ $p->handling_days }} {{ Str::plural('business day', $p->handling_days) }} ·
@@ -122,7 +122,7 @@
                 @foreach ($excludedStates as $code)
                     <span class="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-600" wire:key="ex-{{ $code }}">
                         {{ $code }}
-                        <button type="button" wire:click="removeExcluded('{{ $code }}')" aria-label="Remove {{ $code }}"><x-ui.icon name="x" class="w-3 h-3" /></button>
+                        <button type="button" wire:click="removeExcluded('{{ $code }}')" aria-label="Remove {{ $code }}"><x-ui.icon name="x" class="w-4 h-4" /></button>
                     </span>
                 @endforeach
                 <input wire:model="stateToAdd" wire:keydown.enter.prevent="addExcluded" maxlength="2" class="input h-8 w-20 uppercase text-sm" placeholder="TX" aria-label="Add a state">

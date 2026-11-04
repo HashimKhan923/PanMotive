@@ -34,7 +34,7 @@
                 :class="state === 'added' ? '!bg-emerald-500 !text-white !shadow-[0_8px_24px_-8px_rgb(16_185_129/.6)]' : ''"
                 class="btn-accent relative h-12 w-full overflow-hidden !py-0 text-[15px] transition-colors duration-300">
             <span x-show="state === 'idle'" class="inline-flex items-center gap-2">
-                <x-ui.icon name="cart" class="w-[18px] h-[18px]" /> {{ $added ? 'Add another' : 'Add to cart' }}
+                <x-ui.icon name="cart" class="w-6 h-6" /> {{ $added ? 'Add another' : 'Add to cart' }}
             </span>
             <span x-show="state === 'adding'" x-cloak class="inline-flex items-center gap-2">
                 <svg class="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".25" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
@@ -51,7 +51,7 @@
 
     @if ($added)
         <p class="mt-2 text-center text-xs font-medium text-emerald-600 dark:text-emerald-400" role="status">
-            <x-ui.icon name="check" class="mr-0.5 inline w-3.5 h-3.5" /> In your cart —
+            <x-ui.icon name="check" class="mr-0.5 inline w-4 h-4" /> In your cart —
             <a href="{{ route('cart.index') }}" class="underline">view cart</a>
         </p>
     @endif

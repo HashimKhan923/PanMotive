@@ -24,7 +24,7 @@
 @endphp
 <div x-data="{ open: false }" class="inline-block" {{ $attributes->only('wire:key') }}>
     <button type="button" @click="open = true" {{ $attributes->except('wire:key')->class("inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg border font-semibold transition ".($size === 'xs' ? 'h-7 px-2.5 text-xs' : 'h-9 px-3.5 text-[13px]')." {$btn}") }}>
-        @if ($icon)<x-ui.icon :name="$icon" class="w-3.5 h-3.5" />@endif
+        @if ($icon)<x-ui.icon :name="$icon" class="w-4 h-4" />@endif
         {{ $label }}
     </button>
 

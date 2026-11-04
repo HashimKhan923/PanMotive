@@ -41,7 +41,7 @@
     >
         <div class="flex items-center justify-between border-b border-line px-5 py-4">
             <p class="font-bold">Added to cart <span class="text-muted" x-text="'· ' + data.count + ' item' + (data.count === 1 ? '' : 's')"></span></p>
-            <button @click="open = false" class="btn-ghost !p-2" aria-label="Close"><x-ui.icon name="x" class="w-5 h-5" /></button>
+            <button @click="open = false" class="btn-ghost !p-2" aria-label="Close"><x-ui.icon name="x" class="w-6 h-6" /></button>
         </div>
 
         <div class="flex-1 space-y-3 overflow-y-auto p-5">

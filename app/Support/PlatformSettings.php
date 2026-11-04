@@ -40,7 +40,7 @@ class PlatformSettings
                 'marketplace.seller_tiers.top_rated.commission_rate' => ['label' => 'Top Rated commission', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 50],
                 'marketplace.seller_tiers.powerseller.commission_rate' => ['label' => 'Powerseller commission', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 50],
             ]],
-            'rewards' => ['label' => 'Buyer rewards', 'hint' => 'Cashback, referrals and PanMotive Plus.', 'icon' => 'sparkles', 'fields' => [
+            'rewards' => ['label' => 'Buyer rewards', 'hint' => 'Cashback, referrals and Panmotive Plus.', 'icon' => 'sparkles', 'fields' => [
                 'marketplace.loyalty_tiers.bronze.cashback_rate' => ['label' => 'Bronze cashback', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 25],
                 'marketplace.loyalty_tiers.silver.cashback_rate' => ['label' => 'Silver cashback', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 25],
                 'marketplace.loyalty_tiers.gold.cashback_rate' => ['label' => 'Gold cashback', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 25],

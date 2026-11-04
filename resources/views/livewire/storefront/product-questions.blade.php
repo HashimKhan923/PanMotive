@@ -44,9 +44,9 @@
                                 <div class="min-w-0">
                                     <p class="text-sm">{{ $answer->body }}</p>
                                     <p class="mt-1 text-xs text-muted">
-                                        {{ $answer->user?->name ?? $answer->author_name ?? 'PanMotive' }}
+                                        {{ $answer->user?->name ?? $answer->author_name ?? 'Panmotive' }}
                                         @if ($answer->is_seller)
-                                            <span class="pill ml-1 !bg-accent/10 !text-accent">Seller</span>
+                                            <span class="pill ml-1 !bg-surface-2 !text-fg">Seller</span>
                                         @endif
                                         · {{ $answer->created_at->diffForHumans() }}
                                     </p>

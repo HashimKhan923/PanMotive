@@ -1,1 +1,1 @@
-<x-ui.logo variant="mark" {{ $attributes }} />
+<x-ui.logo variant="symbol" {{ $attributes }} />

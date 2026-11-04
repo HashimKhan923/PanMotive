@@ -57,7 +57,7 @@ class OversightController extends Controller
         };
         $this->audit("Subscription {$data['action']}", $subscription, $data);
         $this->tell($subscription->buyer, 'Your Subscribe & Save was changed',
-            'PanMotive '.['pause' => 'paused', 'resume' => 'resumed', 'cancel' => 'cancelled'][$data['action']].' your repeat order for '.($subscription->product?->title ?? 'a part').'. Reason: '.$data['reason'].'.');
+            'Panmotive '.['pause' => 'paused', 'resume' => 'resumed', 'cancel' => 'cancelled'][$data['action']].' your repeat order for '.($subscription->product?->title ?? 'a part').'. Reason: '.$data['reason'].'.');
 
         return back()->with('success', 'Subscription updated.');
     }
@@ -139,7 +139,7 @@ class OversightController extends Controller
 
         $campaign->update(['status' => 'draft', 'scheduled_at' => null]);
         $this->audit('Stopped seller campaign', $campaign, $data);
-        $this->tell($campaign->seller, 'Your campaign was stopped', "PanMotive stopped \"{$campaign->name}\" before it sent. Reason: {$data['reason']}. It is back in your drafts.");
+        $this->tell($campaign->seller, 'Your campaign was stopped', "Panmotive stopped \"{$campaign->name}\" before it sent. Reason: {$data['reason']}. It is back in your drafts.");
 
         return back()->with('success', 'Campaign stopped. It is back in the seller\'s drafts.');
     }
@@ -150,7 +150,7 @@ class OversightController extends Controller
 
         $automation->update(['is_active' => false]);
         $this->audit('Stopped seller automation', $automation, $data);
-        $this->tell($automation->seller, 'An automation was switched off', "PanMotive switched off one of your marketing automations. Reason: {$data['reason']}.");
+        $this->tell($automation->seller, 'An automation was switched off', "Panmotive switched off one of your marketing automations. Reason: {$data['reason']}.");
 
         return back()->with('success', 'Automation switched off.');
     }

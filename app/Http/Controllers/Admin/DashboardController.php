@@ -136,7 +136,7 @@ class DashboardController extends Controller
         $c = AdminNav::counts();
 
         return collect([
-            ['Escalated claims', $c['claims'], 'alert', 'admin.disputes.index', 'orders.view', 'A buyer is waiting on PanMotive to decide.'],
+            ['Escalated claims', $c['claims'], 'alert', 'admin.disputes.index', 'orders.view', 'A buyer is waiting on Panmotive to decide.'],
             ['Escalated returns', $c['escalated_returns'], 'refresh', 'admin.returns.index', 'orders.view', 'The seller and buyer could not agree.'],
             ['Open alerts', $c['alerts'], 'bell', 'admin.alerts.index', null, 'Blocked payouts and system problems.'],
             ['Seller applications', $c['pending_sellers'], 'store', 'admin.sellers.index', 'sellers.approve', 'New stores waiting for approval.'],

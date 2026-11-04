@@ -2,7 +2,7 @@
     $announcement = config('marketplace.platform.announcement');
     $until = config('marketplace.platform.announcement_until');
     $live = filled($announcement) && (blank($until) || now()->lt(\Illuminate\Support\Carbon::parse($until)));
-    $tone = ['accent' => 'bg-accent text-accent-fg', 'info' => 'bg-brand text-brand-fg', 'warning' => 'bg-amber-500 text-black', 'danger' => 'bg-rose-600 text-white'][config('marketplace.platform.announcement_tone')] ?? 'bg-accent text-accent-fg';
+    $tone = ['accent' => 'bg-accent text-accent-fg', 'info' => 'bg-brand text-brand-fg', 'warning' => 'bg-warning-bg text-amber-600', 'danger' => 'bg-rose-600 text-white'][config('marketplace.platform.announcement_tone')] ?? 'bg-accent text-accent-fg';
 @endphp
 @if ($live)
     <div class="{{ $tone }} px-4 py-2 text-center text-xs font-semibold sm:text-sm">

@@ -3,58 +3,66 @@
 @tailwind utilities;
 
 /* ============================================================
-   Design tokens — RGB triplets so Tailwind's <alpha-value> works.
-   Light is the default; .dark on <html> swaps the roles.
-   Red and black come from the logo. --c-accent is the exact logo red, for fills;
-   --c-accent-ink is the shade that stays readable as small text on each background.
+   Panmotive brand colors (Brand Guidelines 11/2026, chapter 04).
+   RGB triplets so Tailwind's <alpha-value> works. Light is the default;
+   .dark on <html> swaps the roles.
+   --c-accent is Performance Red, for fills. --c-accent-ink is what
+   `text-accent` uses: the guide allows red text on white only, so it is
+   #BB1220 in light mode and white on dark.
    ============================================================ */
 :root {
-    --c-bg: 247 247 248;
+    --c-bg: 255 255 255;
     --c-surface: 255 255 255;
-    --c-surface-2: 240 240 242;
-    --c-fg: 23 24 29;             /* logo black */
-    --c-muted: 95 98 107;
-    --c-line: 227 228 232;
-    --c-brand: 23 24 29;          /* logo black */
+    --c-surface-2: 245 246 248;   /* #F5F6F8 */
+    --c-fg: 21 25 30;             /* Charcoal #15191E */
+    --c-muted: 94 102 114;        /* #5E6672 */
+    --c-line: 217 221 227;        /* #D9DDE3 */
+    --c-input: 102 112 133;       /* #667085 */
+    --c-brand: 21 25 30;
     --c-brand-fg: 255 255 255;
-    --c-accent: 221 30 37;        /* logo red */
+    --c-accent: 229 27 43;        /* Performance Red #E51B2B */
+    --c-accent-hover: 204 23 38;  /* #CC1726 */
+    --c-accent-pressed: 187 18 32;/* #BB1220 */
     --c-accent-fg: 255 255 255;
-    --c-accent-ink: 200 22 29;
-    --c-accent-sheen: 168 15 21;
-    --c-chart: 23 24 29;          /* charts stay neutral: a red revenue line reads as a loss */
+    --c-accent-ink: 187 18 32;
+    --c-accent-sheen: 229 27 43;
+    --c-chart: 21 25 30;          /* charts stay neutral: a red revenue line reads as a loss */
+    --c-success: 24 121 78;       /* #18794E */
+    --c-success-bg: 232 245 238;
+    --c-warning: 138 82 0;        /* #8A5200 */
+    --c-warning-bg: 255 244 214;
+    --c-error: 187 18 32;         /* #BB1220 */
+    --c-error-bg: 253 235 237;
 }
 
-.dark {
-    --c-bg: 14 15 18;
-    --c-surface: 23 24 29;
-    --c-surface-2: 35 37 43;
-    --c-fg: 244 244 245;
-    --c-muted: 161 164 173;
-    --c-line: 51 53 60;
-    --c-brand: 23 24 29;
-    --c-brand-fg: 255 255 255;
-    --c-accent: 221 30 37;
-    --c-accent-fg: 255 255 255;
-    --c-accent-ink: 255 107 112;
-    --c-accent-sheen: 255 150 154;
-    --c-chart: 229 230 233;
+/* Dark mode, per the guide: text white, secondary #C6CBD2, cards #222830. Black panels use the same values. */
+.dark, .bg-brand, .from-brand {
+    --c-surface: 34 40 48;
+    --c-surface-2: 43 50 60;
+    --c-fg: 255 255 255;
+    --c-muted: 198 203 210;
+    --c-line: 62 70 82;
+    --c-input: 125 135 152;
+    --c-accent-ink: 255 255 255;
+    --c-accent-sheen: 198 203 210;
+    --c-chart: 198 203 210;
+    --c-success: 110 231 168;
+    --c-success-bg: 20 54 40;
+    --c-warning: 252 211 77;
+    --c-warning-bg: 58 44 14;
+    --c-error: 252 165 165;
+    --c-error-bg: 66 24 29;
 }
+.dark { --c-bg: 21 25 30; }
+
+/* Status tints use the guide's exact pairs. */
+[class*="bg-emerald-500/"], [class*="bg-green-500/"] { background-color: rgb(var(--c-success-bg)) !important; }
+[class*="bg-amber-500/"], [class*="bg-yellow-500/"], [class*="bg-orange-500/"] { background-color: rgb(var(--c-warning-bg)) !important; }
+[class*="bg-rose-500/"], [class*="bg-red-500/"] { background-color: rgb(var(--c-error-bg)) !important; }
 
 .dark [type='radio']:not(:checked), .dark [type='checkbox']:not(:checked) {
     background-color: rgb(var(--c-surface-2));
-    border-color: rgb(var(--c-muted) / .6);
-}
-
-/* Black panels stay black in light mode, so everything inside them uses the dark values. */
-.bg-brand, .from-brand {
-    --c-surface: 35 37 43;
-    --c-surface-2: 51 53 60;
-    --c-fg: 255 255 255;
-    --c-muted: 176 179 187;
-    --c-line: 64 66 74;
-    --c-accent-ink: 255 107 112;
-    --c-accent-sheen: 255 150 154;
-    --c-chart: 229 230 233;
+    border-color: rgb(var(--c-input));
 }
 
 @layer base {
@@ -64,7 +72,6 @@
     }
     body {
         @apply bg-bg text-fg antialiased;
-        font-feature-settings: 'cv11', 'ss01';
     }
     ::selection {
         background: rgb(var(--c-accent) / 0.28);
@@ -96,7 +103,7 @@
     }
 
     *:focus-visible {
-        outline: 2px solid rgb(var(--c-accent));
+        outline: 2px solid rgb(var(--c-fg));
         outline-offset: 2px;
         border-radius: 3px;
     }
@@ -113,7 +120,7 @@
                transition-[transform,background-color,box-shadow] duration-150 active:scale-[.97]
                focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
     }
-    .btn-accent   { @apply btn bg-accent text-accent-fg hover:brightness-95 shadow-[0_8px_24px_-8px_rgb(221_30_37/.5)]; }
+    .btn-accent   { @apply btn bg-accent text-accent-fg hover:bg-accent-hover active:bg-accent-pressed shadow-[0_8px_24px_-8px_rgb(229_27_43/.5)]; }
     .btn-brand    { @apply btn bg-brand text-brand-fg hover:opacity-90; }
     .btn-outline  { @apply btn border border-line bg-surface text-fg hover:bg-surface-2; }
     .btn-ghost    { @apply btn bg-transparent text-fg hover:bg-surface-2; }
@@ -124,8 +131,8 @@
     }
 
     .input {
-        @apply w-full rounded-xl border-line bg-surface text-fg placeholder:text-muted
-               focus:border-accent focus:ring-2 focus:ring-accent/30;
+        @apply w-full rounded-xl border-input bg-surface text-fg placeholder:text-muted
+               focus:border-fg focus:ring-1 focus:ring-fg;
     }
     .label { @apply mb-1.5 block text-sm font-medium text-fg; }
 
@@ -217,7 +224,7 @@
 /* Reading-progress bar along the top edge. */
 .pm-progress {
     position: fixed; inset: 0 0 auto 0; height: 3px; z-index: 80; pointer-events: none;
-    background: linear-gradient(90deg, rgb(var(--c-accent)), #ff5a5f);
+    background: rgb(var(--c-accent));
     transform-origin: 0 50%; transform: scaleX(0);
 }
 
@@ -225,9 +232,9 @@
 .pm-aurora { position: absolute; inset: -20%; overflow: hidden; pointer-events: none; filter: blur(60px) saturate(1.2); opacity: .9; }
 .pm-aurora span { position: absolute; border-radius: 9999px; mix-blend-mode: multiply; animation: pm-drift 18s ease-in-out infinite alternate; }
 .dark .pm-aurora span { mix-blend-mode: screen; opacity: .8; }
-.pm-aurora span:nth-child(1) { width: 42%; height: 46%; left: 52%; top: 4%; background: rgb(var(--c-accent) / .14); }
+.pm-aurora span:nth-child(1) { width: 42%; height: 46%; left: 52%; top: 4%; background: rgb(var(--c-accent) / .05); }
 .pm-aurora span:nth-child(2) { width: 38%; height: 40%; left: 8%; top: 46%; background: rgb(120 124 135 / .10); animation-duration: 22s; animation-delay: -6s; }
-.pm-aurora span:nth-child(3) { width: 30%; height: 34%; left: 34%; top: 30%; background: rgb(168 15 21 / .06); animation-duration: 26s; animation-delay: -12s; }
+.pm-aurora span:nth-child(3) { width: 30%; height: 34%; left: 34%; top: 30%; background: rgb(94 102 114 / .06); animation-duration: 26s; animation-delay: -12s; }
 @keyframes pm-drift {
     0%   { transform: translate3d(0, 0, 0) scale(1); }
     50%  { transform: translate3d(6%, -8%, 0) scale(1.12); }
@@ -337,6 +344,18 @@ body:has(.pm-sticky-buy.is-visible) .pm-chat { bottom: 5.5rem; }
     to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
 }
 
+/* Touch targets are at least 44 x 44 px on touch screens, even when the icon is smaller. */
+@media (pointer: coarse) {
+    .btn, .btn-accent, .btn-brand, .btn-outline, .btn-ghost, .btn-sm { min-height: 44px; min-width: 44px; }
+    .pm-marquee a, footer li a, nav[aria-label] a, nav[role="navigation"] button { display: inline-flex; align-items: center; min-height: 44px; }
+    /* An invisible, larger press area: the control keeps its size and nothing moves. */
+    .pm-tap::after { content: ''; position: absolute; left: 50%; top: 50%; width: max(100%, 44px); height: max(100%, 44px); transform: translate(-50%, -50%); }
+}
+
+/* The forward cut: the symbol's 60 degree edge. One per composition, never on product information or controls. */
+.pm-cut-field { position: absolute; top: 0; bottom: 0; left: 64%; right: -40%; background: rgb(var(--c-accent)); transform: skewX(-30deg); transform-origin: bottom left; pointer-events: none; }
+.pm-cut-bar { display: block; width: 64px; height: 10px; margin-bottom: .75rem; background: rgb(var(--c-accent)); clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+
 /* Trix rich-text editor (product descriptions) — themed to match .input / dark mode.
    Kept unlayered (not @layer components — Tailwind's layer processing was silently
    dropping every rule here whose selector contained "trix-button", comma-listed or
@@ -362,7 +381,7 @@ trix-toolbar .trix-button {
     background: transparent; color: rgb(var(--c-fg));
 }
 trix-toolbar .trix-button:hover { background: rgb(var(--c-surface)); }
-trix-toolbar .trix-button.trix-active { background: rgb(var(--c-accent) / .15); color: rgb(var(--c-accent)); }
+trix-toolbar .trix-button.trix-active { background: rgb(var(--c-surface)); color: rgb(var(--c-fg)); }
 /* No file storage is wired up for attachments, and code blocks fall outside the
    sanitizer's allow-list — hide both rather than let a seller format something
    that silently vanishes on save. */
@@ -380,11 +399,11 @@ trix-editor {
     padding: .75rem 1rem;
     font-size: 15px; color: rgb(var(--c-fg));
 }
-trix-editor:focus { border-color: rgb(var(--c-accent)); outline: 2px solid rgb(var(--c-accent) / .3); outline-offset: 0; }
+trix-editor:focus { border-color: rgb(var(--c-fg)); outline: 1px solid rgb(var(--c-fg)); outline-offset: 0; }
 trix-editor h1 { margin: .25rem 0 .5rem; font-size: 1.125rem; line-height: 1.75rem; font-weight: 700; }
 trix-editor ul { list-style: disc; padding-left: 1.25rem; }
 trix-editor ol { list-style: decimal; padding-left: 1.25rem; }
-trix-editor a { color: rgb(var(--c-accent)); text-decoration: underline; }
+trix-editor a { color: rgb(var(--c-accent-ink)); text-decoration: underline; }
 
 /* Trix bakes every toolbar icon in as a hardcoded-black inline SVG background-image
    (fill="#000"), not a currentColor mask, so our `color:` override above never
@@ -401,7 +420,7 @@ trix-editor a { color: rgb(var(--c-accent)); text-decoration: underline; }
 .adm-aurora::before, .adm-aurora::after { content: ''; position: absolute; border-radius: 50%; filter: blur(90px); opacity: .08; }
 .dark .adm-aurora::before, .dark .adm-aurora::after { opacity: .14; }
 .adm-aurora::before { width: 620px; height: 380px; top: -180px; left: 12%; background: rgb(var(--c-accent)); animation: adm-drift 22s ease-in-out infinite alternate; }
-.adm-aurora::after { width: 720px; height: 420px; top: -220px; right: 2%; background: #8a8d96; animation: adm-drift 28s ease-in-out infinite alternate-reverse; }
+.adm-aurora::after { width: 720px; height: 420px; top: -220px; right: 2%; background: #5E6672; animation: adm-drift 28s ease-in-out infinite alternate-reverse; }
 @keyframes adm-drift { to { transform: translate3d(90px, 40px, 0) scale(1.15); } }
 
 .adm-sidebar { background: rgb(var(--c-surface) / .86); border-right: 1px solid rgb(var(--c-line) / .7); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
@@ -409,23 +428,23 @@ trix-editor a { color: rgb(var(--c-accent)); text-decoration: underline; }
 
 .adm-nav-link { position: relative; display: flex; align-items: center; gap: .625rem; border-radius: .625rem; padding: .45rem .75rem; font-size: 13px; font-weight: 500; color: rgb(var(--c-muted)); transition: background-color .18s, color .18s, transform .18s; }
 .adm-nav-link:hover { background: rgb(var(--c-surface-2)); color: rgb(var(--c-fg)); transform: translateX(2px); }
-.adm-nav-link.is-active { background: rgb(var(--c-accent) / .12); color: rgb(var(--c-accent)); font-weight: 600; }
+.adm-nav-link.is-active { background: rgb(var(--c-surface-2)); color: rgb(var(--c-fg)); font-weight: 600; }
 .adm-nav-link.is-active::before { content: ''; position: absolute; left: -.75rem; top: 22%; bottom: 22%; width: 3px; border-radius: 0 3px 3px 0; background: rgb(var(--c-accent)); box-shadow: 0 0 12px rgb(var(--c-accent)); }
 .adm-nav-badge { min-width: 1.15rem; border-radius: 999px; background: rgb(var(--c-accent)); padding: 0 .35rem; text-align: center; font-size: 10px; font-weight: 700; line-height: 1.15rem; color: rgb(var(--c-accent-fg)); }
 
 .adm-topbar { background: rgb(var(--c-bg) / .78); border-bottom: 1px solid rgb(var(--c-line) / .5); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .adm-search-trigger { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); transition: border-color .18s, box-shadow .18s; }
 .adm-search-trigger:hover { border-color: rgb(var(--c-accent) / .55); box-shadow: 0 0 0 3px rgb(var(--c-accent) / .1); }
-.adm-palette { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); box-shadow: 0 30px 80px -20px rgb(0 0 0 / .6); }
+.adm-palette { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); box-shadow: 0 30px 80px -20px rgb(21 25 30 / .6); }
 .adm-ping::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: inherit; animation: adm-ping 1.8s cubic-bezier(0, 0, .2, 1) infinite; }
 @keyframes adm-ping { 70%, 100% { transform: scale(2.6); opacity: 0; } }
 
 /* Cards: a soft glow follows the cursor (position set in admin.js). */
-.adm-card { position: relative; border-radius: 1rem; background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line) / .8); box-shadow: 0 1px 2px rgb(0 0 0 / .06); transition: border-color .22s, box-shadow .22s, transform .22s; }
+.adm-card { position: relative; border-radius: 1rem; background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line) / .8); box-shadow: 0 1px 2px rgb(21 25 30 / .06); transition: border-color .22s, box-shadow .22s, transform .22s; }
 .adm-card::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .25s;
     background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0), rgb(var(--c-accent) / .09), transparent 70%); }
 .adm-card:hover::before { opacity: 1; }
-a.adm-card:hover, .adm-card-link:hover { border-color: rgb(var(--c-accent) / .45); transform: translateY(-2px); box-shadow: 0 14px 30px -18px rgb(0 0 0 / .5); }
+a.adm-card:hover, .adm-card-link:hover { border-color: rgb(var(--c-accent) / .45); transform: translateY(-2px); box-shadow: 0 14px 30px -18px rgb(21 25 30 / .5); }
 
 /* Tables */
 .adm-table { width: 100%; font-size: 13px; border-collapse: collapse; }
@@ -443,13 +462,11 @@ a.adm-card:hover, .adm-card-link:hover { border-color: rgb(var(--c-accent) / .45
 /* Status pills always carry a word, so meaning is never colour alone. */
 .adm-pill { display: inline-flex; align-items: center; gap: .35rem; border-radius: 999px; padding: .125rem .55rem; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .adm-pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-.adm-pill-good { background: rgb(16 185 129 / .13); color: rgb(5 150 105); }
-.adm-pill-warn { background: rgb(245 158 11 / .15); color: rgb(180 83 9); }
-.adm-pill-bad { background: rgb(244 63 94 / .13); color: rgb(225 29 72); }
-.adm-pill-info { background: rgb(79 124 255 / .14); color: rgb(59 100 230); }
+.adm-pill-good { background: rgb(var(--c-success-bg)); color: rgb(var(--c-success)); }
+.adm-pill-warn { background: rgb(var(--c-warning-bg)); color: rgb(var(--c-warning)); }
+.adm-pill-bad { background: rgb(var(--c-error-bg)); color: rgb(var(--c-error)); }
+.adm-pill-info { background: rgb(var(--c-surface-2)); color: rgb(var(--c-fg)); }
 .adm-pill-mute { background: rgb(var(--c-surface-2)); color: rgb(var(--c-muted)); }
-.dark .adm-pill-good { color: rgb(52 211 153); } .dark .adm-pill-warn { color: rgb(251 191 36); }
-.dark .adm-pill-bad { color: rgb(251 113 133); } .dark .adm-pill-info { color: rgb(147 175 255); }
 
 /* Charts */
 .adm-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: adm-draw 1.3s cubic-bezier(.65, 0, .35, 1) forwards; }
@@ -462,7 +479,7 @@ a.adm-card:hover, .adm-card-link:hover { border-color: rgb(var(--c-accent) / .45
 /* Tabs */
 .adm-tab { display: inline-flex; align-items: center; gap: .4rem; border-radius: .625rem; padding: .4rem .75rem; font-size: 13px; font-weight: 500; color: rgb(var(--c-muted)); white-space: nowrap; transition: background-color .15s, color .15s; }
 .adm-tab:hover { background: rgb(var(--c-surface-2)); color: rgb(var(--c-fg)); }
-.adm-tab.is-active { background: rgb(var(--c-accent) / .12); color: rgb(var(--c-accent)); font-weight: 600; }
+.adm-tab.is-active { background: rgb(var(--c-fg)); color: rgb(var(--c-bg)); font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) {
     .adm-aurora::before, .adm-aurora::after, .adm-ping::after, .adm-table tbody tr, .adm-bar { animation: none; }

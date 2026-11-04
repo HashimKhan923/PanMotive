@@ -19,12 +19,12 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="font-bold">${{ number_format($order->total, 2) }}</span>
-                    <x-ui.icon name="chevron-right" class="w-5 h-5 text-muted" />
+                    <x-ui.icon name="chevron-right" class="w-6 h-6 text-muted" />
                 </div>
             </a>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="box" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="box" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">No orders yet</p>
                 <a href="{{ route('products.index') }}" class="btn-accent mt-4">Start shopping</a>
             </div>

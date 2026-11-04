@@ -3,7 +3,7 @@
 @section('title', 'Wallets & credit')
 
 @section('content')
-<x-admin.header title="Wallets & credit" subtitle="Store credit is money PanMotive owes buyers. To change a balance, open the person's account." />
+<x-admin.header title="Wallets & credit" subtitle="Store credit is money Panmotive owes buyers. To change a balance, open the person's account." />
 
 <div class="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4" data-enter>
     <x-admin.stat label="Total owed in wallets" :value="$walletOwed" prefix="$" :decimals="2" icon="dollar" />

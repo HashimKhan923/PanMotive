@@ -99,7 +99,7 @@ class OrderController extends Controller
         $data = $request->validate(['reason' => 'required|string', 'note' => 'nullable|string|max:500']);
 
         try {
-            $refunded = $cancellations->cancel($orderItem, $data['reason'], trim('By PanMotive staff. '.($data['note'] ?? '')), $request->user());
+            $refunded = $cancellations->cancel($orderItem, $data['reason'], trim('By Panmotive staff. '.($data['note'] ?? '')), $request->user());
         } catch (RuntimeException $e) {
             return back()->withErrors(['cancel' => $e->getMessage()]);
         }
@@ -127,17 +127,17 @@ class OrderController extends Controller
 
         try {
             $amount = DB::transaction(function () use ($orderItem, $data, $refunds, $request, $stock, $wasUnshipped) {
-                $amount = $refunds->refundLine($orderItem, 'admin', "Refund from PanMotive on order {$orderItem->order->order_number}", (bool) ($data['include_shipping'] ?? false));
+                $amount = $refunds->refundLine($orderItem, 'admin', "Refund from Panmotive on order {$orderItem->order->order_number}", (bool) ($data['include_shipping'] ?? false));
 
                 $orderItem->update(['status' => OrderStatus::Refunded]);
                 $orderItem->statusHistory()->create([
                     'status' => OrderStatus::Refunded->value,
-                    'note' => 'Refunded $'.number_format($amount, 2).' by PanMotive staff: '.$data['reason'],
+                    'note' => 'Refunded $'.number_format($amount, 2).' by Panmotive staff: '.$data['reason'],
                     'changed_by' => $request->user()->id,
                 ]);
                 $orderItem->returnRequests()->whereNotIn('status', ['refunded', 'rejected'])->update([
                     'status' => 'refunded', 'resolved_by' => $request->user()->id, 'resolved_at' => now(),
-                    'resolution_note' => 'Refunded by PanMotive staff.',
+                    'resolution_note' => 'Refunded by Panmotive staff.',
                 ]);
                 if ($wasUnshipped) {
                     $stock->release($orderItem, "Order {$orderItem->order->order_number} refunded by staff");
@@ -152,7 +152,7 @@ class OrderController extends Controller
         $orderItem->order->syncStatusFromLines();
         $this->audit('Refunded order line', $orderItem, $data + ['amount' => $amount]);
         $this->tellBuyer($orderItem->order, 'Your refund is on its way', 'We refunded $'.number_format($amount, 2)." for {$orderItem->product_title} on order {$orderItem->order->order_number}. Card refunds usually take 5 to 10 business days.");
-        $this->tell($orderItem->seller, 'A line on your order was refunded', "PanMotive refunded {$orderItem->product_title} on order {$orderItem->order->order_number}. Reason: {$data['reason']}.");
+        $this->tell($orderItem->seller, 'A line on your order was refunded', "Panmotive refunded {$orderItem->product_title} on order {$orderItem->order->order_number}. Reason: {$data['reason']}.");
 
         return back()->with('success', '$'.number_format($amount, 2).' refunded to the buyer.');
     }
@@ -174,7 +174,7 @@ class OrderController extends Controller
         app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.delivered', [$orderItem->fresh('order')]);
         ReleaseSellerPayout::dispatch($orderItem->id);
         $this->audit('Marked line delivered', $orderItem, $data);
-        $this->tell($orderItem->seller, 'Order marked as delivered', "PanMotive marked {$orderItem->product_title} on order {$orderItem->order->order_number} as delivered, so your payout has started.");
+        $this->tell($orderItem->seller, 'Order marked as delivered', "Panmotive marked {$orderItem->product_title} on order {$orderItem->order->order_number} as delivered, so your payout has started.");
 
         return back()->with('success', 'Marked delivered. The seller payout has started.');
     }

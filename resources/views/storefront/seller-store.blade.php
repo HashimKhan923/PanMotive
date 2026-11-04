@@ -1,7 +1,7 @@
 @extends('layouts.storefront')
 
 @section('title', $sellerProfile->business_name . ' — Seller on ' . config('app.name'))
-@section('meta_description', Str::limit(strip_tags($sellerProfile->bio ?: 'Auto parts from ' . $sellerProfile->business_name . ' on PanMotive.'), 155))
+@section('meta_description', Str::limit(strip_tags($sellerProfile->bio ?: 'Auto parts from ' . $sellerProfile->business_name . ' on Panmotive.'), 155))
 
 @php
     $theme = $sellerProfile->theme ?? [];
@@ -15,7 +15,7 @@
 <div class="container-x py-8 lg:py-12" @if ($accentRgb) style="--c-accent: {{ $accentRgb }}" @endif>
     @if ($sellerProfile->activeAnnouncement())
         <div class="mb-4 flex items-start gap-3 rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm" data-reveal>
-            <x-ui.icon name="sparkles" class="mt-0.5 w-4 h-4 text-accent" />
+            <x-ui.icon name="sparkles" class="mt-0.5 w-4 h-4 text-fg" />
             <p>{{ $sellerProfile->activeAnnouncement() }}</p>
         </div>
     @endif
@@ -31,7 +31,7 @@
         @if (!empty($theme['hero_headline']) || !empty($theme['hero_subtext']))
             <div class="mb-4">
                 @if (!empty($theme['hero_headline']))
-                    <p class="text-lg font-extrabold tracking-tight sm:text-xl">{{ $theme['hero_headline'] }}</p>
+                    <p class="text-lg font-bold tracking-tight sm:text-xl">{{ $theme['hero_headline'] }}</p>
                 @endif
                 @if (!empty($theme['hero_subtext']))
                     <p class="mt-1 max-w-2xl text-sm text-muted">{{ $theme['hero_subtext'] }}</p>
@@ -39,14 +39,14 @@
             </div>
         @endif
         <div class="-mt-14 flex flex-wrap items-start gap-6 sm:-mt-16">
-            <div class="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border-4 border-surface bg-brand text-3xl font-extrabold text-brand-fg">
+            <div class="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border-4 border-surface bg-brand text-3xl font-bold text-brand-fg">
                 {{ Str::of($sellerProfile->business_name)->substr(0, 1)->upper() }}
             </div>
             <div class="min-w-0 flex-1 pt-3 sm:pt-[4.25rem]">
                 <div class="flex flex-wrap items-center gap-2">
                     <h1 class="text-2xl font-bold sm:text-3xl">{{ $sellerProfile->business_name }}</h1>
                     @if ($sellerProfile->hasBadge())
-                        <span class="pill !bg-accent/10 !text-accent">{{ $sellerProfile->tierLabel() }}</span>
+                        <span class="pill !bg-surface-2 !text-fg">{{ $sellerProfile->tierLabel() }}</span>
                     @endif
                 </div>
                 <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
@@ -58,9 +58,9 @@
                     <span>{{ $stats['listings'] }} active {{ Str::plural('listing', $stats['listings']) }}</span>
                     <span>Selling since {{ $stats['since']->format('M Y') }}</span>
                     @if ($reply = $sellerProfile->responseLabel())
-                        <span class="inline-flex items-center gap-1"><x-ui.icon name="message" class="w-3.5 h-3.5" /> {{ $reply }}</span>
+                        <span class="inline-flex items-center gap-1"><x-ui.icon name="message" class="w-4 h-4" /> {{ $reply }}</span>
                     @endif
-                    <span class="inline-flex items-center gap-1"><x-ui.icon name="refresh" class="w-3.5 h-3.5" /> {{ max((int) config('marketplace.returns.window_days', 30), (int) $sellerProfile->return_window_days) }}-day returns{{ $sellerProfile->return_shipping === 'seller' ? ' · free' : '' }}</span>
+                    <span class="inline-flex items-center gap-1"><x-ui.icon name="refresh" class="w-4 h-4" /> {{ max((int) config('marketplace.returns.window_days', 30), (int) $sellerProfile->return_window_days) }}-day returns{{ $sellerProfile->return_shipping === 'seller' ? ' · free' : '' }}</span>
                 </div>
                 @php($about = $theme['about'] ?? $sellerProfile->bio)
                 @if ($about)
@@ -70,15 +70,15 @@
                     @livewire('storefront.follow-store', ['sellerId' => $sellerProfile->user_id])
 
                     @if ($sellerProfile->loyaltyEnabled())
-                        <span class="inline-flex items-center gap-1.5 rounded-xl border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent">
-                            <x-ui.icon name="star" class="w-3.5 h-3.5 fill-current" />
+                        <span class="inline-flex items-center gap-1.5 rounded-xl border border-accent/40 bg-surface-2 px-3 py-1.5 text-xs font-semibold text-fg">
+                            <x-ui.icon name="star" class="w-4 h-4 fill-current" />
                             Earn {{ $sellerProfile->pointsPerDollar() }} points per $1
                         </span>
                     @endif
 
                     @if ($affiliateProgram)
-                        <a href="{{ route('affiliate.join.form', $sellerProfile) }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline">
-                            <x-ui.icon name="sparkles" class="w-3.5 h-3.5" />
+                        <a href="{{ route('affiliate.join.form', $sellerProfile) }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-fg underline underline-offset-2">
+                            <x-ui.icon name="sparkles" class="w-4 h-4" />
                             Join affiliate program &middot; {{ rtrim(rtrim(number_format($affiliateProgram->commission_pct, 2), '0'), '.') }}%
                         </a>
                     @endif
@@ -94,7 +94,7 @@
                                     <form method="POST" action="{{ route('loyalty.redeem', $sellerProfile) }}">
                                         @csrf
                                         <input type="hidden" name="points" value="{{ $loyaltyAccount->points }}">
-                                        <button class="btn-accent btn-sm">Redeem to PanMotive credit</button>
+                                        <button class="btn-accent btn-sm">Redeem to Panmotive credit</button>
                                     </form>
                                 @else
                                     <span class="text-xs text-muted">{{ number_format($minRedeem) }} points minimum to redeem</span>
@@ -128,12 +128,12 @@
     @php($storeSale = \App\Models\SaleEvent::where('seller_id', $sellerProfile->user_id)->whereIn('status', ['scheduled', 'active'])
         ->where('starts_at', '<=', now())->where('ends_at', '>', now())->orderBy('ends_at')->first())
     @if ($storeSale)
-        <div class="pm-grain relative mt-6 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-[#9e1015] px-5 py-4 text-white" data-reveal="scale"
+        <div class="pm-grain relative mt-6 flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-accent to-accent-pressed px-5 py-4 text-white" data-reveal="scale"
              x-data="{ left: {{ max(0, $storeSale->ends_at->getTimestamp() - now()->getTimestamp()) }} }"
              x-init="setInterval(() => left = Math.max(0, left - 1), 1000)">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-widest text-white/80">Store sale</p>
-                <p class="text-xl font-extrabold">{{ $storeSale->name }} · {{ rtrim(rtrim(number_format($storeSale->percent_off, 2), '0'), '.') }}% off</p>
+                <p class="text-xl font-bold">{{ $storeSale->name }} · {{ rtrim(rtrim(number_format($storeSale->percent_off, 2), '0'), '.') }}% off</p>
             </div>
             <p class="font-mono text-lg font-bold tabular-nums" aria-label="Time left">
                 Ends in <span x-text="(Math.floor(left / 86400) > 0 ? Math.floor(left / 86400) + 'd ' : '') + String(Math.floor(left % 86400 / 3600)).padStart(2, '0') + ':' + String(Math.floor(left % 3600 / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0')"></span>
@@ -145,7 +145,7 @@
         <div class="mt-4 flex flex-wrap gap-2" data-reveal>
             @foreach ($offers as $offer)
                 <span class="inline-flex items-center gap-2 rounded-xl border border-dashed border-accent/50 bg-accent/5 px-3 py-1.5 text-sm">
-                    <x-ui.icon name="tag" class="w-3.5 h-3.5 text-accent" />
+                    <x-ui.icon name="tag" class="w-4 h-4 text-fg" />
                     <span class="font-mono font-semibold">{{ $offer->code }}</span>
                     <span class="text-muted">{{ $offer->type === 'percentage' ? rtrim(rtrim(number_format($offer->value,2),'0'),'.').'% off' : '$'.number_format($offer->value,2).' off' }}</span>
                 </span>

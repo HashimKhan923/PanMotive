@@ -53,7 +53,7 @@
                         <div class="flex flex-wrap gap-2">
                             @foreach (['manager', 'staff', 'viewer'] as $preset)
                                 <button type="button" wire:click="usePreset('{{ $preset }}')"
-                                    class="rounded-full border px-3 py-1 text-xs font-medium {{ $editRole === $preset ? 'border-accent bg-accent/10 text-accent' : 'border-line text-muted' }}">
+                                    class="rounded-full border px-3 py-1 text-xs font-medium {{ $editRole === $preset ? 'border-accent bg-surface-2 text-fg' : 'border-line text-muted' }}">
                                     {{ ucfirst($preset) }}
                                 </button>
                             @endforeach
@@ -76,7 +76,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-12 text-center">
-                <x-ui.icon name="user" class="w-9 h-9 text-muted" />
+                <x-ui.icon name="user" class="w-8 h-8 text-muted" />
                 <p class="mt-2 font-semibold">No team members yet</p>
                 <p class="mt-1 text-sm text-muted">Invite someone above to share the workload.</p>
             </div>

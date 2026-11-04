@@ -3,7 +3,7 @@
 @section('title', 'Buyers & accounts')
 
 @section('content')
-<x-admin.header title="Buyers & accounts" subtitle="Every account on PanMotive. Open one to see orders and wallet, or to suspend it." />
+<x-admin.header title="Buyers & accounts" subtitle="Every account on Panmotive. Open one to see orders and wallet, or to suspend it." />
 
 <x-admin.tabs :tabs="$tabs" param="type" :current="$tab" />
 

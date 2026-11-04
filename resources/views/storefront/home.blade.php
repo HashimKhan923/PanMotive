@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', config('app.name') . ' — Auto Parts for Every Vehicle')
+@section('title', config('app.name') . ' | Upgrade your drive.')
 
 @section('content')
 @php
@@ -38,17 +38,17 @@
 @endphp
 
 {{-- ================= HERO ================= --}}
-<section class="pm-grain relative isolate overflow-hidden bg-surface-2 text-fg">
+<section class="pm-grain relative isolate overflow-hidden bg-surface text-fg">
     {{-- Drifting colour fields — pure CSS, paused for reduced-motion users. --}}
     <div class="pm-aurora -z-10" aria-hidden="true"><span></span><span></span><span></span></div>
-    <div data-parallax="0.35" class="pointer-events-none absolute -right-24 -top-24 -z-10 h-96 w-96 rounded-full bg-accent/20 blur-3xl"></div>
+    <div data-parallax="0.35" class="pointer-events-none absolute -right-24 -top-24 -z-10 h-96 w-96 rounded-full bg-accent/5 blur-3xl"></div>
 
     <div class="container-x relative grid gap-12 py-16 lg:grid-cols-2 lg:py-24">
         <div data-reveal="slide-up" class="flex flex-col justify-center">
             <span class="pill w-fit !bg-surface !text-muted ring-1 ring-line">
-                <x-ui.icon name="sparkles" class="w-3.5 h-3.5 text-accent" /> {{ config('marketplace.platform.hero_badge') }}
+                <x-ui.icon name="sparkles" class="w-4 h-4 text-fg" /> {{ config('marketplace.platform.hero_badge') }}
             </span>
-            <h1 class="mt-5 text-4xl font-extrabold leading-[1.05] sm:text-5xl lg:text-6xl" data-split>
+            <h1 class="mt-5 text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl" data-split>
                 {{ config('marketplace.platform.hero_line_1') }}<br>{{ config('marketplace.platform.hero_line_2') }} <span class="pm-gradient-text">{{ config('marketplace.platform.hero_accent') }}</span>
             </h1>
             <p class="mt-5 max-w-md text-lg text-muted">
@@ -60,14 +60,14 @@
             </div>
 
             <div class="mt-5 flex flex-wrap gap-3">
-                <a href="{{ route('products.index') }}" data-magnetic class="btn-accent">Shop all parts <x-ui.icon name="arrow-right" class="w-4 h-4" /></a>
+                <a href="{{ route('products.index') }}" data-magnetic class="btn-outline">Shop all parts <x-ui.icon name="arrow-right" class="w-4 h-4" /></a>
                 <a href="{{ route('deals.index') }}" data-magnetic class="btn-outline !bg-surface/70 backdrop-blur">Today's deals</a>
             </div>
 
             <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted">
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> {{ config('marketplace.platform.hero_point_1') }}</span>
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> {{ config('marketplace.platform.hero_point_2') }}</span>
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-accent" /> {{ config('marketplace.platform.hero_point_3') }}</span>
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-fg" /> {{ config('marketplace.platform.hero_point_1') }}</span>
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-fg" /> {{ config('marketplace.platform.hero_point_2') }}</span>
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="check" class="w-4 h-4 text-fg" /> {{ config('marketplace.platform.hero_point_3') }}</span>
             </div>
         </div>
 
@@ -109,11 +109,11 @@
     <div class="border-t border-line bg-surface">
         <div class="container-x grid grid-cols-2 gap-6 py-8 text-center sm:grid-cols-4" data-reveal-group>
             @foreach ([
-                ['listings', 'Parts Listed'], ['sellers', 'Verified Sellers'],
-                ['makes', 'Vehicle Makes'], ['orders', 'Orders Fulfilled'],
+                ['listings', 'Parts listed'], ['sellers', 'Sellers'],
+                ['makes', 'Vehicle makes'], ['orders', 'Orders placed'],
             ] as [$key, $label])
                 <div>
-                    <p class="text-3xl font-extrabold text-fg" data-counter-to="{{ $stats[$key] }}">0</p>
+                    <p class="text-3xl font-bold text-fg" data-counter-to="{{ $stats[$key] }}">0</p>
                     <p class="mt-1 text-xs uppercase tracking-wide text-muted">{{ $label }}</p>
                 </div>
             @endforeach
@@ -123,8 +123,8 @@
 
 {{-- ================= BRANDS MARQUEE ================= --}}
 @if ($brands->count() >= 4)
-    <section class="border-b border-line bg-surface py-6" aria-label="Brands sold on PanMotive">
-        <div class="pm-marquee text-lg font-extrabold uppercase tracking-widest text-muted/70">
+    <section class="border-b border-line bg-surface py-6" aria-label="Brands sold on Panmotive">
+        <div class="pm-marquee text-lg font-bold uppercase tracking-widest text-muted">
             @foreach ([0, 1] as $copy)
                 <div @if ($copy) aria-hidden="true" @endif>
                     @foreach ($brands as $slug => $b)
@@ -142,7 +142,7 @@
         <div class="flex items-end justify-between">
             <div>
                 <h2 class="text-lg font-bold tracking-tight sm:text-xl">For your {{ $garage['label'] }}</h2>
-                <p class="mt-1 text-sm text-muted">Parts confirmed to fit the vehicle in your garage.</p>
+                <p class="mt-1 text-sm text-muted">Parts sellers have listed for this vehicle.</p>
             </div>
             <a href="{{ route('products.index', ['vehicleId' => $garage['id']]) }}" class="hidden text-sm font-medium text-accent hover:underline sm:block">See all</a>
         </div>
@@ -198,10 +198,11 @@
 <section class="container-x py-16" data-reveal>
     <div class="flex items-end justify-between">
         <div>
+            <span class="pm-cut-bar" aria-hidden="true"></span>
             <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Shop by category</h2>
-            <p class="mt-1 text-sm text-muted">Everything from brake pads to alternators.</p>
+            <p class="mt-1 text-sm text-muted">Find parts and accessories by category.</p>
         </div>
-        <a href="{{ route('products.index') }}" class="hidden text-sm font-semibold text-accent hover:underline sm:inline-flex items-center gap-1">
+        <a href="{{ route('products.index') }}" class="hidden text-sm font-semibold text-fg underline underline-offset-2 sm:inline-flex items-center gap-1">
             View all <x-ui.icon name="arrow-right" class="w-4 h-4" />
         </a>
     </div>
@@ -211,8 +212,8 @@
             <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
                data-tilt class="pm-tilt group card relative flex items-center gap-4 p-5 hover:shadow-card-hover hover:ring-1 hover:ring-accent/40">
                 <div class="pm-glare"></div>
-                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent transition duration-500 group-hover:rotate-[20deg] group-hover:scale-110 group-hover:bg-accent group-hover:text-accent-fg">
-                    <x-ui.icon name="wrench" class="w-6 h-6" />
+                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg transition duration-500 group-hover:rotate-[20deg] group-hover:scale-110 group-hover:bg-accent group-hover:text-accent-fg">
+                    <x-ui.icon :name="['brakes' => 'brakes', 'engine' => 'parts', 'suspension' => 'wheel', 'electrical' => 'batteries', 'cooling' => 'oil', 'lighting' => 'lighting', 'body-exterior' => 'vehicle'][$cat->slug] ?? 'package'" class="w-6 h-6" />
                 </span>
                 <div>
                     <p class="font-semibold text-fg group-hover:text-accent">{{ $cat->name }}</p>
@@ -231,7 +232,7 @@
     <div class="container-x" data-reveal>
         <div class="flex items-end justify-between">
             <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Today's deals</h2>
-            <a href="{{ route('deals.index') }}" class="text-sm font-semibold text-accent hover:underline">See all deals</a>
+            <a href="{{ route('deals.index') }}" class="pm-tap relative text-sm font-semibold text-fg underline underline-offset-2">See all deals</a>
         </div>
         <div class="mt-8 grid grid-cols-2 gap-5 lg:grid-cols-4" data-reveal-group>
             @foreach ($deals as $product)
@@ -245,8 +246,8 @@
 {{-- ================= FEATURED ================= --}}
 <section class="container-x py-16" data-reveal>
     <div class="flex items-end justify-between">
-        <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Fresh listings</h2>
-        <a href="{{ route('products.index') }}" class="text-sm font-semibold text-accent hover:underline">Browse catalog</a>
+        <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">New listings</h2>
+        <a href="{{ route('products.index') }}" class="pm-tap relative text-sm font-semibold text-fg underline underline-offset-2">Browse all parts</a>
     </div>
     @if ($featured->isNotEmpty())
         <div class="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4" data-reveal-group>
@@ -256,9 +257,9 @@
         </div>
     @else
         <div class="mt-8 card grid place-items-center p-16 text-center">
-            <x-ui.icon name="box" class="w-10 h-10 text-muted" />
+            <x-ui.icon name="box" class="w-12 h-12 text-muted" />
             <p class="mt-3 font-semibold">No active listings yet</p>
-            <p class="mt-1 text-sm text-muted">Once sellers are approved and publish parts, they'll show up here.</p>
+            <p class="mt-1 text-sm text-muted">Parts appear here when sellers publish them.</p>
         </div>
     @endif
 </section>
@@ -267,12 +268,12 @@
 <section class="border-y border-line bg-surface py-16">
     <div class="container-x grid gap-8 md:grid-cols-3" data-reveal-group>
         @foreach ([
-            ['shield', 'Escrow-protected', 'Your payment is held until the part is delivered. Sellers are only paid once you have it in hand.'],
-            ['sparkles', 'Cashback + credits', 'Earn a percentage back to your wallet on every completed order. Redeem at checkout.'],
-            ['truck', 'Real fitment data', 'Every listing is matched to specific year/make/model so you order the right part the first time.'],
+            ['shield', 'Payment held until delivery', 'Sellers are paid after your order is delivered.'],
+            ['sparkles', 'Cashback on delivered orders', 'Cashback goes to your wallet. Use it at checkout.'],
+            ['truck', 'Listed vehicle compatibility', 'Sellers list the vehicles a part fits. Check the list before ordering.'],
         ] as [$icon, $title, $body])
             <div class="flex gap-4">
-                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent"><x-ui.icon :name="$icon" class="w-6 h-6" /></span>
+                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg"><x-ui.icon :name="$icon" class="w-6 h-6" /></span>
                 <div>
                     <h3 class="font-semibold">{{ $title }}</h3>
                     <p class="mt-1 text-sm text-muted">{{ $body }}</p>
@@ -284,12 +285,13 @@
 
 {{-- ================= CTA ================= --}}
 <section class="container-x py-16">
-    <div class="pm-grain relative isolate overflow-hidden rounded-3xl bg-brand p-10 text-center text-brand-fg sm:p-16" data-reveal="scale">
+    <div class="pm-grain relative isolate overflow-hidden rounded-3xl bg-brand p-10 text-brand-fg sm:p-16" data-reveal="scale">
+        <div class="pm-cut-field hidden md:block" aria-hidden="true"></div>
+        <x-ui.logo variant="symbol" :on-red="true" class="absolute right-12 top-1/2 hidden h-20 w-auto -translate-y-1/2 md:block lg:right-20" aria-hidden="true" />
         <div class="pm-aurora -z-10 opacity-60" aria-hidden="true"><span></span><span></span><span></span></div>
-        <h2 class="relative text-2xl font-bold sm:text-3xl">Have parts to sell?</h2>
-        <p class="relative mx-auto mt-3 max-w-lg text-white/70">
-            Reach buyers searching for the exact parts you stock. 10% flat commission, payouts released on delivery,
-            AI-assisted listing tools included.
+        <h2 class="relative max-w-md text-2xl font-bold sm:text-3xl">Sell on Panmotive</h2>
+        <p class="relative mt-3 max-w-md text-white/70">
+            List your parts and reach buyers searching for them. 10% commission. Payouts are released after delivery.
         </p>
         <a href="{{ route('seller.onboarding.start') }}" data-magnetic class="btn-accent relative mt-6">Start selling <x-ui.icon name="arrow-right" class="w-4 h-4" /></a>
     </div>

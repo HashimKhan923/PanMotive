@@ -19,7 +19,7 @@ class ReturnController extends Controller
         $data = $request->validate(['note' => 'nullable|string|max:1000']);
 
         $returnRequest->update(['escalated_at' => now(), 'escalated_by' => 'buyer']);
-        $returnRequest->log('escalated', 'buyer', auth()->id(), $data['note'] ?? 'Buyer escalated to PanMotive support');
+        $returnRequest->log('escalated', 'buyer', auth()->id(), $data['note'] ?? 'Buyer escalated to Panmotive support');
 
         AdminAlert::create([
             'type' => 'return_escalated',
@@ -27,7 +27,7 @@ class ReturnController extends Controller
             'related_order_item_id' => $returnRequest->order_item_id,
         ]);
 
-        return back()->with('success', 'Escalated — PanMotive support will review within 1 business day.');
+        return back()->with('success', 'Escalated — Panmotive support will review within 1 business day.');
     }
 
     public function request(Request $request, OrderItem $orderItem)

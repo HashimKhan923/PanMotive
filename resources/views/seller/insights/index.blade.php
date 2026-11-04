@@ -102,7 +102,7 @@
 
         {{-- Unanswered --}}
         <div class="card p-6" data-reveal>
-            <h2 class="font-bold">Unanswered questions <a href="{{ route('seller.questions.index') }}" class="ml-1 text-xs font-medium text-accent hover:underline">Answer →</a></h2>
+            <h2 class="font-bold">Unanswered questions <a href="{{ route('seller.questions.index') }}" class="ml-1 text-xs font-medium text-fg underline underline-offset-2">Answer →</a></h2>
             <p class="mt-1 text-xs text-muted">Answering lifts conversion.</p>
             @forelse ($questions as $q)
                 <div class="mt-3 border-t border-line pt-3">

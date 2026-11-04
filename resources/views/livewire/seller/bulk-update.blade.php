@@ -7,7 +7,7 @@
 @endphp
 <div class="max-w-4xl">
     <div class="flex items-center gap-3">
-        <a href="{{ route('seller.products.index') }}" class="btn-ghost !p-2" aria-label="Back to products"><x-ui.icon name="arrow-left" class="w-5 h-5" /></a>
+        <a href="{{ route('seller.products.index') }}" class="btn-ghost !p-2" aria-label="Back to products"><x-ui.icon name="arrow-left" class="w-6 h-6" /></a>
         <div>
             <h1 class="text-2xl font-bold">Update by spreadsheet</h1>
             <p class="mt-1 text-sm text-muted">Change prices, stock and status for many listings at once in Excel or Google Sheets.</p>
@@ -17,19 +17,19 @@
     @if (! $result)
         <div class="mt-6 grid gap-4 md:grid-cols-3">
             <div class="card p-5">
-                <span class="grid h-8 w-8 place-items-center rounded-full bg-accent/15 font-bold text-accent">1</span>
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-surface-2 font-bold text-fg">1</span>
                 <p class="mt-3 font-semibold">Download your catalog</p>
                 <p class="mt-1 text-sm text-muted">One row per listing — and one per option for listings with options.</p>
                 <button wire:click="download" class="btn-outline btn-sm mt-4 w-full"><x-ui.icon name="download" class="w-4 h-4" /> Download CSV</button>
             </div>
             <div class="card p-5">
-                <span class="grid h-8 w-8 place-items-center rounded-full bg-accent/15 font-bold text-accent">2</span>
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-surface-2 font-bold text-fg">2</span>
                 <p class="mt-3 font-semibold">Edit what you want to change</p>
                 <p class="mt-1 text-sm text-muted">Edit <strong>price</strong>, <strong>sale_price</strong>, <strong>quantity</strong> or <strong>status</strong> (active / draft / archived). Leave a cell blank to keep it. Put <code>0</code> in sale_price to end a sale.</p>
                 <p class="mt-2 text-xs text-muted">Don't change listing_id, option_id or sku — they tell us which row is which.</p>
             </div>
             <div class="card p-5">
-                <span class="grid h-8 w-8 place-items-center rounded-full bg-accent/15 font-bold text-accent">3</span>
+                <span class="grid h-8 w-8 place-items-center rounded-full bg-surface-2 font-bold text-fg">3</span>
                 <p class="mt-3 font-semibold">Upload and review</p>
                 <p class="mt-1 text-sm text-muted">We show every change before anything is saved.</p>
                 <div class="mt-4 space-y-2">

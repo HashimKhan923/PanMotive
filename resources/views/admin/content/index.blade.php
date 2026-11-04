@@ -6,7 +6,7 @@
 <x-admin.header title="Homepage & announcement" subtitle="The words shoppers see first, and a message across the top of every shop page." />
 
 @php
-    $tones = ['accent' => ['Brand red', 'bg-accent text-accent-fg'], 'info' => ['Black', 'bg-brand text-brand-fg'], 'warning' => ['Yellow warning', 'bg-amber-500 text-black'], 'danger' => ['Urgent', 'bg-rose-600 text-white']];
+    $tones = ['accent' => ['Brand red', 'bg-accent text-accent-fg'], 'info' => ['Charcoal', 'bg-brand text-brand-fg'], 'warning' => ['Warning', 'bg-warning-bg text-amber-600'], 'danger' => ['Urgent', 'bg-rose-600 text-white']];
     $tone = old('announcement_tone', config('marketplace.platform.announcement_tone'));
 @endphp
 
@@ -34,7 +34,7 @@
     <x-admin.card title="Preview" subtitle="How it looks on the site">
         <div class="overflow-hidden rounded-xl border border-line">
             <div class="px-4 py-2 text-center text-xs font-semibold sm:text-sm" :class="tones[tone]" x-show="text" x-text="text"></div>
-            <div class="flex h-12 items-center gap-2 border-b border-line bg-surface px-4 text-sm font-extrabold"><x-ui.logo class="h-6 w-auto" /></div>
+            <div class="flex h-12 items-center gap-2 border-b border-line bg-surface px-4 text-sm font-bold"><x-ui.logo class="h-5 w-auto" /></div>
             <div class="grid h-36 place-items-center bg-bg text-xs text-muted">Your shop page</div>
         </div>
         <p x-show="!text" class="mt-3 text-xs text-muted">No message: the bar is off.</p>

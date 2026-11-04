@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Mail\Mailables\Headers;
 use Illuminate\Queue\SerializesModels;
 
-/** A seller's marketing email (campaign or automation), sent by PanMotive on their behalf. */
+/** A seller's marketing email (campaign or automation), sent by Panmotive on their behalf. */
 class CampaignMail extends Mailable
 {
     use Queueable, SerializesModels;

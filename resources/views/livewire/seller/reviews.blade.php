@@ -20,7 +20,7 @@
         </div>
         <div class="card space-y-1 p-5">
             @foreach ($summary['distribution'] as $s => $n)
-                <button wire:click="$set('stars', '{{ $stars === (string) $s ? '' : $s }}')" class="flex w-full items-center gap-2 text-xs {{ $stars === (string) $s ? 'text-accent' : '' }}">
+                <button wire:click="$set('stars', '{{ $stars === (string) $s ? '' : $s }}')" class="flex w-full items-center gap-2 text-xs {{ $stars === (string) $s ? 'text-fg' : '' }}">
                     <span class="w-6 shrink-0 text-left">{{ $s }}★</span>
                     <span class="h-2 flex-1 overflow-hidden rounded-full bg-surface-2"><span class="block h-full rounded-full {{ $s >= 4 ? 'bg-emerald-500' : ($s === 3 ? 'bg-amber-400' : 'bg-rose-500') }}" style="width: {{ $summary['total'] ? round($n / $summary['total'] * 100) : 0 }}%"></span></span>
                     <span class="w-6 shrink-0 text-right text-muted">{{ $n }}</span>
@@ -33,7 +33,7 @@
         <div class="flex gap-1 text-sm">
             @foreach (['all' => 'All', 'unanswered' => 'Needs a reply', 'critical' => 'Critical (≤3★)', 'reported' => 'Reported'] as $key => $label)
                 <button wire:click="$set('filter', '{{ $key }}')"
-                        class="-mb-px border-b-2 px-3 py-2 font-medium {{ $filter === $key ? 'border-accent text-accent' : 'border-transparent text-muted hover:text-fg' }}">
+                        class="-mb-px border-b-2 px-3 py-2 font-medium {{ $filter === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">
                     {{ $label }}
                     @if ($key === 'unanswered' && $summary['unanswered'])<span class="ml-1 rounded-full bg-accent px-1.5 text-xs text-accent-fg">{{ $summary['unanswered'] }}</span>@endif
                 </button>
@@ -81,7 +81,7 @@
                         <div class="mb-1.5 flex flex-wrap gap-1.5">
                             @if ($savedReplies->isNotEmpty())
                                 <div x-data="{ open: false }" class="relative">
-                                    <button type="button" @click="open = !open" class="btn-ghost btn-sm text-xs"><x-ui.icon name="list" class="w-3.5 h-3.5" /> Saved reply</button>
+                                    <button type="button" @click="open = !open" class="btn-ghost btn-sm text-xs"><x-ui.icon name="list" class="w-4 h-4" /> Saved reply</button>
                                     <div x-show="open" x-cloak @click.outside="open = false" class="absolute left-0 top-full z-20 mt-1 w-72 rounded-xl border border-line bg-surface p-1 shadow-lg">
                                         @foreach ($savedReplies as $r)
                                             <button type="button" wire:click="useReply({{ $review->id }}, {{ $r->id }})" @click="open = false" class="block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2">
@@ -94,7 +94,7 @@
                             @endif
                             @if ($aiEnabled)
                                 <button type="button" wire:click="suggest({{ $review->id }})" wire:loading.attr="disabled" wire:target="suggest({{ $review->id }})" class="btn-ghost btn-sm text-xs">
-                                    <x-ui.icon name="sparkles" class="w-3.5 h-3.5" />
+                                    <x-ui.icon name="sparkles" class="w-4 h-4" />
                                     <span wire:loading.remove wire:target="suggest({{ $review->id }})">Draft a reply</span>
                                     <span wire:loading wire:target="suggest({{ $review->id }})">Writing…</span>
                                 </button>
@@ -114,7 +114,7 @@
 
                 @if ($reportingId === $review->id)
                     <form wire:submit="submitReport" class="mt-3 space-y-2 rounded-xl border border-line p-3">
-                        <p class="text-sm font-semibold">Ask PanMotive to review this review</p>
+                        <p class="text-sm font-semibold">Ask Panmotive to review this review</p>
                         <p class="text-xs text-muted">Honest negative reviews stay up. We remove reviews that break the rules.</p>
                         <select wire:model="reportReason" class="input h-9 text-sm" aria-label="Reason">
                             <option value="">Choose a reason…</option>
@@ -131,7 +131,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="star" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="star" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">{{ $filter === 'unanswered' ? 'Every review has a reply' : 'No reviews here' }}</p>
             </div>
         @endforelse

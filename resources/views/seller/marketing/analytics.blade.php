@@ -165,7 +165,7 @@
                 </table>
             </div>
         @else
-            <p class="mt-4 text-sm text-muted">No campaigns sent yet. <a href="{{ route('seller.campaigns.index') }}" class="text-accent hover:underline">Create one →</a></p>
+            <p class="mt-4 text-sm text-muted">No campaigns sent yet. <a href="{{ route('seller.campaigns.index') }}" class="text-fg underline underline-offset-2">Create one →</a></p>
         @endif
     </div>
 </div>

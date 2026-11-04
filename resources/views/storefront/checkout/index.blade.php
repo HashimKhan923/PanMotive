@@ -12,7 +12,7 @@
 
     @if ($lines->isEmpty())
         <div class="mt-8 card grid place-items-center p-16 text-center">
-            <x-ui.icon name="cart" class="w-10 h-10 text-muted" />
+            <x-ui.icon name="cart" class="w-12 h-12 text-muted" />
             <p class="mt-3 font-semibold">Your cart is empty</p>
             <a href="{{ route('products.index') }}" class="btn-accent mt-4">Browse parts</a>
         </div>
@@ -117,7 +117,7 @@
                     @endauth
                 </div>
 
-                <p class="text-center text-xs text-muted"><x-ui.icon name="shield" class="mr-1 inline w-3.5 h-3.5" /> Card handled by Stripe. We never see your card number.</p>
+                <p class="text-center text-xs text-muted"><x-ui.icon name="shield" class="mr-1 inline w-4 h-4" /> Card handled by Stripe. We never see your card number.</p>
             </div>
         </div>
     @endif

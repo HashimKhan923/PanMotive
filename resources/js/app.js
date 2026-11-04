@@ -33,7 +33,7 @@ function celebrate() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const host = document.createElement('div');
     host.className = 'pm-confetti';
-    const colors = ['#DD1E25', '#17181D', '#F45B60', '#A1A4AD', '#FFFFFF'];
+    const colors = ['#E51B2B', '#15191E', '#CC1726', '#5E6672', '#FFFFFF'];
     for (let i = 0; i < 90; i++) {
         const bit = document.createElement('i');
         bit.style.left = Math.random() * 100 + 'vw';

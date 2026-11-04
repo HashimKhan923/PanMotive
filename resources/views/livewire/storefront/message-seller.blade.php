@@ -2,7 +2,7 @@
     @auth
         @if ($sent)
             <p class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                <x-ui.icon name="check" class="w-3.5 h-3.5" /> Message sent —
+                <x-ui.icon name="check" class="w-4 h-4" /> Message sent —
                 <a href="{{ route('messages.index') }}" class="underline">view in Messages</a>
             </p>
         @elseif ($open)
@@ -16,12 +16,12 @@
             </form>
         @else
             <button wire:click="$set('open', true)" class="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-fg">
-                <x-ui.icon name="mail" class="w-3.5 h-3.5" /> Message seller
+                <x-ui.icon name="mail" class="w-4 h-4" /> Message seller
             </button>
         @endif
     @else
         <a href="{{ route('login') }}" class="inline-flex items-center gap-1.5 text-xs font-medium text-muted hover:text-fg">
-            <x-ui.icon name="mail" class="w-3.5 h-3.5" /> Message seller
+            <x-ui.icon name="mail" class="w-4 h-4" /> Message seller
         </a>
     @endauth
 </div>

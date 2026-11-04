@@ -136,7 +136,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | PanMotive Plus — buyer membership
+    | Panmotive Plus — buyer membership
     |--------------------------------------------------------------------------
     */
 
@@ -183,7 +183,7 @@ return [
     | Offsite Ads (Etsy model)
     |--------------------------------------------------------------------------
     |
-    | PanMotive advertises sellers' listings on Facebook/Instagram, Google etc.
+    | Panmotive advertises sellers' listings on Facebook/Instagram, Google etc.
     | from its own ad accounts. Sellers pay nothing up front — only a fee on an
     | order placed within `attribution_days` of a buyer clicking one of their
     | ads. Sellers above `large_seller_threshold` (sales, trailing 12 months)
@@ -197,7 +197,7 @@ return [
         'frequency_cap_hours' => (int) env('MARKETING_FREQUENCY_CAP_HOURS', 24), // per buyer, per store
         'campaigns_per_week' => (int) env('MARKETING_CAMPAIGNS_PER_WEEK', 3),    // per store
         // Placeholder until the real registered address is set in .env.
-        'postal_address' => env('MARKETING_POSTAL_ADDRESS') ?: 'PanMotive, Inc. · 2100 Commerce St · Dallas, TX 75201 · USA',
+        'postal_address' => env('MARKETING_POSTAL_ADDRESS') ?: 'Panmotive, Inc. · 2100 Commerce St · Dallas, TX 75201 · USA',
         'announcement_cooldown_hours' => 24,
         'affiliate_hold_days' => (int) env('AFFILIATE_HOLD_DAYS', 30), // commission payable once the return window has passed
     ],
@@ -224,14 +224,14 @@ return [
         'announcement_tone' => 'accent',
         'announcement_until' => '',
         'support_email' => '',
-        'hero_badge' => 'Trusted by researchers of horsepower everywhere',
-        'hero_line_1' => 'Every Part.',
-        'hero_line_2' => 'Every Vehicle.',
-        'hero_accent' => 'Fast.',
-        'hero_text' => 'Genuine and aftermarket auto parts from vetted sellers — matched to your exact year, make and model. Buyer protection and cashback on every order.',
-        'hero_point_1' => 'OEM & part-number search',
-        'hero_point_2' => 'Escrow-protected payments',
-        'hero_point_3' => 'Verified sellers only',
+        'hero_badge' => 'Automotive marketplace',
+        'hero_line_1' => 'Upgrade',
+        'hero_line_2' => '',
+        'hero_accent' => 'your drive.',
+        'hero_text' => 'Find parts and accessories for your vehicle. Check the listed vehicle compatibility before ordering.',
+        'hero_point_1' => 'Search by part number',
+        'hero_point_2' => 'Payment held until delivery',
+        'hero_point_3' => 'Cashback on delivered orders',
     ],
 
     'offsite_ads' => [

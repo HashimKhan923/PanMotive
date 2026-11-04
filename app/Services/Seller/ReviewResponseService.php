@@ -9,7 +9,7 @@ use App\Services\AI\AiClient;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
-/** Seller side of product reviews: public responses, and asking PanMotive to look at a rule-breaking review. */
+/** Seller side of product reviews: public responses, and asking Panmotive to look at a rule-breaking review. */
 class ReviewResponseService
 {
     public const REPORT_REASONS = [
@@ -48,7 +48,7 @@ class ReviewResponseService
             throw ValidationException::withMessages(['reportReason' => 'Choose a reason.']);
         }
         if ($review->reported_at) {
-            throw ValidationException::withMessages(['reportReason' => 'Already reported — PanMotive will review it.']);
+            throw ValidationException::withMessages(['reportReason' => 'Already reported — Panmotive will review it.']);
         }
 
         $review->update(['report_reason' => $reason, 'report_note' => $note ? trim($note) : null, 'reported_at' => now()]);
@@ -72,7 +72,7 @@ class ReviewResponseService
         try {
             return trim($ai->complete(
                 "You write public replies to product reviews for {$store}, an auto-parts seller. 2–4 sentences, warm and professional. "
-                .'Thank them; for critical reviews acknowledge the specific problem and invite them to message the store through PanMotive. '
+                .'Thank them; for critical reviews acknowledge the specific problem and invite them to message the store through Panmotive. '
                 .'Never argue, never promise refunds or discounts, never ask them to change their review, no contact details.',
                 "Product: {$review->product?->title}\nRating: {$review->rating}/5\nTitle: {$review->title}\nReview: ".Str::limit((string) $review->body, 1200),
                 220,

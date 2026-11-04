@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', config('app.name') . ' — Auto Parts for Every Vehicle')</title>
-    <meta name="description" content="@yield('meta_description', 'Genuine and aftermarket auto parts from trusted sellers, matched to your exact vehicle. Fast shipping, buyer protection, cashback on every order.')">
+    <meta name="description" content="@yield('meta_description', 'Find parts and accessories for your vehicle. Panmotive is an automotive marketplace with independent sellers across the US.')">
 
     {{-- No-flash theme --}}
     <script @nonce>
@@ -18,11 +18,11 @@
     </script>
 
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#17181D">
+    <meta name="theme-color" content="#15191E">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
 
     @stack('structured_data')
     @vite(['resources/css/app.css', 'resources/js/app.js'])

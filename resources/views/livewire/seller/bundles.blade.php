@@ -35,7 +35,7 @@
             <div>
                 <div class="flex items-center justify-between">
                     <span class="label mb-0">Products (2+)</span>
-                    <button type="button" wire:click="addLine" class="text-xs font-medium text-accent">+ Add product</button>
+                    <button type="button" wire:click="addLine" class="text-xs font-medium text-fg">+ Add product</button>
                 </div>
                 <div class="mt-2 space-y-2">
                     @foreach ($lines as $i => $line)
@@ -83,7 +83,7 @@
                         @if ($bundle->is_active && ! $bundle->isAvailable())
                             @php($missing = $bundle->products->reject(fn ($p) => $p->status === 'active' && $p->sellableQuantity() >= (int) $p->pivot->quantity))
                             <p class="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2 py-1 text-xs text-amber-700 dark:text-amber-400">
-                                <x-ui.icon name="alert" class="w-3.5 h-3.5" />
+                                <x-ui.icon name="alert" class="w-4 h-4" />
                                 Hidden from buyers — {{ $missing->pluck('title')->join(', ') }} {{ $missing->count() > 1 ? 'are' : 'is' }} out of stock or not active.
                             </p>
                         @endif
@@ -104,7 +104,7 @@
             </div>
         @empty
             <div class="card grid place-items-center p-16 text-center">
-                <x-ui.icon name="box" class="w-10 h-10 text-muted" />
+                <x-ui.icon name="box" class="w-12 h-12 text-muted" />
                 <p class="mt-3 font-semibold">No bundles yet</p>
                 <p class="mt-1 text-sm text-muted">Pair a common repair's parts and reward buyers for taking both.</p>
             </div>

@@ -32,13 +32,13 @@
         <section class="card p-6">
             <h2 class="font-bold">How it works</h2>
             <ol class="mt-3 space-y-3 text-sm">
-                <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent/15 text-xs font-bold text-accent">1</span>
+                <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-2 text-xs font-bold text-fg">1</span>
                     <span>We show your listings in ads on Facebook, Instagram, Google, Pinterest and Bing — <strong>we pay for the ads</strong>.</span></li>
-                <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent/15 text-xs font-bold text-accent">2</span>
-                    <span>A shopper clicks an ad for one of your parts and lands on PanMotive.</span></li>
-                <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent/15 text-xs font-bold text-accent">3</span>
+                <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-2 text-xs font-bold text-fg">2</span>
+                    <span>A shopper clicks an ad for one of your parts and lands on Panmotive.</span></li>
+                <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-2 text-xs font-bold text-fg">3</span>
                     <span>If they buy from your store within <strong>{{ $days }} days</strong>, you pay a <strong>{{ $rateLabel }}% ad fee</strong> on that order (never more than <strong>${{ number_format($cap) }}</strong>). It's taken from that order's payout.</span></li>
-                <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-accent/15 text-xs font-bold text-accent">4</span>
+                <li class="flex gap-3"><span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-2 text-xs font-bold text-fg">4</span>
                     <span>No sale, no fee. Clicks and views are free for you. If the order is cancelled or refunded, the fee goes with it.</span></li>
             </ol>
             <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted">

@@ -47,8 +47,8 @@ class DeliverWebhook implements ShouldQueue
                 ->withoutRedirecting() // a redirect could bounce the request to an internal address
                 ->withHeaders([
                     'Content-Type' => 'application/json',
-                    'X-PanMotive-Event' => $this->payload['event'],
-                    'X-PanMotive-Signature' => $signature,
+                    'X-Panmotive-Event' => $this->payload['event'],
+                    'X-Panmotive-Signature' => $signature,
                 ])
                 ->withBody($body, 'application/json')
                 ->post($endpoint->url);

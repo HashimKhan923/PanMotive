@@ -18,7 +18,7 @@
                     </a>
                     <div class="p-4">
                         <a href="{{ route('products.show', $product->slug) }}" class="line-clamp-2 text-sm font-semibold hover:text-accent">{{ $product->title }}</a>
-                        <div class="mt-2"><x-ui.price :price="$product->price" :sale="$product->liveSalePrice()" size="text-lg" /></div>
+                        <div class="mt-2"><x-ui.price :price="$product->price" :sale="$product->liveSalePrice()" :basis="$product->priceBasis()" size="text-lg" /></div>
                         <div class="mt-3 flex gap-2">
                             <button wire:click="moveToCart({{ $product->id }})" class="btn-accent btn-sm flex-1">Move to cart</button>
                             <button wire:click="remove({{ $product->id }})" class="btn-outline btn-sm" aria-label="Remove"><x-ui.icon name="trash" class="w-4 h-4" /></button>

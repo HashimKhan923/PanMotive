@@ -51,7 +51,7 @@
                         <div class="flex items-center {{ $i < count($flow) - 1 ? 'flex-1' : '' }}">
                             <div class="grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-bold
                                         {{ $done > $i ? 'bg-accent text-accent-fg' : 'bg-surface-2 text-muted' }}">
-                                @if ($done > $i)<x-ui.icon name="check" class="w-3.5 h-3.5" />@else{{ $i + 1 }}@endif
+                                @if ($done > $i)<x-ui.icon name="check" class="w-4 h-4" />@else{{ $i + 1 }}@endif
                             </div>
                             @if ($i < count($flow) - 1)
                                 <div class="mx-1 h-0.5 flex-1 {{ $done > $i + 1 ? 'bg-accent' : 'bg-surface-2' }}"></div>

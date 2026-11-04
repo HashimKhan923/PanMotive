@@ -6,7 +6,7 @@
 <x-admin.header :title="$profile->business_name" :subtitle="$profile->user?->email" :back="route('admin.sellers.index')">
     <x-admin.status :value="$profile->status" />
     @if ($profile->status === 'approved')
-        <a href="{{ \App\Support\AdminNav::site('sellers.show', $profile) }}" target="_blank" rel="noopener" class="btn-outline btn-sm">View store <x-ui.icon name="external" class="w-3.5 h-3.5" /></a>
+        <a href="{{ \App\Support\AdminNav::site('sellers.show', $profile) }}" target="_blank" rel="noopener" class="btn-outline btn-sm">View store <x-ui.icon name="external" class="w-4 h-4" /></a>
     @endif
     @if ($profile->status === 'pending')
         <x-admin.action :url="route('admin.sellers.approve', $profile)" label="Approve" tone="primary" body="They can start selling straight away." />

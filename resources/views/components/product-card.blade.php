@@ -32,7 +32,7 @@
 
             <div class="absolute left-3 top-3 flex flex-col items-start gap-1">
                 @if ($sale)
-                    <span class="pm-shine rounded-full bg-accent px-2 py-0.5 text-[11px] font-extrabold text-accent-fg shadow-sm">−{{ $off }}%</span>
+                    <span class="pm-shine rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-fg shadow-sm">−{{ $off }}%</span>
                 @endif
                 @if ($endsSoon)
                     <span class="rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
@@ -44,19 +44,19 @@
             @if ($product->quantity <= 0 && ! $product->hasVariants())
                 <span class="absolute inset-x-0 bottom-0 bg-brand/85 py-1.5 text-center text-xs font-semibold text-brand-fg">Out of stock</span>
             @elseif ($product->quantity <= 3 && ! $product->hasVariants())
-                <span class="absolute left-3 bottom-3 rounded bg-surface/90 px-1.5 py-0.5 text-[11px] font-semibold text-fg backdrop-blur">Only {{ $product->quantity }} left</span>
+                <span class="absolute left-3 bottom-3 rounded bg-warning-bg px-1.5 py-0.5 text-[11px] font-semibold text-amber-600">Only {{ $product->quantity }} left</span>
             @endif
         </div>
 
         <div class="flex flex-1 flex-col p-3.5 sm:p-4">
             {{-- one quiet meta line keeps every card's title on the same baseline --}}
             <p class="h-4 truncate text-[11px] font-semibold uppercase tracking-[.12em] text-muted">
-                {{ $product->brand?->name }}{{ $product->brand && $product->part_number ? ' · ' : '' }}{{ $product->part_number ? '#'.$product->part_number : '' }}
+                {{ $product->brand?->name }}{{ $product->brand && $product->part_number ? ' · ' : '' }}{{ $product->part_number ? 'Part no. '.$product->part_number : '' }}
             </p>
             <h3 class="mt-1.5 line-clamp-2 min-h-[2.6em] text-[13.5px] font-medium leading-[1.3] text-fg transition-colors group-hover:text-accent">{{ $product->title }}</h3>
 
             <div class="mt-auto flex items-center justify-between gap-2 pt-3">
-                <x-ui.price :price="$product->price" :sale="$sale" size="text-base" :badge="false" />
+                <x-ui.price :price="$product->price" :sale="$sale" :basis="$product->priceBasis()" size="text-base" :badge="false" />
                 @if ($rating > 0)
                     <x-ui.rating :value="$rating" :count="$ratingCount" size="w-3 h-3" />
                 @endif
@@ -74,16 +74,16 @@
                             .then(() => { s = 'ok'; setTimeout(() => s = 'idle', 1500) })
                             .catch(() => s = 'idle')"
                     :class="s === 'ok' ? '!border-emerald-500 !bg-emerald-500 !text-white' : ''"
-                    class="inline-flex h-7 items-center gap-1 rounded-full border border-line px-2.5 text-[11px] font-semibold text-fg transition hover:border-accent hover:bg-accent hover:text-accent-fg active:scale-95"
+                    class="pm-tap relative inline-flex h-7 items-center gap-1 rounded-full border border-line px-2.5 text-[11px] font-semibold text-fg transition hover:border-accent hover:bg-accent hover:text-accent-fg active:scale-95"
                     aria-label="Add {{ $product->title }} to cart">
-                <x-ui.icon name="cart" class="w-3.5 h-3.5" x-show="s === 'idle'" />
+                <x-ui.icon name="cart" class="w-4 h-4" x-show="s === 'idle'" />
                 <svg x-show="s === 'busy'" x-cloak class="h-3.5 w-3.5 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3"/><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
                 <svg x-show="s === 'ok'" x-cloak class="pm-check h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span x-text="s === 'ok' ? 'Added' : 'Add'">Add</span>
             </button>
         @elseif ($product->hasVariants())
             <a href="{{ $href ?? route('products.show', $product->slug) }}"
-               class="inline-flex h-7 items-center rounded-full border border-line px-2.5 text-[11px] font-semibold text-fg transition hover:border-accent hover:text-accent">Options</a>
+               class="pm-tap relative inline-flex h-7 items-center rounded-full border border-line px-2.5 text-[11px] font-semibold text-fg transition hover:border-accent hover:text-accent">Options</a>
         @endif
     </div>
 </div>

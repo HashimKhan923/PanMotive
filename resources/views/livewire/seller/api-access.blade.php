@@ -60,7 +60,7 @@
     {{-- Webhooks --}}
     <section class="card mt-6 p-6" data-reveal>
         <h2 class="font-bold">Webhook endpoints</h2>
-        <p class="mt-1 text-xs text-muted">We POST signed JSON to https URLs. Check <code>X-PanMotive-Signature</code> = HMAC-SHA256 of the raw body using the endpoint's secret, and reply 2xx within 8 seconds. Failed deliveries retry 4 times.</p>
+        <p class="mt-1 text-xs text-muted">We POST signed JSON to https URLs. Check <code>X-Panmotive-Signature</code> = HMAC-SHA256 of the raw body using the endpoint's secret, and reply 2xx within 8 seconds. Failed deliveries retry 4 times.</p>
 
         <form wire:submit="addEndpoint" class="mt-4 flex flex-wrap items-end gap-3">
             <div class="min-w-[220px] flex-1">

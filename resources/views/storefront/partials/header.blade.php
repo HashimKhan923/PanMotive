@@ -15,21 +15,21 @@
     <div class="hidden border-b border-line bg-brand text-brand-fg lg:block">
         <div class="container-x flex h-8 items-center justify-between text-[11px] tracking-wide">
             <div class="flex items-center gap-5">
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="shield" class="w-3.5 h-3.5" /> Buyer protection on every order</span>
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="truck" class="w-3.5 h-3.5" /> Fast US shipping</span>
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="shield" class="w-4 h-4" /> Independent sellers across the US</span>
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="truck" class="w-4 h-4" /> Payment held until delivery</span>
             </div>
             <div class="flex items-center gap-5">
-                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="sparkles" class="w-3.5 h-3.5 text-accent" /> Cashback credited on delivery</span>
-                <a href="{{ route('seller.onboarding.start') }}" class="hover:text-accent">Sell on PanMotive</a>
+                <span class="inline-flex items-center gap-1.5"><x-ui.icon name="sparkles" class="w-4 h-4 text-fg" /> Cashback on delivered orders</span>
+                <a href="{{ route('seller.onboarding.start') }}" class="hover:text-accent">Sell on Panmotive</a>
             </div>
         </div>
     </div>
 
     <div class="container-x flex h-14 items-center gap-4 lg:h-16">
         {{-- logo --}}
-        <a href="{{ route('home') }}" class="flex shrink-0 items-center text-fg" aria-label="PanMotive home">
-            <x-ui.logo class="hidden h-7 w-auto min-[360px]:block sm:h-8 lg:h-9" />
-            <x-ui.logo variant="mark" class="h-7 w-auto min-[360px]:hidden" />
+        <a href="{{ route('home') }}" class="pm-tap relative flex shrink-0 items-center text-fg" aria-label="Panmotive home">
+            <x-ui.logo class="hidden h-5 w-auto min-[360px]:block lg:h-[25px]" />
+            <x-ui.logo variant="symbol" class="min-[360px]:hidden" />
         </a>
 
         {{-- search --}}
@@ -44,18 +44,18 @@
         {{-- actions --}}
         <nav class="ml-auto flex items-center gap-1">
             <button type="button" @click="$store.theme.toggle()" class="btn-ghost !p-2 !rounded-lg" aria-label="Toggle dark mode">
-                <x-ui.icon name="sun" class="w-[18px] h-[18px] dark:hidden" />
-                <x-ui.icon name="moon" class="hidden w-[18px] h-[18px] dark:block" />
+                <x-ui.icon name="sun" class="w-6 h-6 dark:hidden" />
+                <x-ui.icon name="moon" class="hidden w-6 h-6 dark:block" />
             </button>
 
             @auth
                 <a href="{{ route('wallet.index') }}" class="btn-ghost !p-2 !rounded-lg" aria-label="Wallet">
-                    <x-ui.icon name="sparkles" class="w-[18px] h-[18px]" />
+                    <x-ui.icon name="sparkles" class="w-6 h-6" />
                 </a>
                 <a href="{{ route('orders.index') }}" class="hidden btn-ghost btn-sm sm:inline-flex">Orders</a>
                 <div class="relative" x-data="{ acct: false }" @click.outside="acct = false">
                     <button type="button" @click="acct = !acct" class="btn-ghost !p-2 !rounded-lg" aria-label="Account menu" :aria-expanded="acct">
-                        <x-ui.icon name="user" class="w-[18px] h-[18px]" />
+                        <x-ui.icon name="user" class="w-6 h-6" />
                     </button>
                     <div x-show="acct" x-cloak x-transition.origin.top.right
                          class="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-line bg-surface py-1 shadow-card-hover">
@@ -89,41 +89,41 @@
 
             <a href="{{ route('compare.index') }}" class="relative hidden btn-ghost !p-2 !rounded-lg sm:inline-flex" x-data
                :aria-label="`Compare, ${$store.compare.count} items`">
-                <x-ui.icon name="grid" class="w-[18px] h-[18px]" />
+                <x-ui.icon name="grid" class="w-6 h-6" />
                 <span x-show="$store.compare.count > 0" x-cloak x-text="$store.compare.count"
                       class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-fg"></span>
             </a>
 
             <a href="{{ route('wishlist.index') }}" class="relative btn-ghost !p-2 !rounded-lg" x-data
                :aria-label="`Saved, ${$store.wishlist.count} items`">
-                <x-ui.icon name="heart" class="w-[18px] h-[18px]" />
+                <x-ui.icon name="heart" class="w-6 h-6" />
                 <span x-show="$store.wishlist.count > 0" x-cloak x-text="$store.wishlist.count"
                       class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-fg"></span>
             </a>
 
             <a href="{{ route('cart.index') }}" id="cart-icon" class="relative btn-ghost !p-2 !rounded-lg"
                x-data="{}" :aria-label="`Cart, ${$store.cart.count} items`">
-                <x-ui.icon name="cart" class="w-[18px] h-[18px]" />
+                <x-ui.icon name="cart" class="w-6 h-6" />
                 <span x-show="$store.cart.count > 0" x-cloak x-text="$store.cart.count"
                       class="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-accent px-1 text-[10px] font-bold text-accent-fg">{{ $cartCount ?: '' }}</span>
             </a>
 
-            <button type="button" @click="open = true" class="btn-ghost !p-2 !rounded-lg lg:hidden" aria-label="Menu"><x-ui.icon name="menu" class="w-[18px] h-[18px]" /></button>
+            <button type="button" @click="open = true" class="btn-ghost !p-2 !rounded-lg lg:hidden" aria-label="Menu"><x-ui.icon name="menu" class="w-6 h-6" /></button>
         </nav>
     </div>
 
     {{-- category nav --}}
     <div class="hidden border-t border-line lg:block">
         <div class="container-x flex h-10 items-center gap-5 text-[13px] font-medium">
-            <a href="{{ route('products.index') }}" class="text-fg hover:text-accent">All Parts</a>
+            <a href="{{ route('products.index') }}" class="text-fg hover:text-accent">All parts</a>
             <a href="{{ route('find-parts') }}" class="inline-flex items-center gap-1 text-fg hover:text-accent">
-                <x-ui.icon name="search" class="w-3.5 h-3.5" /> Find parts
+                <x-ui.icon name="search" class="w-4 h-4" /> Find parts
             </a>
             @foreach (\App\Models\Category::shopRoots()->take(7) as $cat)
                 <a href="{{ route('products.index', ['category' => $cat->slug]) }}" class="text-muted hover:text-accent">{{ $cat->name }}</a>
             @endforeach
             <a href="{{ route('plus.show') }}" class="ml-auto font-semibold text-fg hover:text-accent">Plus</a>
-            <a href="{{ route('deals.index') }}" class="font-semibold text-accent">Today's Deals</a>
+            <a href="{{ route('deals.index') }}" class="font-semibold text-accent">Today's deals</a>
         </div>
     </div>
 
@@ -140,16 +140,16 @@
              x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full">
             <div class="flex items-center justify-between">
                 <span class="font-bold">Menu</span>
-                <button @click="open = false" class="btn-ghost !p-2"><x-ui.icon name="x" class="w-5 h-5" /></button>
+                <button @click="open = false" class="btn-ghost !p-2"><x-ui.icon name="x" class="w-6 h-6" /></button>
             </div>
             <form action="{{ route('products.index') }}" method="GET" class="mt-4">
                 <input name="q" placeholder="Search parts…" class="input h-11">
             </form>
             <nav class="mt-4 flex flex-col text-sm">
-                <a href="{{ route('products.index') }}" class="py-2.5 font-semibold">All Parts</a>
+                <a href="{{ route('products.index') }}" class="py-2.5 font-semibold">All parts</a>
                 <a href="{{ route('find-parts') }}" class="py-2.5 font-semibold">Find parts for my vehicle</a>
-                <a href="{{ route('plus.show') }}" class="py-2.5 font-semibold">PanMotive Plus</a>
-                <a href="{{ route('deals.index') }}" class="py-2.5 font-semibold text-accent">Today's Deals</a>
+                <a href="{{ route('plus.show') }}" class="py-2.5 font-semibold">Panmotive Plus</a>
+                <a href="{{ route('deals.index') }}" class="py-2.5 font-semibold text-accent">Today's deals</a>
                 @foreach (\App\Models\Category::shopRoots() as $cat)
                     <a href="{{ route('products.index', ['category' => $cat->slug]) }}" class="py-2.5 text-muted">{{ $cat->name }}</a>
                 @endforeach

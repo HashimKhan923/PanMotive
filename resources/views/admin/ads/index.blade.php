@@ -3,7 +3,7 @@
 @section('title', 'Seller ads')
 
 @section('content')
-<x-admin.header title="Seller ads" subtitle="Campaigns and boosts sellers are running on PanMotive. Stop anything that breaks policy." />
+<x-admin.header title="Seller ads" subtitle="Campaigns and boosts sellers are running on Panmotive. Stop anything that breaks policy." />
 
 <div class="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4" data-enter>
     <x-admin.stat label="Live campaigns" :value="$stats['live']" icon="sparkles" />

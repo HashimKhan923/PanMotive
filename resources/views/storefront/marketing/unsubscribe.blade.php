@@ -4,13 +4,13 @@
 @section('content')
 <div class="container-x max-w-lg py-16">
     <div class="card p-8 text-center" data-reveal>
-        <x-ui.icon name="mail" class="mx-auto w-10 h-10 text-accent" />
+        <x-ui.icon name="mail" class="mx-auto w-12 h-12 text-fg" />
 
         @if ($done)
             <h1 class="mt-4 text-2xl font-bold">You're unsubscribed</h1>
             <p class="mt-2 text-sm text-muted">
                 @if (! empty($all) || ! $store)
-                    You won't get marketing emails from any store on PanMotive.
+                    You won't get marketing emails from any store on Panmotive.
                 @else
                     You won't get marketing emails from <strong>{{ $store }}</strong> any more.
                 @endif
@@ -25,7 +25,7 @@
         @else
             <h1 class="mt-4 text-2xl font-bold">Unsubscribe{{ $store ? ' from '.$store : '' }}?</h1>
             <p class="mt-2 text-sm text-muted">
-                {{ $store ? "You'll stop getting promotions and news from {$store}." : "You'll stop getting promotions from stores on PanMotive." }}
+                {{ $store ? "You'll stop getting promotions and news from {$store}." : "You'll stop getting promotions from stores on Panmotive." }}
                 Order updates and receipts aren't affected.
             </p>
             <form method="POST" action="{{ request()->fullUrl() }}" class="mt-6 space-y-3">
@@ -37,7 +37,7 @@
         @endif
 
         @auth
-            <a href="{{ route('marketing.preferences') }}" class="mt-6 inline-block text-xs text-accent hover:underline">Manage all marketing preferences</a>
+            <a href="{{ route('marketing.preferences') }}" class="mt-6 inline-block text-xs text-fg underline underline-offset-2">Manage all marketing preferences</a>
         @endauth
     </div>
 </div>

@@ -5,7 +5,7 @@
 @section('content')
 <x-admin.header title="Commission ledger" subtitle="Delivered and paid-out order lines, with what each one earned.">
     @can('finance.export')
-        <a href="{{ route('admin.finance.export', request()->query()) }}" class="btn-outline btn-sm"><x-ui.icon name="download" class="w-3.5 h-3.5" /> Export CSV</a>
+        <a href="{{ route('admin.finance.export', request()->query()) }}" class="btn-outline btn-sm"><x-ui.icon name="download" class="w-4 h-4" /> Export CSV</a>
     @endcan
 </x-admin.header>
 

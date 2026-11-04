@@ -28,7 +28,7 @@
         <div class="card flex flex-col overflow-hidden" style="min-height: 60vh;">
             @if (! $active)
                 <div class="grid flex-1 place-items-center p-10 text-center text-sm text-muted">
-                    <div><x-ui.icon name="mail" class="mx-auto w-10 h-10" /><p class="mt-3">Select a conversation.</p></div>
+                    <div><x-ui.icon name="mail" class="mx-auto w-12 h-12" /><p class="mt-3">Select a conversation.</p></div>
                 </div>
             @else
                 <div class="border-b border-line px-5 py-3">
@@ -74,7 +74,7 @@
                                         @if (method_exists($photo, 'isPreviewable') && $photo->isPreviewable())
                                             <img src="{{ $photo->temporaryUrl() }}" class="h-16 w-16 rounded-lg object-cover" alt="">
                                         @endif
-                                        <button type="button" wire:click="removePhoto({{ $i }})" class="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-fg text-bg" aria-label="Remove photo"><x-ui.icon name="x" class="w-3 h-3" /></button>
+                                        <button type="button" wire:click="removePhoto({{ $i }})" class="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-fg text-bg" aria-label="Remove photo"><x-ui.icon name="x" class="w-4 h-4" /></button>
                                     </div>
                                 @endforeach
                             </div>
@@ -91,7 +91,7 @@
                         @error('body') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         @error('photos') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         @error('photos.*') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
-                        <p class="mt-1 text-[10px] text-muted">For your protection, keep payments and conversations on PanMotive.</p>
+                        <p class="mt-1 text-[10px] text-muted">For your protection, keep payments and conversations on Panmotive.</p>
                     </form>
                 @endif
             @endif

@@ -2,7 +2,7 @@
     <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
             <h1 class="text-2xl font-bold">Storefront builder</h1>
-            <p class="mt-1 text-sm text-muted">Design your public store page. Share the link anywhere — it's your shopfront on PanMotive.</p>
+            <p class="mt-1 text-sm text-muted">Design your public store page. Share the link anywhere — it's your shopfront on Panmotive.</p>
         </div>
         @if ($profile->slug)
             <a href="{{ route('sellers.show', $profile) }}" target="_blank" class="btn-outline btn-sm"><x-ui.icon name="external" class="w-4 h-4" /> View store</a>

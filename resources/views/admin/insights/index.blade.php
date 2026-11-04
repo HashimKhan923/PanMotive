@@ -52,7 +52,7 @@
                             <span class="block text-[13px] font-semibold group-hover:text-accent">{{ $issue['label'] }}</span>
                             <span class="block text-xs text-muted">{{ $issue['hint'] }}</span>
                         </span>
-                        <span class="text-lg font-bold tabular-nums {{ $issue['count'] === 0 ? 'text-muted/50' : '' }}">{{ number_format($issue['count']) }}</span>
+                        <span class="text-lg font-bold tabular-nums {{ $issue['count'] === 0 ? 'text-muted' : '' }}">{{ number_format($issue['count']) }}</span>
                     </{{ $openable ? 'a' : 'div' }}>
                 </li>
             @endforeach
