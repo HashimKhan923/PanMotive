@@ -6,7 +6,7 @@
 <div class="container-x max-w-lg py-14" data-reveal>
     <div class="card p-6 sm:p-8">
         <h1 class="text-xl font-bold">Payment</h1>
-        <p class="mt-1 text-sm text-muted">Order {{ $order->order_number }} · <span class="font-semibold text-fg">${{ number_format($order->total, 2) }}</span></p>
+        <p class="mt-1 text-sm text-muted">Order {{ $order->order_number }} · <span class="font-semibold text-fg">${{ number_format($order->total, 2) }}</span>@if ((float) $order->tax_total > 0) <span class="whitespace-nowrap">(includes ${{ number_format($order->tax_total, 2) }} sales tax)</span>@endif</p>
 
         <div id="payment-element" class="mt-6"></div>
         <button id="submit-payment" class="btn-accent mt-5 w-full !py-3.5 text-base">

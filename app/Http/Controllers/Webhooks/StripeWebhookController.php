@@ -67,6 +67,7 @@ class StripeWebhookController extends Controller
         $order->update(['status' => OrderStatus::Paid, 'placed_at' => $order->placed_at ?? now()]);
         $order->items()->update(['status' => OrderStatus::Paid]);
         app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.paid', $order->items()->with('order')->get());
+        app(\App\Services\Tax\SalesTaxService::class)->recordSale($order);
 
         // Referral bonus is gated on a real first paid order (not signup) to
         // stop reward farming from accounts that never buy.

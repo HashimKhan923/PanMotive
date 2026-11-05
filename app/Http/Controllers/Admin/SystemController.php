@@ -133,7 +133,7 @@ class SystemController extends Controller
         return [
             ['Debug mode off', ! config('app.debug'), 'Debug pages show secrets to visitors.'],
             ['Real email sending', ! in_array(config('mail.default'), ['log', 'array'], true), 'Emails are only written to a log file right now.'],
-            ['Sales tax collected', (bool) config('marketplace.sales_tax.collecting'), 'US marketplaces must normally collect it.'],
+            ['Sales tax collected', app(\App\Services\Tax\SalesTaxService::class)->ready(), 'US marketplaces must normally collect it. Needs Stripe Tax active, your state registrations, and SALES_TAX_COLLECTING=true.'],
             ['Terms and Privacy pages published', \App\Models\Page::where('is_published', true)->count() >= 2, 'Add them in Content → Pages.'],
         ];
     }

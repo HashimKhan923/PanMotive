@@ -1,4 +1,5 @@
-{!! '<?xml version="1.0" encoding="UTF-8"?>'."\n" !!}
+{{-- Split on purpose: with PHP's short_open_tag On, a literal open tag in this file is read as PHP code and crashes the page. --}}
+{!! '<'.'?xml version="1.0" encoding="UTF-8"?'.'>'."\n" !!}
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>{{ route('home') }}</loc>

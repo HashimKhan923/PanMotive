@@ -4,6 +4,7 @@ namespace App\Livewire\Seller;
 
 use App\Models\Offer;
 use App\Services\Seller\OfferService;
+use App\Support\SellerContext;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -27,6 +28,8 @@ class Offers extends Component
 
     public function accept(int $id, OfferService $offers): void
     {
+        abort_unless(SellerContext::can('orders.manage'), 403);
+
         try {
             $offers->accept($this->owned($id), 'seller');
         } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
@@ -40,12 +43,16 @@ class Offers extends Component
 
     public function decline(int $id, OfferService $offers): void
     {
+        abort_unless(SellerContext::can('orders.manage'), 403);
+
         $offers->decline($this->owned($id));
         $this->dispatch('toast', message: 'Offer declined');
     }
 
     public function sendCounter(int $id, OfferService $offers): void
     {
+        abort_unless(SellerContext::can('orders.manage'), 403);
+
         $price = (float) ($this->counter[$id] ?? 0);
         $this->validate(["counter.$id" => 'required|numeric|min:0.01'], [], ["counter.$id" => 'counter price']);
 
@@ -73,6 +80,10 @@ class Offers extends Component
 
         $openCount = Offer::where('seller_id', auth()->id())->whereIn('status', ['pending', 'countered'])->count();
 
-        return view('livewire.seller.offers', compact('offers', 'openCount'));
+        return view('livewire.seller.offers', [
+            'offers' => $offers,
+            'openCount' => $openCount,
+            'canManage' => SellerContext::can('orders.manage'),
+        ]);
     }
 }

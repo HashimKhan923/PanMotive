@@ -113,8 +113,22 @@ class SubscriptionService
         $shipping = app(\App\Services\Shipping\ShippingEstimateService::class)
             ->estimate([['product' => $product, 'quantity' => $sub->quantity, 'line_total' => $lineTotal]], $sub->buyer)['shipping'];
 
-        $order = DB::transaction(function () use ($sub, $product, $unit, $lineTotal, $address, $rate, $split, $shipping) {
-            $total = round($lineTotal + $shipping, 2);
+        $salesTax = app(\App\Services\Tax\SalesTaxService::class);
+        try {
+            $tax = $salesTax->calculate([0 => $lineTotal], $shipping, $address);
+        } catch (\App\Services\Tax\SalesTaxUnavailable $e) {
+            // Don't place an order with the wrong total. Try again tomorrow, and tell staff.
+            \App\Models\AdminAlert::create([
+                'type' => 'subscription_tax_failed',
+                'message' => "Subscription #{$sub->id} didn't place its order because the sales tax couldn't be worked out: {$e->getMessage()}",
+            ]);
+            $sub->update(['next_run_at' => now()->addDay()]);
+
+            return null;
+        }
+
+        $order = DB::transaction(function () use ($sub, $product, $unit, $lineTotal, $address, $rate, $split, $shipping, $tax) {
+            $total = round($lineTotal + $shipping + $tax->total, 2);
 
             $order = Order::create([
                 'order_number' => 'PM-'.strtoupper(Str::random(10)),
@@ -122,7 +136,9 @@ class SubscriptionService
                 'status' => OrderStatus::Placed,
                 'subtotal' => $lineTotal,
                 'shipping_total' => $shipping,
-                'tax_total' => 0,
+                'tax_total' => $tax->total,
+                'shipping_tax' => $tax->shipping,
+                'tax_calculation_id' => $tax->calculationId,
                 'discount_total' => 0,
                 'credits_used' => 0,
                 'subscription_id' => $sub->id,
@@ -141,6 +157,7 @@ class SubscriptionService
                 'quantity' => $sub->quantity,
                 'unit_price' => $unit,
                 'line_total' => $lineTotal,
+                'tax_amount' => $tax->byLine[0] ?? 0,
                 'commission_rate' => $rate,
                 'platform_fee_amount' => $split['platform_fee_amount'],
                 'seller_payout_amount' => $split['seller_payout_amount'],
@@ -165,6 +182,10 @@ class SubscriptionService
 
             return $order;
         });
+
+        if ($order->status === OrderStatus::Paid) {
+            $salesTax->recordSale($order); // paid from wallet credit above; card orders record on payment
+        }
 
         $sub->buyer->notify(new SubscriptionOrderPlaced($order, $sub));
 

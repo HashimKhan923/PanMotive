@@ -35,9 +35,15 @@ class PayoutReversalService
         $transfer = collect($transfers->data)->firstWhere('metadata.order_item_id', (string) $orderItem->id);
 
         if ($transfer) {
-            $this->stripe->transfers->createReversal($transfer->id, [
-                'amount' => (int) round($orderItem->seller_payout_amount * 100),
-            ]);
+            // An instant payout sent less than the full payout (the fee was kept), and Stripe
+            // refuses to reverse more than the transfer has left.
+            $wanted = (int) round($orderItem->seller_payout_amount * 100);
+            $left = (int) ($transfer->amount ?? $wanted) - (int) ($transfer->amount_reversed ?? 0);
+            $amount = min($wanted, $left);
+
+            if ($amount > 0) {
+                $this->stripe->transfers->createReversal($transfer->id, ['amount' => $amount]);
+            }
         }
     }
 }

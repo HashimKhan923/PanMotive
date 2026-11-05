@@ -22,7 +22,7 @@
 </x-admin.filters>
 
 <div class="grid grid-cols-2 gap-3 lg:grid-cols-4" data-enter>
-    <x-admin.stat label="Gross sales" :value="$sales" prefix="$" :decimals="2" icon="dollar" hint="Paid orders" />
+    <x-admin.stat label="Gross sales" :value="$sales" prefix="$" :decimals="2" icon="dollar" hint="Paid orders, without sales tax" />
     <x-admin.stat label="Platform income" :value="$totalRevenue" prefix="$" :decimals="2" icon="chart" hint="All income sources below" />
     <x-admin.stat label="Refunded" :value="$refunded" prefix="$" :decimals="2" icon="refresh" hint="Line value refunded" />
     <x-admin.stat label="Paid to sellers" :value="$paidOut" prefix="$" :decimals="2" icon="archive" hint="Payouts released" />
@@ -45,6 +45,9 @@
                 <div class="flex justify-between gap-3"><dt class="text-muted">Seller ad credit</dt><dd class="font-semibold">${{ number_format($adCreditOwed, 2) }}</dd></div>
                 <div class="flex justify-between gap-3 border-t border-line/60 pt-2.5"><dt class="font-medium">Total</dt><dd class="font-bold">${{ number_format($owedSellers + $walletOwed + $adCreditOwed, 2) }}</dd></div>
             </dl>
+            @if ($taxCollected > 0)
+                <p class="mt-3 border-t border-line/60 pt-2.5 text-[13px] text-muted">Sales tax collected in the selected dates, owed to the states: <span class="font-semibold text-fg tabular-nums">${{ number_format($taxCollected, 2) }}</span></p>
+            @endif
         </x-admin.card>
     </div>
 </div>

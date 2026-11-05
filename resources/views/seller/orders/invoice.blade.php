@@ -67,7 +67,7 @@
 </table>
 
 <p class="mt-8 text-xs text-slate-500">
-    Shipping and any order-wide discounts are settled by Panmotive on the buyer's combined receipt.
+    Shipping, sales tax and any order-wide discounts are settled by Panmotive on the buyer's combined receipt.
     Questions about this order? Message {{ $store?->business_name }} from your Panmotive account.
 </p>
 @endsection

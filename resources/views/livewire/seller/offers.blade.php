@@ -38,7 +38,7 @@
                     <p class="mt-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-xs text-emerald-600">Deal at ${{ number_format($offer->listPrice(), 2) }}/ea — the buyer's price is held until {{ $offer->expires_at?->format('M j, g:i A') }}.</p>
                 @elseif ($offer->status === 'countered')
                     <p class="mt-3 rounded-lg bg-accent/10 px-3 py-2 text-xs">You countered at <span class="font-semibold">${{ number_format($offer->counter_price, 2) }}/ea</span> — waiting on the buyer until {{ $offer->expires_at?->format('M j, g:i A') }}.</p>
-                @elseif ($offer->status === 'pending')
+                @elseif ($offer->status === 'pending' && $canManage)
                     <div class="mt-4 flex flex-wrap items-end gap-2 border-t border-line pt-4">
                         <button wire:click="accept({{ $offer->id }})" class="btn-accent btn-sm">Accept ${{ number_format($offer->listPrice(), 2) }}</button>
                         <div class="flex items-end gap-1">

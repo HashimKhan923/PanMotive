@@ -93,6 +93,9 @@
                         @foreach ($bundlesApplied as $b)
                             <div class="flex justify-between text-emerald-600"><dt>Bundle: {{ $b['title'] }}</dt><dd>−${{ number_format($b['savings'], 2) }}</dd></div>
                         @endforeach
+                        @if ($taxCollecting)
+                            <div class="flex justify-between"><dt class="text-muted">Sales tax</dt><dd class="text-muted">Added on the next step</dd></div>
+                        @endif
                         <div class="flex justify-between border-t border-line pt-2 text-base font-bold">
                             <dt>Estimated total</dt>
                             <dd>${{ number_format(max(0, $subtotal + $shipping - $discount - $bundleSavings), 2) }}</dd>

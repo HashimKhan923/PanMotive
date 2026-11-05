@@ -62,18 +62,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('seller.dashboard');
 
         // Products
-        Route::get('/products', ProductList::class)->name('seller.products.index');
+        Route::get('/products', ProductList::class)->middleware('seller.can:products.view,products.manage')->name('seller.products.index');
         Route::get('/products/create', ProductForm::class)->middleware('seller.can:products.manage')->name('seller.products.create');
         Route::get('/products/bulk-upload', BulkUpload::class)->middleware('seller.can:products.manage')->name('seller.products.bulk');
         Route::get('/products/bulk-update', \App\Livewire\Seller\BulkUpdate::class)->middleware('seller.can:products.manage')->name('seller.products.bulk-update');
         Route::get('/products/{product}/edit', ProductForm::class)->middleware('seller.can:products.manage')->name('seller.products.edit');
 
         // Orders
-        Route::get('/orders', [OrderController::class, 'index'])->name('seller.orders.index');
-        Route::get('/orders/export', [OrderController::class, 'export'])->name('seller.orders.export');
+        Route::get('/orders', [OrderController::class, 'index'])->middleware('seller.can:orders.view,orders.manage')->name('seller.orders.index');
+        Route::get('/orders/export', [OrderController::class, 'export'])->middleware('seller.can:orders.view,orders.manage')->name('seller.orders.export');
         Route::post('/orders/bulk-accept', [OrderController::class, 'bulkAccept'])->middleware('seller.can:orders.manage')->name('seller.orders.bulk-accept');
-        Route::get('/orders/invoice/{order}', [OrderController::class, 'invoice'])->name('seller.orders.invoice');
-        Route::get('/orders/{orderItem}', [OrderController::class, 'show'])->name('seller.orders.show');
+        Route::get('/orders/invoice/{order}', [OrderController::class, 'invoice'])->middleware('seller.can:orders.view,orders.manage,fulfilment')->name('seller.orders.invoice');
+        Route::get('/orders/{orderItem}', [OrderController::class, 'show'])->middleware('seller.can:orders.view,orders.manage,returns.manage,fulfilment')->name('seller.orders.show');
         Route::post('/orders/{orderItem}/accept', [OrderController::class, 'accept'])->middleware('seller.can:orders.manage')->name('seller.orders.accept');
         Route::post('/orders/{orderItem}/cancel', [OrderController::class, 'cancel'])->middleware('seller.can:orders.manage')->name('seller.orders.cancel');
         Route::post('/orders/{orderItem}/ship', [OrderController::class, 'ship'])->middleware('seller.can:orders.manage')->name('seller.orders.ship');
@@ -92,7 +92,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/fulfilment/{order}/label', [FulfilmentController::class, 'buyLabel'])->middleware('seller.can:fulfilment')->name('seller.fulfilment.buy-label');
 
         // Returns / RMA queue
-        Route::get('/returns', [ReturnController::class, 'index'])->name('seller.returns.index');
+        Route::get('/returns', [ReturnController::class, 'index'])->middleware('seller.can:returns.manage,orders.view')->name('seller.returns.index');
         Route::post('/returns/{returnRequest}', [ReturnController::class, 'update'])->middleware('seller.can:returns.manage')->name('seller.returns.update');
 
         // Customers (CRM)
@@ -112,7 +112,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/messages', Inbox::class)->middleware('seller.can:messages')->name('seller.messages.index');
 
         // Offers
-        Route::get('/offers', Offers::class)->middleware('seller.can:orders.view')->name('seller.offers.index');
+        Route::get('/offers', Offers::class)->middleware('seller.can:orders.view,orders.manage')->name('seller.offers.index');
 
         // Promotions
         Route::get('/promotions', Promotions::class)->middleware('seller.can:marketing')->name('seller.promotions.index');
@@ -156,7 +156,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/account-health', AccountHealth::class)->name('seller.account-health.index');
 
         // Bundles
-        Route::get('/bundles', Bundles::class)->name('seller.bundles.index');
+        Route::get('/bundles', Bundles::class)->middleware('seller.can:products.manage')->name('seller.bundles.index');
 
         // Insights
         Route::get('/insights', [InsightsController::class, 'index'])->middleware('seller.can:products.view')->name('seller.insights.index');

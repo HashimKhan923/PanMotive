@@ -4,6 +4,7 @@ namespace App\Livewire\Seller;
 
 use App\Models\Product;
 use App\Models\ProductTemplate;
+use App\Support\SellerContext;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -62,12 +63,16 @@ class ProductList extends Component
 
     public function archive(int $id): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $this->owned($id)->update(['status' => 'archived']);
         $this->dispatch('toast', message: 'Listing archived');
     }
 
     public function activate(int $id): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $product = $this->owned($id);
 
         // Re-publishing something already reviewed → straight back to active.
@@ -93,6 +98,8 @@ class ProductList extends Component
      */
     public function delete(int $id): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $product = $this->owned($id);
 
         if (\App\Models\OrderItem::where('product_id', $product->id)->exists()) {
@@ -115,6 +122,8 @@ class ProductList extends Component
 
     public function duplicate(int $id): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $original = $this->owned($id);
         $copy = $original->replicate(['slug', 'views_count', 'avg_rating', 'reviews_count', 'published_at']);
         $copy->title = $original->title.' (copy)';
@@ -128,6 +137,8 @@ class ProductList extends Component
 
     public function bulk(string $action): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $ids = collect($this->selected)->map(fn ($i) => (int) $i);
         $q = Product::where('seller_id', auth()->id())->whereIn('id', $ids);
 
@@ -165,6 +176,8 @@ class ProductList extends Component
 
     public function applyBulkPrice(): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $this->validate(['priceValue' => 'required|numeric|min:0']);
         $v = (float) $this->priceValue;
 
@@ -189,6 +202,8 @@ class ProductList extends Component
 
     public function startEdit(int $id): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $p = $this->owned($id);
         $this->editId = $id;
         $this->editPrice = (float) $p->price;
@@ -197,6 +212,8 @@ class ProductList extends Component
 
     public function saveEdit(): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $this->validate([
             'editPrice' => 'required|numeric|min:0.01',
             'editQty' => 'required|integer|min:0|max:1000000',
@@ -224,6 +241,8 @@ class ProductList extends Component
 
     public function saveAsTemplate(int $id): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         $p = $this->owned($id);
         ProductTemplate::create([
             'seller_id' => auth()->id(),
@@ -244,6 +263,8 @@ class ProductList extends Component
 
     public function deleteTemplate(int $id): void
     {
+        abort_unless(SellerContext::can('products.manage'), 403);
+
         ProductTemplate::where('seller_id', auth()->id())->whereKey($id)->delete();
     }
 
@@ -299,6 +320,7 @@ class ProductList extends Component
             'counts' => $counts,
             'total' => $counts->sum(),
             'templates' => auth()->user()->productTemplates()->latest()->get(),
+            'canManage' => SellerContext::can('products.manage'),
         ]);
     }
 }

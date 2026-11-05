@@ -14,6 +14,8 @@ use App\Services\Marketing\ReferralService;
 use App\Services\Marketing\WalletService;
 use App\Services\Payments\CheckoutPaymentService;
 use App\Services\Shipping\ShippingEstimateService;
+use App\Services\Tax\SalesTaxService;
+use App\Services\Tax\SalesTaxUnavailable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -44,6 +46,7 @@ class CheckoutController extends Controller
             'shipping' => $ship['shipping'],
             'shippingFree' => $ship['free'],
             'couponCode' => session('checkout.coupon_code'),
+            'taxCollecting' => app(SalesTaxService::class)->enabled(),
         ]);
     }
 
@@ -69,6 +72,7 @@ class CheckoutController extends Controller
         CouponService $coupons,
         WalletService $wallet,
         ShippingEstimateService $shipping,
+        SalesTaxService $salesTax,
     ) {
         if ($cart->isEmpty()) {
             return redirect()->route('cart.index')->with('status', 'Your cart is empty.');
@@ -154,9 +158,22 @@ class CheckoutController extends Controller
             $creditsToUse = $wallet->maxRedeemable(auth()->user(), max(0, $subtotal - $discountTotal));
         }
 
-        $total = round(max(0, $subtotal + $shippingTotal - $discountTotal - $creditsToUse), 2);
+        // Tax is charged on what's actually paid for the goods: store credit is a way of paying, not a
+        // discount, so it doesn't lower the tax. Worked out before anything is saved, so a problem
+        // here leaves the cart untouched.
+        $netLines = $lines->map(fn ($line, $i) => round((float) $line['line_total'] - (float) ($lineDiscounts[$i] ?? 0), 2))->all();
+        $taxable = $salesTax->taxableAmounts($netLines, max(0, $discountTotal - (float) array_sum((array) $lineDiscounts)));
+        try {
+            $tax = $salesTax->calculate($taxable, $shippingTotal, $address);
+        } catch (SalesTaxUnavailable) {
+            return back()->withInput()->withErrors([
+                'postal_code' => 'We couldn\'t work out the sales tax for this address. Check the ZIP code and state, then try again.',
+            ]);
+        }
 
-        $order = DB::transaction(function () use ($lines, $lineDiscounts, $couponDiscount, $address, $data, $subtotal, $shippingTotal, $discountTotal, $creditsToUse, $total, $appliedCoupon, $coupons, $wallet) {
+        $total = round(max(0, $subtotal + $shippingTotal + $tax->total - $discountTotal - $creditsToUse), 2);
+
+        $order = DB::transaction(function () use ($lines, $lineDiscounts, $couponDiscount, $address, $data, $subtotal, $shippingTotal, $discountTotal, $creditsToUse, $total, $tax, $appliedCoupon, $coupons, $wallet) {
             $order = Order::create([
                 'order_number' => 'PM-'.strtoupper(Str::random(10)),
                 'buyer_id' => auth()->id(),
@@ -165,7 +182,9 @@ class CheckoutController extends Controller
                 'status' => OrderStatus::Placed,
                 'subtotal' => $subtotal,
                 'shipping_total' => $shippingTotal,
-                'tax_total' => 0,
+                'tax_total' => $tax->total,
+                'shipping_tax' => $tax->shipping,
+                'tax_calculation_id' => $tax->calculationId,
                 'discount_total' => $discountTotal,
                 'credits_used' => $creditsToUse,
                 'coupon_id' => $appliedCoupon?->id,
@@ -195,6 +214,7 @@ class CheckoutController extends Controller
                     'unit_price' => $line['unit_price'],
                     'discount_amount' => $lineDiscount,
                     'line_total' => $netLine,
+                    'tax_amount' => $tax->byLine[$i] ?? 0,
                     'commission_rate' => $rate,
                     'platform_fee_amount' => $split['platform_fee_amount'],
                     'seller_payout_amount' => $split['seller_payout_amount'],
@@ -247,6 +267,7 @@ class CheckoutController extends Controller
             $order->update(['status' => OrderStatus::Paid, 'placed_at' => now()]);
             $order->items()->update(['status' => OrderStatus::Paid]);
             app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.paid', $order->items()->with('order')->get());
+            $salesTax->recordSale($order);
 
             if ($order->buyer) {
                 app(ReferralService::class)->completeIfEligible($order->buyer);

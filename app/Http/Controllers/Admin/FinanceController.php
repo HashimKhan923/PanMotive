@@ -46,7 +46,9 @@ class FinanceController extends Controller
             'from' => $from, 'to' => $to,
             'revenue' => $revenue,
             'totalRevenue' => array_sum($revenue),
-            'sales' => (float) Order::whereBetween('created_at', [$from, $to])->whereNotIn('status', ['placed', 'cancelled'])->sum(DB::raw('total + credits_used')),
+            'sales' => (float) Order::whereBetween('created_at', [$from, $to])->whereNotIn('status', ['placed', 'cancelled'])->sum(DB::raw('total + credits_used - tax_total')),
+            // Collected for the states, so it's neither sales nor income. Refunds on these orders still come off this.
+            'taxCollected' => (float) Order::whereBetween('created_at', [$from, $to])->whereNotIn('status', ['placed', 'cancelled'])->sum('tax_total'),
             'refunded' => (float) OrderItem::where('status', OrderStatus::Refunded)->whereBetween('updated_at', [$from, $to])->sum('line_total'),
             'paidOut' => (float) OrderItem::whereBetween('payout_released_at', [$from, $to])->sum('seller_payout_amount'),
             // What Panmotive holds that belongs to someone else, right now.
@@ -55,7 +57,7 @@ class FinanceController extends Controller
             'walletOwed' => (float) User::sum('wallet_balance'),
             'adCreditOwed' => (float) SellerProfile::sum('ad_credit'),
             'monthly' => $this->monthly(),
-            'taxCollecting' => (bool) config('marketplace.sales_tax.collecting'),
+            'taxCollecting' => app(\App\Services\Tax\SalesTaxService::class)->ready(),
         ]);
     }
 

@@ -21,8 +21,8 @@
         </div>
     </div>
 
-    @if ($errors->has('cancel'))
-        <div class="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-400">{{ $errors->first('cancel') }}</div>
+    @if ($errors->has('cancel') || $errors->has('advance'))
+        <div class="mt-4 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-700 dark:text-rose-400">{{ $errors->first('cancel') ?: $errors->first('advance') }}</div>
     @endif
 
     <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_280px]">

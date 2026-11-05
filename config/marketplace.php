@@ -86,10 +86,12 @@ return [
     'tax_1099k_threshold' => env('TAX_1099K_THRESHOLD', 20000),
     'tax_1099k_min_transactions' => env('TAX_1099K_MIN_TRANSACTIONS', 200),
 
-    // Marketplace-facilitator sales tax. Checkout doesn't calculate tax yet (orders.tax_total is 0),
-    // so this stays false — never tell sellers tax is handled until it really is.
+    // Marketplace-facilitator sales tax through Stripe Tax (see SalesTaxService). Only turn this on
+    // once Stripe Tax is active with your state registrations: it also tells sellers tax is handled.
     'sales_tax' => [
         'collecting' => (bool) env('SALES_TAX_COLLECTING', false),
+        'product_tax_code' => env('SALES_TAX_PRODUCT_CODE', 'txcd_99999999'), // General - Tangible Goods
+        'shipping_tax_code' => env('SALES_TAX_SHIPPING_CODE', 'txcd_92010001'), // Shipping
     ],
 
 

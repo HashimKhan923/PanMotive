@@ -32,6 +32,9 @@
                     @endforeach
                 </tbody>
                 <tfoot>
+                    @if ((float) $order->tax_total > 0)
+                        <tr class="text-muted"><td colspan="2" class="pt-3 text-right">Sales tax</td><td class="pt-3 text-right">${{ number_format($order->tax_total, 2) }}</td></tr>
+                    @endif
                     <tr class="font-bold"><td colspan="2" class="pt-3 text-right">Total</td><td class="pt-3 text-right">${{ number_format($order->total, 2) }}</td></tr>
                 </tfoot>
             </table>

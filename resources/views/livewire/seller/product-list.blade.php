@@ -6,13 +6,15 @@
         </div>
         <div class="flex flex-wrap gap-2">
             <button wire:click="exportCsv" class="btn-ghost btn-sm"><x-ui.icon name="external" class="w-4 h-4" /> Export CSV</button>
-            <a href="{{ route('seller.products.bulk-update') }}" class="btn-ghost btn-sm"><x-ui.icon name="refresh" class="w-4 h-4" /> Update by spreadsheet</a>
-            <a href="{{ route('seller.products.bulk') }}" class="btn-outline btn-sm"><x-ui.icon name="list" class="w-4 h-4" /> Bulk upload</a>
-            <a href="{{ route('seller.products.create') }}" class="btn-accent btn-sm"><x-ui.icon name="plus" class="w-4 h-4" /> New product</a>
+            @if ($canManage)
+                <a href="{{ route('seller.products.bulk-update') }}" class="btn-ghost btn-sm"><x-ui.icon name="refresh" class="w-4 h-4" /> Update by spreadsheet</a>
+                <a href="{{ route('seller.products.bulk') }}" class="btn-outline btn-sm"><x-ui.icon name="list" class="w-4 h-4" /> Bulk upload</a>
+                <a href="{{ route('seller.products.create') }}" class="btn-accent btn-sm"><x-ui.icon name="plus" class="w-4 h-4" /> New product</a>
+            @endif
         </div>
     </div>
 
-    @if ($templates->isNotEmpty())
+    @if ($canManage && $templates->isNotEmpty())
         <div class="mt-4 flex flex-wrap items-center gap-2 text-xs">
             <span class="font-semibold uppercase text-muted">New from template:</span>
             @foreach ($templates as $t)
@@ -61,7 +63,7 @@
     </div>
 
     {{-- bulk bar --}}
-    @if (count($selected))
+    @if ($canManage && count($selected))
         <div class="mt-4 rounded-xl border border-accent/30 bg-accent/10 px-4 py-2.5 text-sm">
             <div class="flex items-center gap-3">
                 <span class="font-medium">{{ count($selected) }} selected</span>
@@ -93,7 +95,7 @@
         <table class="w-full min-w-[720px] text-sm">
             <thead class="bg-surface-2 text-left text-xs uppercase text-muted">
                 <tr>
-                    <th class="w-10 px-4 py-3"><input type="checkbox" wire:model.live="selectPage" class="rounded border-line text-accent focus:ring-accent"></th>
+                    <th class="w-10 px-4 py-3">@if ($canManage)<input type="checkbox" wire:model.live="selectPage" class="rounded border-line text-accent focus:ring-accent">@endif</th>
                     <th class="px-4 py-3">Product</th>
                     <th class="px-4 py-3">Price</th>
                     <th class="px-4 py-3">Stock</th>
@@ -106,7 +108,7 @@
                 @forelse ($products as $product)
                     <tr class="bg-surface" wire:key="p-{{ $product->id }}">
                         <td class="px-4 py-3">
-                            <input type="checkbox" value="{{ $product->id }}" wire:model.live="selected" class="rounded border-line text-accent focus:ring-accent">
+                            @if ($canManage)<input type="checkbox" value="{{ $product->id }}" wire:model.live="selected" class="rounded border-line text-accent focus:ring-accent">@endif
                         </td>
                         <td class="px-4 py-3">
                             <div class="flex items-center gap-3">
@@ -119,7 +121,7 @@
                                     @endif
                                 </div>
                                 <div class="min-w-0">
-                                    <a href="{{ route('seller.products.edit', $product) }}" class="line-clamp-1 font-medium hover:text-accent">{{ $product->title }}</a>
+                                    @if ($canManage)<a href="{{ route('seller.products.edit', $product) }}" class="line-clamp-1 font-medium hover:text-accent">{{ $product->title }}</a>@else<span class="line-clamp-1 font-medium">{{ $product->title }}</span>@endif
                                     <p class="text-xs text-muted">{{ $product->part_number ? 'Part #'.$product->part_number : ($product->sku ?: '—') }}</p>
                                 </div>
                             </div>
@@ -137,7 +139,7 @@
                                 @endif
                             </td>
                         @else
-                            <td class="px-4 py-3 cursor-pointer" wire:click="startEdit({{ $product->id }})" title="Click to edit">
+                            <td @class(['px-4 py-3', 'cursor-pointer' => $canManage]) @if ($canManage) wire:click="startEdit({{ $product->id }})" title="Click to edit" @endif>
                                 @if ($product->sale_price)
                                     <span class="font-semibold">${{ number_format($product->sale_price, 2) }}</span>
                                     <span class="ml-1 text-xs text-muted line-through">${{ number_format($product->price, 2) }}</span>
@@ -145,7 +147,7 @@
                                     <span class="font-semibold">${{ number_format($product->price, 2) }}</span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 cursor-pointer" wire:click="startEdit({{ $product->id }})" title="Click to edit">
+                            <td @class(['px-4 py-3', 'cursor-pointer' => $canManage]) @if ($canManage) wire:click="startEdit({{ $product->id }})" title="Click to edit" @endif>
                                 <span class="{{ $product->quantity <= 0 ? 'text-rose-500' : ($product->quantity <= 5 ? 'text-amber-600' : '') }}">{{ $product->quantity }}</span>
                             </td>
                         @endif
@@ -159,6 +161,10 @@
                             @if ($editId === $product->id)
                                 <button wire:click="saveEdit" class="btn-accent btn-sm">Save</button>
                                 <button wire:click="$set('editId', null)" class="btn-ghost btn-sm">Cancel</button>
+                            @elseif (! $canManage)
+                                @if ($product->status === 'active')
+                                    <a href="{{ route('products.show', $product->slug) }}" target="_blank" class="whitespace-nowrap text-xs font-medium text-accent hover:underline">View on site</a>
+                                @endif
                             @else
                             <div class="relative inline-block" x-data="{ open: false }" @click.outside="open = false">
                                 <button @click="open = !open" class="btn-ghost !p-1.5" aria-label="Actions"><x-ui.icon name="list" class="w-4 h-4" /></button>
@@ -192,7 +198,7 @@
                         <x-ui.icon name="box" class="mx-auto w-12 h-12 text-muted" />
                         <p class="mt-3 font-semibold">No products here yet</p>
                         <p class="mt-1 text-sm text-muted">{{ $search || $status || $stock ? 'Try clearing your filters.' : 'Create your first listing to start selling.' }}</p>
-                        <a href="{{ route('seller.products.create') }}" class="btn-accent btn-sm mt-4">New product</a>
+                        @if ($canManage)<a href="{{ route('seller.products.create') }}" class="btn-accent btn-sm mt-4">New product</a>@endif
                     </td></tr>
                 @endforelse
             </tbody>

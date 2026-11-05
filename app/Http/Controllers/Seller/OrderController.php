@@ -237,6 +237,8 @@ class OrderController extends Controller
             ]);
         }
 
+        app(\App\Services\Orders\ShipmentNotifier::class)->notify($targets);
+
         $n = $targets->count();
 
         return back()->with('success', $n > 1

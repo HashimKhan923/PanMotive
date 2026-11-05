@@ -74,6 +74,9 @@
         @if ($order->discount_total > 0)
             <div class="mt-1 flex justify-between text-emerald-600 dark:text-emerald-400"><span>Discount</span><span>-${{ number_format($order->discount_total, 2) }}</span></div>
         @endif
+        @if ((float) $order->tax_total > 0)
+            <div class="mt-1 flex justify-between"><span class="text-muted">Sales tax</span><span>${{ number_format($order->tax_total, 2) }}</span></div>
+        @endif
         <div class="mt-2 flex justify-between border-t border-line pt-2 font-bold"><span>Total</span><span>${{ number_format($order->total, 2) }}</span></div>
     </div>
 </div>

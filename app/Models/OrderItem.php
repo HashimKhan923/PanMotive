@@ -12,7 +12,7 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id', 'seller_id', 'product_id', 'product_variant_id', 'product_title',
         'variant_label', 'product_sku',
-        'quantity', 'unit_price', 'discount_amount', 'line_total', 'commission_rate',
+        'quantity', 'unit_price', 'discount_amount', 'line_total', 'tax_amount', 'commission_rate',
         'platform_fee_amount', 'offsite_ad_fee', 'affiliate_fee', 'label_fee', 'seller_payout_amount', 'cashback_amount', 'status',
         'carrier', 'tracking_number', 'shipped_at', 'delivered_at',
         'payout_released_at', 'cashback_credited_at',
@@ -31,6 +31,7 @@ class OrderItem extends Model
         'unit_price' => 'decimal:2',
         'discount_amount' => 'decimal:2',
         'line_total' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
         'commission_rate' => 'decimal:2',
         'platform_fee_amount' => 'decimal:2',
         'offsite_ad_fee' => 'decimal:2',

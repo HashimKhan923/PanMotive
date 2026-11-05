@@ -66,6 +66,9 @@ class MoneyPayoutsTest extends TestCase
 
     public function test_instant_payout_charges_fee_and_records_advance(): void
     {
+        $this->mock(\App\Services\Payments\TransferPayoutService::class)->shouldReceive('advanceToSeller')->once()
+            ->andReturn(\Stripe\Transfer::constructFrom(['id' => 'tr_test']));
+
         $seller = $this->seller();
         $item = $this->shippedItem($seller);
 
@@ -92,6 +95,9 @@ class MoneyPayoutsTest extends TestCase
 
     public function test_release_job_recoups_advance_instead_of_paying_twice(): void
     {
+        $this->mock(\App\Services\Payments\TransferPayoutService::class)->shouldReceive('advanceToSeller')->once()
+            ->andReturn(\Stripe\Transfer::constructFrom(['id' => 'tr_test']));
+
         $seller = $this->seller();
         $item = $this->shippedItem($seller);
         app(InstantPayoutService::class)->advance($item);

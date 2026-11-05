@@ -155,6 +155,8 @@ class LabelService
             ]);
         }
 
+        app(\App\Services\Orders\ShipmentNotifier::class)->notify($items);
+
         return $label;
     }
 

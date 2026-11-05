@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\OrderItem;
 use App\Models\PayoutAdvance;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class InstantPayoutService
@@ -36,6 +37,11 @@ class InstantPayoutService
             PayoutAdvance::where('order_item_id', $item->id)->exists() => 'An advance already exists for this order.',
             ! $seller->sellerProfile?->stripe_account_id || ! $seller->sellerProfile->stripe_onboarding_complete
                 => 'Connect your Stripe payout account first.',
+            // The normal payout refuses unverified sellers, so getting paid early can't skip that.
+            config('marketplace.kyc.enforce_payouts')
+                && \App\Models\SellerVerification::where('seller_id', $item->seller_id)->where('status', 'approved')->doesntExist()
+                => 'Finish identity verification before taking a payout.',
+            $gross - $fee <= 0 => 'There is nothing to pay out on this order.',
             default => null,
         };
 
@@ -50,30 +56,36 @@ class InstantPayoutService
 
     public function advance(OrderItem $item): PayoutAdvance
     {
-        $q = $this->quote($item);
-        if (! $q['eligible']) {
-            throw ValidationException::withMessages(['advance' => $q['reason']]);
-        }
+        // Locked so two quick clicks can't both pass the check and record two advances.
+        return DB::transaction(function () use ($item) {
+            $item = OrderItem::whereKey($item->id)->lockForUpdate()->firstOrFail();
 
-        $accountId = $item->seller->sellerProfile->stripe_account_id;
+            $q = $this->quote($item);
+            if (! $q['eligible']) {
+                throw ValidationException::withMessages(['advance' => $q['reason']]);
+            }
 
-        // Front the net amount now. Stripe idempotency keyed to the advance.
-        $transferId = null;
-        try {
-            $transfer = $this->transfers->transferToSeller($item, $accountId);
-            $transferId = $transfer->id ?? null;
-        } catch (\Throwable $e) {
-            report($e); // dev / no Stripe key — still record the advance
-        }
+            // An advance is only recorded once Stripe has really sent the money. Recording one
+            // without it would stop the seller's real payout and block refunds on this line.
+            try {
+                $transfer = $this->transfers->advanceToSeller($item, $item->seller->sellerProfile->stripe_account_id, $q['net']);
+            } catch (\Throwable $e) {
+                report($e);
 
-        return PayoutAdvance::create([
-            'order_item_id' => $item->id,
-            'seller_id' => $item->seller_id,
-            'gross' => $q['gross'],
-            'fee' => $q['fee'],
-            'net_paid' => $q['net'],
-            'stripe_transfer_id' => $transferId,
-            'status' => 'advanced',
-        ]);
+                throw ValidationException::withMessages([
+                    'advance' => 'Stripe couldn\'t send this payout, so nothing was charged. Please try again in a few minutes.',
+                ]);
+            }
+
+            return PayoutAdvance::create([
+                'order_item_id' => $item->id,
+                'seller_id' => $item->seller_id,
+                'gross' => $q['gross'],
+                'fee' => $q['fee'],
+                'net_paid' => $q['net'],
+                'stripe_transfer_id' => $transfer->id,
+                'status' => 'advanced',
+            ]);
+        });
     }
 }

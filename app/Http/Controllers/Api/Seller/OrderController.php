@@ -52,6 +52,7 @@ class OrderController extends Controller
         $orderItem->statusHistory()->create(['status' => OrderStatus::Shipped->value, 'note' => "via API — {$data['carrier']} {$data['tracking_number']}"]);
 
         app(\App\Services\Integrations\WebhookDispatcher::class)->fire('order.shipped', $orderItem->seller_id, $this->transform($orderItem->fresh()->load('order')));
+        app(\App\Services\Orders\ShipmentNotifier::class)->notify(collect([$orderItem->fresh()->load('order')]));
 
         return response()->json($this->transform($orderItem->fresh()->load('order')));
     }

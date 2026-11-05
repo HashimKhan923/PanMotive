@@ -62,7 +62,7 @@
                     </p>
                 @endif
 
-                @php $activeReturn = $item->activeReturn(); @endphp
+                @php($activeReturn = $item->activeReturn())
 
                 @if ($activeReturn)
                     <div class="mt-4 rounded-xl border border-line bg-surface-2 p-3 text-sm">
@@ -158,7 +158,12 @@
         @endforeach
     </div>
 
-    <div class="mt-6 flex justify-between border-t border-line pt-4 text-lg font-bold">
+    @if ((float) $order->tax_total > 0)
+        <div class="mt-6 flex justify-between border-t border-line pt-4 text-sm text-muted">
+            <span>Sales tax</span><span>${{ number_format($order->tax_total, 2) }}</span>
+        </div>
+    @endif
+    <div class="{{ (float) $order->tax_total > 0 ? 'mt-2' : 'mt-6 border-t border-line pt-4' }} flex justify-between text-lg font-bold">
         <span>Total</span><span>${{ number_format($order->total, 2) }}</span>
     </div>
 </div>

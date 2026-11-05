@@ -7,6 +7,7 @@ use App\Models\PayoutAdvance;
 use App\Services\Marketing\WalletService;
 use App\Services\Payments\PayoutReversalService;
 use App\Services\Payments\RefundService;
+use App\Services\Tax\SalesTaxService;
 use RuntimeException;
 
 /**
@@ -22,9 +23,10 @@ class BuyerRefundService
         private RefundService $refunds,
         private WalletService $wallet,
         private PayoutReversalService $reversals,
+        private SalesTaxService $salesTax,
     ) {}
 
-    /** What the buyer actually paid for this line, after seller and platform discounts. */
+    /** What the buyer actually paid for this line: after seller and platform discounts, with its sales tax. */
     public function paidForLine(OrderItem $item, bool $includeShipping = false): float
     {
         $order = $item->order()->with('items')->first();
@@ -35,8 +37,9 @@ class BuyerRefundService
         $platformDiscount = max(0, (float) $order->discount_total - (float) $order->items->sum('discount_amount'));
 
         $amount = (float) $item->line_total * max(0, $netSubtotal - $platformDiscount) / $netSubtotal;
+        $amount += (float) $item->tax_amount;
         if ($includeShipping) {
-            $amount += (float) $order->shipping_total;
+            $amount += (float) $order->shipping_total + (float) $order->shipping_tax;
         }
 
         return round($amount, 2);
@@ -82,6 +85,8 @@ class BuyerRefundService
         }
 
         $this->reverseCashback($item);
+
+        $this->salesTax->recordRefund($order, $item, $amount);
 
         return $amount;
     }

@@ -228,7 +228,8 @@ class OrdersSectionTest extends TestCase
         $buyer = User::factory()->create();
         $item = $this->item($this->seller(), $buyer, OrderStatus::Placed);
 
-        $this->actingAs($buyer)->get(route('orders.show', $item->order))->assertSee('Pay $100.00 now');
+        // assertOk matters: a crashed page in debug mode shows its source, which also contains this text.
+        $this->actingAs($buyer)->get(route('orders.show', $item->order))->assertOk()->assertSee('Pay $100.00 now');
         $this->actingAs($buyer)->get(route('orders.pay', $item->order))->assertOk()->assertViewIs('storefront.checkout.pay');
         $this->actingAs(User::factory()->create())->get(route('orders.pay', $item->order))->assertForbidden();
     }
