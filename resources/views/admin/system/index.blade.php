@@ -44,7 +44,7 @@
 
 <x-admin.card title="Failed background jobs" :subtitle="number_format($failedCount).' in total'" flush class="mt-4">
     @if ($failed->isEmpty())
-        <x-admin.empty title="No failed jobs" text="Emails, payouts and imports are all running." />
+        <x-admin.empty title="No failed jobs" text="Nothing has failed so far." />
     @else
         <table class="adm-table">
             <thead><tr><th>Job</th><th>Error</th><th>Failed</th><th></th></tr></thead>

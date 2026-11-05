@@ -8,6 +8,9 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
+// Lets the admin health page see that the scheduler is really running.
+Schedule::call(fn () => \App\Support\Heartbeat::beat('scheduler'))->everyMinute()->name('system-heartbeat');
+
 Schedule::command('orders:auto-confirm-deliveries')->daily();
 Schedule::command('carts:send-abandoned-reminders')->hourly();
 Schedule::command('marketplace:maintain')->hourly();

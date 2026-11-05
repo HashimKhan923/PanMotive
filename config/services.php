@@ -43,6 +43,7 @@ return [
 
     'easypost' => [
         'key' => env('EASYPOST_API_KEY'),
+        'webhook_secret' => env('EASYPOST_WEBHOOK_SECRET'),
     ],
 
     'anthropic' => [

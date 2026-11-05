@@ -6,12 +6,20 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Jobs\ReleaseSellerPayout;
 use App\Models\OrderItem;
+use App\Support\Heartbeat;
 use Illuminate\Http\Request;
 
 class EasyPostWebhookController extends Controller
 {
     public function handle(Request $request)
     {
+        // "Delivered" releases a seller's money, so only EasyPost itself may say it.
+        if (! $this->signatureIsValid($request)) {
+            return response('Invalid signature', 401);
+        }
+
+        Heartbeat::beat('easypost-webhook');
+
         $payload = $request->all();
 
         if (($payload['description'] ?? null) !== 'tracker.updated') {
@@ -26,23 +34,43 @@ class EasyPostWebhookController extends Controller
             return response()->json(['ok' => true]);
         }
 
-        $orderItem = OrderItem::where('tracking_number', $trackingNumber)->first();
+        // Only lines on their way move. A late carrier update must never bring back a line that was
+        // refunded, cancelled or returned, because "delivered" would then pay the seller for it.
+        // One tracking number can cover several lines of a combined shipment.
+        $items = OrderItem::where('tracking_number', $trackingNumber)
+            ->whereIn('status', [OrderStatus::Shipped, OrderStatus::OutForDelivery])
+            ->get();
 
-        if (! $orderItem) {
-            return response()->json(['ok' => true]);
-        }
-
-        if ($status === 'delivered' && $orderItem->status->value !== 'delivered') {
-            $orderItem->update([
-                'status' => OrderStatus::Delivered,
-                'delivered_at' => now(),
-            ]);
-            app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.delivered', [$orderItem->fresh('order')]);
-            ReleaseSellerPayout::dispatch($orderItem->id);
-        } elseif ($status === 'out_for_delivery') {
-            $orderItem->update(['status' => OrderStatus::OutForDelivery]);
+        foreach ($items as $orderItem) {
+            if ($status === 'delivered') {
+                $orderItem->update([
+                    'status' => OrderStatus::Delivered,
+                    'delivered_at' => now(),
+                ]);
+                app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.delivered', [$orderItem->fresh('order')]);
+                ReleaseSellerPayout::dispatch($orderItem->id);
+            } elseif ($status === 'out_for_delivery') {
+                $orderItem->update(['status' => OrderStatus::OutForDelivery]);
+            }
         }
 
         return response()->json(['ok' => true]);
+    }
+
+    /** Same check as EasyPost's own libraries. With no secret set, every call is refused. */
+    private function signatureIsValid(Request $request): bool
+    {
+        $secret = (string) config('services.easypost.webhook_secret');
+        $signature = (string) $request->header('X-Hmac-Signature');
+
+        if ($secret === '' || $signature === '') {
+            return false;
+        }
+
+        if (class_exists(\Normalizer::class)) {
+            $secret = \Normalizer::normalize($secret, \Normalizer::FORM_KD) ?: $secret;
+        }
+
+        return hash_equals('hmac-sha256-hex='.hash_hmac('sha256', $request->getContent(), $secret), $signature);
     }
 }

@@ -28,6 +28,8 @@ class StripeWebhookController extends Controller
             return response('Invalid signature', 400);
         }
 
+        \App\Support\Heartbeat::beat('stripe-webhook');
+
         match ($event->type) {
             'payment_intent.succeeded' => $this->onPaymentSucceeded($event->data->object),
             'payment_intent.payment_failed' => $this->onPaymentFailed($event->data->object),

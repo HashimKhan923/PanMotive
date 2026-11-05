@@ -168,13 +168,95 @@ class PaymentsEscrowTest extends TestCase
         $item = $this->shippedItem($seller);
         $item->update(['tracking_number' => 'TRK123']);
 
-        $this->postJson(route('webhooks.easypost'), [
-            'description' => 'tracker.updated',
-            'result' => ['tracking_code' => 'TRK123', 'status' => 'delivered'],
-        ])->assertOk();
+        $this->easyPostTracker('TRK123', 'delivered')->assertOk();
 
         $this->assertSame(OrderStatus::Delivered, $item->refresh()->status);
         Queue::assertPushed(ReleaseSellerPayout::class);
+    }
+
+    public function test_easypost_refuses_unsigned_forged_and_unconfigured_calls(): void
+    {
+        Queue::fake();
+        $item = $this->shippedItem($this->readySeller());
+        $item->update(['tracking_number' => 'TRK123']);
+
+        $body = json_encode(['description' => 'tracker.updated', 'result' => ['tracking_code' => 'TRK123', 'status' => 'delivered']]);
+        $server = ['CONTENT_TYPE' => 'application/json'];
+
+        config(['services.easypost.webhook_secret' => 'the-real-secret']);
+        $this->call('POST', route('webhooks.easypost'), [], [], [], $server, $body)->assertStatus(401);
+
+        $wrongKey = 'hmac-sha256-hex='.hash_hmac('sha256', $body, 'a-guess');
+        $this->call('POST', route('webhooks.easypost'), [], [], [], $server + ['HTTP_X_HMAC_SIGNATURE' => $wrongKey], $body)->assertStatus(401);
+
+        // A real signature can't be reused on a changed message.
+        $signed = 'hmac-sha256-hex='.hash_hmac('sha256', '{"description":"other"}', 'the-real-secret');
+        $this->call('POST', route('webhooks.easypost'), [], [], [], $server + ['HTTP_X_HMAC_SIGNATURE' => $signed], $body)->assertStatus(401);
+
+        // No secret set: refuse everything, even a call "signed" with an empty secret.
+        config(['services.easypost.webhook_secret' => null]);
+        $empty = 'hmac-sha256-hex='.hash_hmac('sha256', $body, '');
+        $this->call('POST', route('webhooks.easypost'), [], [], [], $server + ['HTTP_X_HMAC_SIGNATURE' => $empty], $body)->assertStatus(401);
+
+        $this->assertSame(OrderStatus::Shipped, $item->refresh()->status);
+        Queue::assertNotPushed(ReleaseSellerPayout::class);
+    }
+
+    public function test_easypost_update_never_revives_a_line_that_is_no_longer_on_its_way(): void
+    {
+        Queue::fake();
+        $item = $this->shippedItem($this->readySeller());
+
+        foreach ([OrderStatus::Refunded, OrderStatus::Cancelled, OrderStatus::ReturnRequested, OrderStatus::PayoutReleased] as $status) {
+            $item->update(['tracking_number' => 'TRK123', 'status' => $status]);
+
+            $this->easyPostTracker('TRK123', 'delivered')->assertOk();
+            $this->assertSame($status, $item->refresh()->status);
+
+            $this->easyPostTracker('TRK123', 'out_for_delivery')->assertOk();
+            $this->assertSame($status, $item->refresh()->status);
+        }
+
+        Queue::assertNotPushed(ReleaseSellerPayout::class);
+    }
+
+    public function test_easypost_late_scan_does_not_move_a_delivered_line_backwards(): void
+    {
+        Queue::fake();
+        $item = $this->shippedItem($this->readySeller());
+        $item->update(['tracking_number' => 'TRK123', 'status' => OrderStatus::Delivered]);
+
+        $this->easyPostTracker('TRK123', 'out_for_delivery')->assertOk();
+
+        $this->assertSame(OrderStatus::Delivered, $item->refresh()->status);
+    }
+
+    public function test_easypost_delivery_covers_every_line_in_a_combined_shipment(): void
+    {
+        Queue::fake();
+        $seller = $this->readySeller();
+        $first = $this->shippedItem($seller);
+        $second = $this->shippedItem($seller);
+        $first->update(['tracking_number' => 'TRK123']);
+        $second->update(['tracking_number' => 'TRK123']);
+
+        $this->easyPostTracker('TRK123', 'delivered')->assertOk();
+
+        $this->assertSame(OrderStatus::Delivered, $first->refresh()->status);
+        $this->assertSame(OrderStatus::Delivered, $second->refresh()->status);
+        Queue::assertPushed(ReleaseSellerPayout::class, 2);
+    }
+
+    /** A tracking update signed the way EasyPost signs it. */
+    private function easyPostTracker(string $tracking, string $status): \Illuminate\Testing\TestResponse
+    {
+        config(['services.easypost.webhook_secret' => 'the-real-secret']);
+        $body = json_encode(['description' => 'tracker.updated', 'result' => ['tracking_code' => $tracking, 'status' => $status]]);
+
+        return $this->call('POST', route('webhooks.easypost'), [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_X_HMAC_SIGNATURE' => 'hmac-sha256-hex='.hash_hmac('sha256', $body, 'the-real-secret'),
+        ], $body);
     }
 
     // ---------- payout job ----------

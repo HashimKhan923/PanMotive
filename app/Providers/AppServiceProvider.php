@@ -21,6 +21,11 @@ class AppServiceProvider extends ServiceProvider
         // Queue workers run for days: without this they'd never see a setting changed after they started.
         \Illuminate\Support\Facades\Queue::before(fn () => \App\Support\PlatformSettings::apply());
 
+        // What the admin health page reads to show the worker and backups are really running.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Queue\Events\Looping::class, fn () => \App\Support\Heartbeat::beat('queue-worker'));
+        \Illuminate\Support\Facades\Event::listen(\Spatie\Backup\Events\BackupWasSuccessful::class, fn () => \App\Support\Heartbeat::beat('backup-success'));
+        \Illuminate\Support\Facades\Event::listen(\Spatie\Backup\Events\BackupHasFailed::class, fn () => \App\Support\Heartbeat::beat('backup-failed'));
+
         $this->configureRateLimiters();
 
         // Nginx hosts like CloudPanel treat any ".js" address as a file on disk and answer 404 before
