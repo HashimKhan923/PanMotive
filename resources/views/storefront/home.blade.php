@@ -4,12 +4,7 @@
 
 @section('content')
 @php
-    $stats = cache()->remember('home.stats.v2.' . now()->format('Y-m-d-H'), 1800, fn () => [
-        'listings' => \App\Models\Product::listed()->count(),
-        'sellers'  => \App\Models\SellerProfile::where('status', 'approved')->count(),
-        'makes'    => \App\Models\VehicleMake::count(),
-        'orders'   => \App\Models\Order::whereNotIn('status', ['placed', 'cancelled'])->count(),
-    ]);
+    $homeBanners = \App\Models\Banner::forHome();
     $featured = \App\Models\Product::listed()->with('brand', 'seller.sellerProfile')->latest()->take(8)->get();
     $deals = \App\Models\Product::onDeal()->listed()
         ->with('brand', 'seller.sellerProfile')->orderByRaw('(price - sale_price) / price DESC')->take(4)->get();
@@ -104,21 +99,6 @@
             </div>
         </div>
     </div>
-
-    {{-- stat bar --}}
-    <div class="border-t border-line bg-surface">
-        <div class="container-x grid grid-cols-2 gap-6 py-8 text-center sm:grid-cols-4" data-reveal-group>
-            @foreach ([
-                ['listings', 'Parts listed'], ['sellers', 'Sellers'],
-                ['makes', 'Vehicle makes'], ['orders', 'Orders placed'],
-            ] as [$key, $label])
-                <div>
-                    <p class="text-3xl font-bold text-fg" data-counter-to="{{ $stats[$key] }}">0</p>
-                    <p class="mt-1 text-xs uppercase tracking-wide text-muted">{{ $label }}</p>
-                </div>
-            @endforeach
-        </div>
-    </div>
 </section>
 
 {{-- ================= BRANDS MARQUEE ================= --}}
@@ -135,6 +115,40 @@
         </div>
     </section>
 @endif
+
+{{-- ================= CATEGORIES (kept first, right under the hero) ================= --}}
+<section class="container-x py-16" data-reveal>
+    <div class="flex items-end justify-between">
+        <div>
+            <span class="pm-cut-bar" aria-hidden="true"></span>
+            <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Shop by category</h2>
+            <p class="mt-1 text-sm text-muted">Find parts and accessories by category.</p>
+        </div>
+        <a href="{{ route('products.index') }}" class="hidden text-sm font-semibold text-fg underline underline-offset-2 sm:inline-flex items-center gap-1">
+            View all <x-ui.icon name="arrow-right" class="w-4 h-4" />
+        </a>
+    </div>
+
+    <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" data-reveal-group>
+        @forelse ($categories as $cat)
+            <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
+               data-tilt class="pm-tilt group card relative flex items-center gap-4 p-5 hover:shadow-card-hover hover:ring-1 hover:ring-accent/40">
+                <div class="pm-glare"></div>
+                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg transition duration-500 group-hover:rotate-[20deg] group-hover:scale-110 group-hover:bg-accent group-hover:text-accent-fg">
+                    <x-ui.icon :name="['brakes' => 'brakes', 'engine' => 'parts', 'suspension' => 'wheel', 'electrical' => 'batteries', 'cooling' => 'oil', 'lighting' => 'lighting', 'body-exterior' => 'vehicle'][$cat->slug] ?? 'package'" class="w-6 h-6" />
+                </span>
+                <div>
+                    <p class="font-semibold text-fg group-hover:text-accent">{{ $cat->name }}</p>
+                    <p class="text-xs text-muted">{{ number_format($cat->listings_count) }} {{ Str::plural('part', $cat->listings_count) }}</p>
+                </div>
+            </a>
+        @empty
+            <p class="col-span-full text-sm text-muted">Categories will appear once the catalog is populated.</p>
+        @endforelse
+    </div>
+</section>
+
+<x-home.banners :banners="$homeBanners['below_categories'] ?? []" />
 
 {{-- ================= FOR YOUR VEHICLE ================= --}}
 @if ($forVehicle->isNotEmpty())
@@ -182,50 +196,6 @@
     </section>
 @endif
 
-{{-- ================= RECENTLY VIEWED ================= --}}
-@if ($recent->isNotEmpty())
-    <section class="container-x py-14" data-reveal>
-        <h2 class="text-lg font-bold tracking-tight sm:text-xl">Recently viewed</h2>
-        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            @foreach ($recent as $product)
-                <x-product-card :product="$product" />
-            @endforeach
-        </div>
-    </section>
-@endif
-
-{{-- ================= CATEGORIES ================= --}}
-<section class="container-x py-16" data-reveal>
-    <div class="flex items-end justify-between">
-        <div>
-            <span class="pm-cut-bar" aria-hidden="true"></span>
-            <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Shop by category</h2>
-            <p class="mt-1 text-sm text-muted">Find parts and accessories by category.</p>
-        </div>
-        <a href="{{ route('products.index') }}" class="hidden text-sm font-semibold text-fg underline underline-offset-2 sm:inline-flex items-center gap-1">
-            View all <x-ui.icon name="arrow-right" class="w-4 h-4" />
-        </a>
-    </div>
-
-    <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" data-reveal-group>
-        @forelse ($categories as $cat)
-            <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
-               data-tilt class="pm-tilt group card relative flex items-center gap-4 p-5 hover:shadow-card-hover hover:ring-1 hover:ring-accent/40">
-                <div class="pm-glare"></div>
-                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg transition duration-500 group-hover:rotate-[20deg] group-hover:scale-110 group-hover:bg-accent group-hover:text-accent-fg">
-                    <x-ui.icon :name="['brakes' => 'brakes', 'engine' => 'parts', 'suspension' => 'wheel', 'electrical' => 'batteries', 'cooling' => 'oil', 'lighting' => 'lighting', 'body-exterior' => 'vehicle'][$cat->slug] ?? 'package'" class="w-6 h-6" />
-                </span>
-                <div>
-                    <p class="font-semibold text-fg group-hover:text-accent">{{ $cat->name }}</p>
-                    <p class="text-xs text-muted">{{ number_format($cat->listings_count) }} {{ Str::plural('part', $cat->listings_count) }}</p>
-                </div>
-            </a>
-        @empty
-            <p class="col-span-full text-sm text-muted">Categories will appear once the catalog is populated.</p>
-        @endforelse
-    </div>
-</section>
-
 {{-- ================= DEALS RAIL ================= --}}
 @if ($deals->isNotEmpty())
 <section class="bg-surface py-16">
@@ -242,6 +212,8 @@
     </div>
 </section>
 @endif
+
+<x-home.banners :banners="$homeBanners['below_deals'] ?? []" />
 
 {{-- ================= FEATURED ================= --}}
 <section class="container-x py-16" data-reveal>
@@ -263,6 +235,20 @@
         </div>
     @endif
 </section>
+
+<x-home.banners :banners="$homeBanners['below_listings'] ?? []" />
+
+{{-- ================= RECENTLY VIEWED ================= --}}
+@if ($recent->isNotEmpty())
+    <section class="container-x py-14" data-reveal>
+        <h2 class="text-lg font-bold tracking-tight sm:text-xl">Recently viewed</h2>
+        <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            @foreach ($recent as $product)
+                <x-product-card :product="$product" />
+            @endforeach
+        </div>
+    </section>
+@endif
 
 {{-- ================= VALUE PROPS ================= --}}
 <section class="border-y border-line bg-surface py-16">

@@ -58,7 +58,7 @@ class BrandContrastTest extends TestCase
     public function test_dark_tokens_keep_text_readable_and_never_use_red_text(): void
     {
         $light = $this->tokens(':root');
-        $dark = array_merge($light, $this->tokens('.dark, .bg-brand, .from-brand'));
+        $dark = array_merge($light, $this->tokens('.dark, .bg-brand, .from-brand, .pm-charcoal'));
 
         foreach ([$light['fg'], $dark['surface'], $dark['surface-2']] as $background) {
             foreach (['fg', 'muted', 'accent-ink', 'success', 'warning', 'error'] as $text) {

@@ -187,6 +187,12 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/content', [ContentController::class, 'index'])->name('admin.content.index');
         Route::post('/content', [ContentController::class, 'update'])->name('admin.content.update');
         Route::post('/content/home', [ContentController::class, 'updateHome'])->name('admin.content.home');
+        Route::get('/banners', [\App\Http\Controllers\Admin\BannerController::class, 'index'])->name('admin.banners.index');
+        Route::get('/banners/create', [\App\Http\Controllers\Admin\BannerController::class, 'create'])->name('admin.banners.create');
+        Route::post('/banners', [\App\Http\Controllers\Admin\BannerController::class, 'store'])->name('admin.banners.store');
+        Route::get('/banners/{banner}/edit', [\App\Http\Controllers\Admin\BannerController::class, 'edit'])->name('admin.banners.edit');
+        Route::patch('/banners/{banner}', [\App\Http\Controllers\Admin\BannerController::class, 'update'])->name('admin.banners.update');
+        Route::delete('/banners/{banner}', [\App\Http\Controllers\Admin\BannerController::class, 'destroy'])->name('admin.banners.destroy');
         Route::get('/pages', [PageController::class, 'index'])->name('admin.pages.index');
         Route::get('/pages/create', [PageController::class, 'create'])->name('admin.pages.create');
         Route::post('/pages', [PageController::class, 'store'])->name('admin.pages.store');

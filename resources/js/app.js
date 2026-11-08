@@ -1,5 +1,6 @@
 import './bootstrap';
 import { initMotion, refreshMotion, pageTransition, flyToCart, initTilt, initProductMorph, animateAdded } from './motion';
+import { initBanners } from './banners';
 
 /* --- Rich text editor (Trix) — loaded only on pages that actually use it --- */
 function loadRichEditorIfNeeded() {
@@ -178,6 +179,7 @@ document.addEventListener('livewire:init', () => {
 
 function boot() {
     initMotion();
+    initBanners();
     initTilt();
     initProductMorph();
     loadRichEditorIfNeeded();
@@ -188,6 +190,7 @@ document.addEventListener('DOMContentLoaded', boot);
 window.addEventListener('load', refreshMotion);
 document.addEventListener('livewire:navigated', () => {
     initMotion();
+    initBanners();
     pageTransition();
     loadRichEditorIfNeeded();
     window.Alpine?.store('wishlist')?.hydrate();

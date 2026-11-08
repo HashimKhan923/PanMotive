@@ -52,8 +52,10 @@ class PolishTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('data-counter-to', false)
+            // The stat counter bar was removed at the owner's request; the other motion stays.
+            ->assertDontSee('Parts listed')
             ->assertSee('data-reveal-group', false)
+            ->assertSee('data-tilt', false)
             ->assertSee('<link rel="manifest"', false);
     }
 

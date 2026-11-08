@@ -65,6 +65,7 @@ class AdminNav
             ]],
             ['Content', [
                 ['admin.content.index', 'Homepage & announcement', 'bell', 0, 'content.manage', null],
+                ['admin.banners.index', 'Homepage banners', 'image', 0, 'content.manage', 'admin.banners.*'],
                 ['admin.pages.index', 'Pages', 'list', 0, 'content.manage', 'admin.pages.*'],
             ]],
             ['Support', [

@@ -10,7 +10,7 @@
             if (! open) hidden = y > 160 && y > lastY + 4 ? true : (y < lastY - 4 ? false : hidden);
             lastY = y"
         :class="{ '-translate-y-full': hidden, 'shadow-[0_10px_30px_-18px_rgb(23_24_29/.35)]': scrolled }"
-        class="site-header sticky top-0 z-40 border-b border-line bg-surface/95 backdrop-blur-xl backdrop-saturate-150 transition-[transform,box-shadow] duration-300 ease-out">
+        class="site-header pm-charcoal sticky top-0 z-40 border-b border-line bg-brand/95 text-fg backdrop-blur-xl backdrop-saturate-150 transition-[transform,box-shadow] duration-300 ease-out">
     {{-- top strip --}}
     <div class="hidden border-b border-line bg-brand text-brand-fg lg:block">
         <div class="container-x flex h-8 items-center justify-between text-[11px] tracking-wide">

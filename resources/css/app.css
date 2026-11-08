@@ -35,8 +35,9 @@
     --c-error-bg: 253 235 237;
 }
 
-/* Dark mode, per the guide: text white, secondary #C6CBD2, cards #222830. Black panels use the same values. */
-.dark, .bg-brand, .from-brand {
+/* Dark mode, per the guide: text white, secondary #C6CBD2, cards #222830. Black panels use the same values.
+   .pm-charcoal keeps the shop header and footer charcoal in light mode too. */
+.dark, .bg-brand, .from-brand, .pm-charcoal {
     --c-surface: 34 40 48;
     --c-surface-2: 43 50 60;
     --c-fg: 255 255 255;
@@ -485,4 +486,41 @@ a.adm-card:hover, .adm-card-link:hover { border-color: rgb(var(--c-accent) / .45
     .adm-aurora::before, .adm-aurora::after, .adm-ping::after, .adm-table tbody tr, .adm-bar { animation: none; }
     .adm-line { animation: none; stroke-dashoffset: 0; }
     .adm-area { animation: none; opacity: 1; }
+}
+
+/* ============================================================
+   Homepage banners (components/home/banners.blade.php + js/banners.js)
+   ============================================================ */
+.pm-banner-stage { display: grid; }
+/* Every slide sits in the same cell, so the rail is as tall as the tallest one and nothing jumps. */
+.pm-banner-stage > [data-banner-slide] { grid-area: 1 / 1; visibility: hidden; opacity: 0; }
+.pm-banner-stage > [data-banner-slide].is-active { visibility: visible; opacity: 1; }
+.pm-banner--red { background: linear-gradient(115deg, #BB1220 0%, #BB1220 42%, #E51B2B 100%); }
+.pm-banner-glow {
+    position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(520px circle at var(--mx, 72%) var(--my, 30%), rgb(255 255 255 / .11), transparent 55%);
+    transition: background .2s;
+}
+.pm-banner--light .pm-banner-glow { background: radial-gradient(520px circle at var(--mx, 72%) var(--my, 30%), rgb(var(--c-accent) / .07), transparent 55%); }
+/* Forward cut: on wide screens the photo's left edge leans like the brand's cut. */
+@media (min-width: 768px) {
+    .pm-banner-cut { overflow: hidden; transform: skewX(-16deg); transform-origin: bottom left; left: 9%; right: -14%; }
+    .pm-banner-uncut { transform: skewX(16deg) scale(1.08); transform-origin: bottom left; }
+    .pm-banner-edge { position: absolute; top: 0; bottom: 0; left: 9%; width: 7px; transform: skewX(-16deg) translateX(-7px); transform-origin: bottom left; }
+}
+@media (max-width: 767.98px) { .pm-banner-cut { overflow: hidden; } .pm-banner-edge { display: none; } }
+.pm-banner-kenburns { animation: pm-kenburns 16s ease-in-out infinite alternate; transform-origin: 60% 40%; }
+@keyframes pm-kenburns { from { transform: scale(1); } to { transform: scale(1.09) translate(-1.5%, -1%); } }
+.pm-banner-float { animation: pm-banner-float 6s ease-in-out infinite; }
+@keyframes pm-banner-float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-12px) rotate(-2deg); } }
+/* The two-band wipe between slides: charcoal then Performance Red. */
+.pm-banner-sweep { position: absolute; inset: 0; z-index: 25; display: flex; gap: 0; pointer-events: none; visibility: hidden; }
+.pm-banner-sweep span { flex: 0 0 62%; height: 100%; transform: skewX(-16deg); }
+.pm-banner-sweep span:first-child { background: #15191E; margin-left: -12%; }
+.pm-banner-sweep span:last-child { background: #E51B2B; }
+.pm-banner-rail { touch-action: pan-y; }
+/* Room under each masked headline line so letters like p and y aren't clipped. */
+.pm-banner [data-banner-title] .pm-split-line { padding-bottom: .16em; margin-bottom: -.16em; }
+@media (prefers-reduced-motion: reduce) {
+    .pm-banner-kenburns, .pm-banner-float { animation: none; }
 }

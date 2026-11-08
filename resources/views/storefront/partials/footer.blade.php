@@ -1,4 +1,4 @@
-<footer class="mt-24 border-t border-line bg-surface">
+<footer class="pm-charcoal mt-24 border-t border-line bg-brand text-fg">
     <div class="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-5">
         <div class="lg:col-span-2">
             <div class="flex items-center gap-2">
