@@ -25,7 +25,7 @@
 <div x-data="{ mobileNav: false }" class="relative flex min-h-screen">
     {{-- ===== SIDEBAR ===== --}}
     <div x-show="mobileNav" x-cloak x-transition.opacity @click="mobileNav = false" class="fixed inset-0 z-40 bg-black/60 lg:hidden"></div>
-    <aside class="adm-sidebar fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
+    <aside class="adm-sidebar pm-charcoal fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
            :class="mobileNav ? '!translate-x-0' : ''" style="view-transition-name: adm-sidebar">
         <a href="{{ route('admin.dashboard') }}" class="pm-charcoal flex h-16 shrink-0 items-center gap-2.5 border-b border-line bg-brand px-5 text-fg">
             <span class="leading-tight">

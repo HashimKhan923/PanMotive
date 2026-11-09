@@ -6,6 +6,6 @@
     <x-ui.icon name="package" class="w-5 h-5" />
     @if ($src)
         <img src="{{ $src }}" alt="{{ $item->product_title }}" loading="lazy" decoding="async"
-             class="absolute inset-0 h-full w-full bg-surface object-cover" onerror="this.remove()">
+             class="absolute inset-0 h-full w-full object-cover" onload="this.classList.add('bg-surface')" onerror="this.remove()">
     @endif
 </span>

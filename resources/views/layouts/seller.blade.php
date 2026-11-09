@@ -111,7 +111,7 @@
 
 <div x-data="{ sidebar: false }" class="flex min-h-screen">
     {{-- Sidebar --}}
-    <aside class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-line bg-surface transition-transform lg:sticky lg:top-0 lg:h-screen lg:self-start lg:translate-x-0"
+    <aside class="pm-charcoal fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-line bg-surface text-fg transition-transform lg:sticky lg:top-0 lg:h-screen lg:self-start lg:translate-x-0"
            :class="sidebar ? 'translate-x-0' : '-translate-x-full'">
         <div class="pm-charcoal flex h-16 items-center gap-2 border-b border-line bg-brand px-5 text-fg">
             <x-ui.logo class="h-[21px] w-auto" />

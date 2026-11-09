@@ -434,6 +434,7 @@ trix-editor a { color: rgb(var(--c-accent-ink)); text-decoration: underline; }
 .adm-nav-badge { min-width: 1.15rem; border-radius: 999px; background: rgb(var(--c-accent)); padding: 0 .35rem; text-align: center; font-size: 10px; font-weight: 700; line-height: 1.15rem; color: rgb(var(--c-accent-fg)); }
 
 /* The portal top bars stay charcoal in light mode too (owner's request), like the shop header. */
+.adm-sidebar.pm-charcoal { background: rgb(var(--c-surface)); color: rgb(var(--c-fg)); }
 .adm-topbar.pm-charcoal { background: rgb(var(--c-brand) / .95); border-bottom-color: rgb(var(--c-line)); }
 .adm-topbar { background: rgb(var(--c-bg) / .78); border-bottom: 1px solid rgb(var(--c-line) / .5); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .adm-search-trigger { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); transition: border-color .18s, box-shadow .18s; }
