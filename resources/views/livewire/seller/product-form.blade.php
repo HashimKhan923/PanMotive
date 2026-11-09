@@ -247,7 +247,7 @@
 
             @if (count($variants))
                 <div class="mt-4 space-y-2">
-                    <div class="hidden gap-2 px-1 text-xs font-semibold uppercase text-muted sm:grid sm:grid-cols-[44px_1fr_120px_100px_90px_32px]">
+                    <div class="hidden gap-2 text-xs font-semibold uppercase text-muted sm:grid sm:grid-cols-[44px_1fr_120px_100px_90px_32px]">
                         <span></span><span>Option name</span><span>SKU</span><span>Price</span><span>Qty</span><span></span>
                     </div>
                     @foreach ($variants as $i => $variant)
@@ -278,6 +278,12 @@
                                         @endforeach
                                     </div>
                                 </div>
+                            @else
+                                {{-- Keeps the photo column so the fields stay under their headings. --}}
+                                <span class="hidden h-10 w-10 place-items-center rounded-lg border border-dashed border-line text-muted sm:grid"
+                                      title="{{ $product ? 'Add photos to the listing first, then pick one for this option' : 'Save the listing first to add a photo to this option' }}">
+                                    <x-ui.icon name="image" class="w-4 h-4" />
+                                </span>
                             @endif
                             <div>
                                 <input wire:model="variants.{{ $i }}.label" class="input h-10 text-sm" placeholder="e.g. Front axle">
