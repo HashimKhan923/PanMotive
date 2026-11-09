@@ -113,7 +113,7 @@
     {{-- Sidebar --}}
     <aside class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 flex-col border-r border-line bg-surface transition-transform lg:sticky lg:top-0 lg:h-screen lg:self-start lg:translate-x-0"
            :class="sidebar ? 'translate-x-0' : '-translate-x-full'">
-        <div class="flex h-16 items-center gap-2 border-b border-line px-5">
+        <div class="pm-charcoal flex h-16 items-center gap-2 border-b border-line bg-brand px-5 text-fg">
             <x-ui.logo class="h-[21px] w-auto" />
             <span class="ml-1 rounded bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted">Seller</span>
         </div>
@@ -187,7 +187,7 @@
 
     {{-- Main --}}
     <div class="flex min-w-0 flex-1 flex-col">
-        <header class="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-surface/90 px-4 backdrop-blur lg:px-8">
+        <header class="pm-charcoal sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-line bg-brand/95 px-4 text-fg backdrop-blur lg:px-8">
             <button @click="sidebar = true" class="btn-ghost !p-2 lg:hidden" aria-label="Menu"><x-ui.icon name="menu" class="w-6 h-6" /></button>
 
             <div class="min-w-0">

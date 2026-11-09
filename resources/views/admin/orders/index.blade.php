@@ -27,7 +27,17 @@
             <tbody>
                 @foreach ($orders as $o)
                     <tr>
-                        <td><a href="{{ route('admin.orders.show', $o) }}" class="font-medium hover:text-accent">{{ $o->order_number }}</a></td>
+                        <td>
+                            <a href="{{ route('admin.orders.show', $o) }}" class="flex items-center gap-3">
+                                <span class="flex shrink-0 -space-x-3">
+                                    @foreach ($o->items->take(3) as $line)
+                                        <x-order-thumb :item="$line" size="h-10 w-10" class="ring-2 !ring-[rgb(var(--c-surface))]" />
+                                    @endforeach
+                                </span>
+                                <span class="font-medium hover:text-accent">{{ $o->order_number }}</span>
+                                @if ($o->items->count() > 3)<span class="text-xs text-muted">+{{ $o->items->count() - 3 }}</span>@endif
+                            </a>
+                        </td>
                         <td>{{ $o->buyer?->name ?? $o->guest_name ?? 'Guest' }}<p class="text-xs text-muted">{{ $o->buyer?->email ?? $o->guest_email }}</p></td>
                         <td><x-admin.status :value="$o->status" :label="$o->status->label()" /></td>
                         <td class="num">{{ $o->items_count }}</td>

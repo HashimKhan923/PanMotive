@@ -32,7 +32,7 @@ class OrderController extends Controller
         }
 
         return view('admin.orders.index', [
-            'orders' => $this->filtered($request)->with('buyer:id,name,email', 'items:id,order_id,seller_id,status')->withCount('items')
+            'orders' => $this->filtered($request)->with('buyer:id,name,email', 'items:id,order_id,seller_id,status,product_id,product_variant_id,product_title', 'items.product:id', 'items.product.media', 'items.variant.media')->withCount('items')
                 ->latest()->paginate(25)->withQueryString(),
             'status' => $status,
             'tabs' => $tabs,
@@ -72,7 +72,7 @@ class OrderController extends Controller
 
     public function show(Order $order, BuyerRefundService $refunds)
     {
-        $order->load('buyer', 'items.seller.sellerProfile', 'items.statusHistory', 'items.returnRequests', 'items.product:id,slug');
+        $order->load('buyer', 'items.seller.sellerProfile', 'items.statusHistory', 'items.returnRequests', 'items.product:id,slug', 'items.product.media', 'items.variant.media');
 
         return view('admin.orders.show', [
             'order' => $order,

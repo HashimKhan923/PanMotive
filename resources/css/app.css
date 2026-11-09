@@ -433,6 +433,8 @@ trix-editor a { color: rgb(var(--c-accent-ink)); text-decoration: underline; }
 .adm-nav-link.is-active::before { content: ''; position: absolute; left: -.75rem; top: 22%; bottom: 22%; width: 3px; border-radius: 0 3px 3px 0; background: rgb(var(--c-accent)); box-shadow: 0 0 12px rgb(var(--c-accent)); }
 .adm-nav-badge { min-width: 1.15rem; border-radius: 999px; background: rgb(var(--c-accent)); padding: 0 .35rem; text-align: center; font-size: 10px; font-weight: 700; line-height: 1.15rem; color: rgb(var(--c-accent-fg)); }
 
+/* The portal top bars stay charcoal in light mode too (owner's request), like the shop header. */
+.adm-topbar.pm-charcoal { background: rgb(var(--c-brand) / .95); border-bottom-color: rgb(var(--c-line)); }
 .adm-topbar { background: rgb(var(--c-bg) / .78); border-bottom: 1px solid rgb(var(--c-line) / .5); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
 .adm-search-trigger { background: rgb(var(--c-surface)); border: 1px solid rgb(var(--c-line)); transition: border-color .18s, box-shadow .18s; }
 .adm-search-trigger:hover { border-color: rgb(var(--c-accent) / .55); box-shadow: 0 0 0 3px rgb(var(--c-accent) / .1); }

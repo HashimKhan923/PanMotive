@@ -31,7 +31,8 @@
             <div class="card p-6">
                 <h2 class="font-bold">Item</h2>
                 <div class="mt-3 flex items-start justify-between gap-4">
-                    <div>
+                    <x-order-thumb :item="$item" size="h-20 w-20" class="rounded-xl" />
+                    <div class="min-w-0 flex-1">
                         <p class="font-medium">{{ $item->product_title }}</p>
                         @if ($item->variant_label)<p class="mt-0.5 text-sm">{{ $item->variant_label }}</p>@endif
                         <p class="mt-0.5 text-sm text-muted">SKU {{ $item->product_sku ?: '—' }} · Qty {{ $item->quantity }} × ${{ number_format($item->unit_price, 2) }}</p>
@@ -179,7 +180,10 @@
                     <ul class="mt-3 divide-y divide-line text-sm">
                         @foreach ($siblings as $sib)
                             <li class="flex items-center justify-between gap-3 py-2">
-                                <a href="{{ route('seller.orders.show', $sib) }}" class="hover:text-accent">{{ $sib->product_title }} <span class="text-muted">× {{ $sib->quantity }}</span></a>
+                                <a href="{{ route('seller.orders.show', $sib) }}" class="flex min-w-0 items-center gap-3 hover:text-accent">
+                                    <x-order-thumb :item="$sib" size="h-9 w-9" />
+                                    <span class="min-w-0">{{ $sib->product_title }} <span class="text-muted">× {{ $sib->quantity }}</span></span>
+                                </a>
                                 <span class="pill">{{ $sib->status->label() }}</span>
                             </li>
                         @endforeach

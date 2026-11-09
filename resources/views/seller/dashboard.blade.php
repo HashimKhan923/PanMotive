@@ -25,7 +25,6 @@
             <h1 class="text-2xl font-bold">Welcome back{{ auth()->user()->name ? ', ' . Str::before(auth()->user()->name, ' ') : '' }}</h1>
             <p class="mt-1 text-sm text-muted">Here's how {{ auth()->user()->sellerProfile?->business_name ?? 'your store' }} is doing.</p>
         </div>
-        <a href="{{ route('seller.products.create') }}" class="btn-accent btn-sm"><x-ui.icon name="plus" class="w-4 h-4" /> New listing</a>
     </div>
 
     @unless ($payoutReady)

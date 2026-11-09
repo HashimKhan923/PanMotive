@@ -113,8 +113,13 @@
                         </td>
                         <td class="px-4 py-3 text-muted">{{ $item->order->contactName() ?: '—' }}</td>
                         <td class="px-4 py-3">
-                            {{ $item->product_title }}
-                            @if ($item->variant_label)<p class="text-xs text-muted">{{ $item->variant_label }}</p>@endif
+                            <div class="flex items-center gap-3">
+                                <x-order-thumb :item="$item" size="h-11 w-11" />
+                                <div class="min-w-0">
+                                    <p class="line-clamp-2">{{ $item->product_title }}</p>
+                                    @if ($item->variant_label)<p class="text-xs text-muted">{{ $item->variant_label }}</p>@endif
+                                </div>
+                            </div>
                         </td>
                         <td class="px-4 py-3">{{ $item->quantity }}</td>
                         <td class="px-4 py-3 font-semibold {{ in_array($s, ['cancelled', 'refunded']) ? 'text-muted line-through' : '' }}">${{ number_format($item->seller_payout_amount, 2) }}</td>

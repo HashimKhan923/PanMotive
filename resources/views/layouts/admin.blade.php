@@ -27,7 +27,7 @@
     <div x-show="mobileNav" x-cloak x-transition.opacity @click="mobileNav = false" class="fixed inset-0 z-40 bg-black/60 lg:hidden"></div>
     <aside class="adm-sidebar fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
            :class="mobileNav ? '!translate-x-0' : ''" style="view-transition-name: adm-sidebar">
-        <a href="{{ route('admin.dashboard') }}" class="flex h-16 shrink-0 items-center gap-2.5 px-5">
+        <a href="{{ route('admin.dashboard') }}" class="pm-charcoal flex h-16 shrink-0 items-center gap-2.5 border-b border-line bg-brand px-5 text-fg">
             <span class="leading-tight">
                 <x-ui.logo class="block h-[22px] w-auto" />
                 <span class="mt-1.5 block text-[10px] font-semibold uppercase tracking-[.18em] text-muted">Command center</span>
@@ -74,7 +74,7 @@
 
     {{-- ===== MAIN ===== --}}
     <div class="flex min-w-0 flex-1 flex-col">
-        <header class="adm-topbar sticky top-0 z-30 flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
+        <header class="adm-topbar pm-charcoal sticky top-0 z-30 flex h-16 items-center gap-3 px-4 sm:px-6 lg:px-8">
             <button @click="mobileNav = true" class="grid h-9 w-9 place-items-center rounded-lg text-muted hover:bg-surface-2 lg:hidden" aria-label="Open menu">
                 <x-ui.icon name="menu" class="w-6 h-6" />
             </button>

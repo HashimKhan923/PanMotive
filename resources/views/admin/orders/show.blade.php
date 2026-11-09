@@ -17,6 +17,7 @@
         @foreach ($order->items as $item)
             <x-admin.card>
                 <div class="flex flex-wrap items-start justify-between gap-3">
+                    <x-order-thumb :item="$item" size="h-16 w-16" class="rounded-xl" />
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-2">
                             @if ($item->product && $me->can('catalog.manage'))

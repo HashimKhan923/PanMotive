@@ -60,6 +60,14 @@ class OrderItem extends Model
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
+    /** The photo for this line: the chosen variant's own photo, else the product's first photo. Null if neither exists. */
+    public function imageUrl(): ?string
+    {
+        $media = $this->variant?->media ?? $this->product?->getFirstMedia('images');
+
+        return $media ? ($media->getUrl('thumb') ?: $media->getUrl()) : null;
+    }
+
     public function statusHistory(): HasMany
     {
         return $this->hasMany(OrderStatusHistory::class);

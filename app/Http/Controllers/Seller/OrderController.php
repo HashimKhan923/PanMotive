@@ -47,7 +47,7 @@ class OrderController extends Controller
 
         $items = $this->filtered($request, $status === 'late' ? '' : $status)
             ->when($status === 'late', fn ($q) => $q->whereIn('id', $lateIds ?: [0]))
-            ->with('order:id,order_number,buyer_id,guest_name,created_at,placed_at', 'order.buyer:id,name', 'product:id,slug,handling_days,shipping_policy_id,seller_id', 'product.shippingPolicy')
+            ->with('order:id,order_number,buyer_id,guest_name,created_at,placed_at', 'order.buyer:id,name', 'product:id,slug,handling_days,shipping_policy_id,seller_id', 'product.shippingPolicy', 'product.media', 'variant.media')
             ->latest()
             ->paginate(20)
             ->withQueryString();
@@ -100,12 +100,13 @@ class OrderController extends Controller
     {
         $this->authorizeOwnership($orderItem);
 
-        $orderItem->load('order.buyer', 'product', 'statusHistory', 'returnRequests');
+        $orderItem->load('order.buyer', 'product.media', 'variant.media', 'statusHistory', 'returnRequests');
 
         // Everything else this buyer bought from this store in the same order.
         $siblings = OrderItem::where('order_id', $orderItem->order_id)
             ->where('seller_id', auth()->id())
             ->whereKeyNot($orderItem->id)
+            ->with('product.media', 'variant.media')
             ->get();
 
         return view('seller.orders.show', [
