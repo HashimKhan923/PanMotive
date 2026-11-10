@@ -126,4 +126,54 @@ class CustomerInsightsService
 
         return $loc !== '' ? $loc : null;
     }
+
+    /**
+     * Where each buyer last had this store ship to, for a whole page of customers in one query.
+     *
+     * @return array<int, array{text: string, country: ?string}> keyed by buyer id
+     */
+    public function lastLocations(int $sellerId, iterable $buyerIds): array
+    {
+        $ids = collect($buyerIds)->filter()->unique()->values();
+        if ($ids->isEmpty()) {
+            return [];
+        }
+
+        $rows = OrderItem::query()
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->where('order_items.seller_id', $sellerId)
+            ->whereIn('orders.buyer_id', $ids)
+            ->orderByDesc('order_items.created_at')->orderByDesc('order_items.id')
+            ->get(['orders.buyer_id', 'orders.shipping_address']);
+
+        $out = [];
+        foreach ($rows as $row) {
+            if (isset($out[$row->buyer_id])) {
+                continue; // the newest one wins
+            }
+            $a = is_array($row->shipping_address) ? $row->shipping_address : (json_decode((string) $row->shipping_address, true) ?: []);
+            $country = self::countryCode($a['country'] ?? null);
+            $text = trim(implode(', ', array_filter([$a['city'] ?? null, $a['state'] ?? null, $country ?? ($a['country'] ?? null)])));
+            if ($text !== '') {
+                $out[$row->buyer_id] = ['text' => $text, 'country' => $country];
+            }
+        }
+
+        return $out;
+    }
+
+    /** "US", "usa" and "United States" all become "US". Unknown names give null. */
+    public static function countryCode(?string $country): ?string
+    {
+        $c = strtoupper(trim((string) $country));
+
+        return match (true) {
+            $c === '' => null,
+            in_array($c, ['USA', 'UNITED STATES', 'UNITED STATES OF AMERICA', 'U.S.', 'U.S.A.'], true) => 'US',
+            in_array($c, ['CANADA'], true) => 'CA',
+            in_array($c, ['MEXICO', 'MÉXICO'], true) => 'MX',
+            (bool) preg_match('/^[A-Z]{2}$/', $c) => $c,
+            default => null,
+        };
+    }
 }

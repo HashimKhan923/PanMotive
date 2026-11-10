@@ -68,15 +68,15 @@ class Customers extends Component
     public function export(CustomerInsightsService $insights)
     {
         $rows = $this->filtered($insights)->get();
-        $sellerId = auth()->id();
+        $locations = $insights->lastLocations(auth()->id(), $rows->pluck('id'));
 
-        return response()->streamDownload(function () use ($rows, $insights, $sellerId) {
+        return response()->streamDownload(function () use ($rows, $insights, $locations) {
             $out = fopen('php://output', 'w');
             fputcsv($out, ['Customer', 'Location', 'Orders', 'Units', 'Lifetime spend', 'Avg order', 'First order', 'Last order', 'Segments']);
             foreach ($rows as $c) {
                 fputcsv($out, [
                     $c->name,
-                    $insights->lastLocation($sellerId, $c->id),
+                    $locations[$c->id]['text'] ?? '',
                     $c->orders_count,
                     $c->units,
                     number_format((float) $c->spent, 2, '.', ''),
@@ -109,6 +109,7 @@ class Customers extends Component
                 ? CustomerInsightsService::SEGMENTS
                 : array_diff_key(CustomerInsightsService::SEGMENTS, ['blocked' => true]),
             'notes' => $notes,
+            'locations' => $insights->lastLocations($sellerId, $customers->pluck('id')),
             'allTags' => $allTags,
             'insights' => $insights,
         ]);

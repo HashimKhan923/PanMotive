@@ -64,10 +64,11 @@
     </div>
 
     <div class="mt-4 overflow-x-auto rounded-xl border border-line">
-        <table class="w-full min-w-[760px] text-sm">
+        <table class="w-full min-w-[900px] text-sm">
             <thead class="bg-surface-2 text-left text-xs uppercase text-muted">
                 <tr>
                     <th class="px-4 py-3">Customer</th>
+                    <th class="px-4 py-3">Location</th>
                     <th class="px-4 py-3 text-right">Orders</th>
                     <th class="px-4 py-3 text-right">Lifetime spend</th>
                     <th class="px-4 py-3 text-right">Avg order</th>
@@ -95,6 +96,13 @@
                                 </span>
                             </a>
                         </td>
+                        <td class="px-4 py-3">
+                            @if ($loc = $locations[$c->id] ?? null)
+                                <span class="inline-flex items-center gap-2 whitespace-nowrap">{{ $loc['text'] }} <x-country-flag :code="$loc['country']" /></span>
+                            @else
+                                <span class="text-muted">—</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 text-right">{{ $c->orders_count }}</td>
                         <td class="px-4 py-3 text-right font-semibold">${{ number_format((float) $c->spent, 2) }}</td>
                         <td class="px-4 py-3 text-right text-muted">${{ number_format((float) $c->spent / max(1, (int) $c->orders_count), 2) }}</td>
@@ -104,7 +112,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="px-4 py-16 text-center">
+                    <tr><td colspan="7" class="px-4 py-16 text-center">
                         <x-ui.icon name="users" class="mx-auto w-12 h-12 text-muted" />
                         <p class="mt-3 font-semibold">{{ $search || $segment || $tag ? 'No customers match' : 'No customers yet' }}</p>
                         <p class="mt-1 text-sm text-muted">{{ $search || $segment || $tag ? 'Try a different search or segment.' : 'Buyers appear here after their first paid order with you.' }}</p>
