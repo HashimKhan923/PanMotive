@@ -156,7 +156,16 @@ window.pmQuickAdd = (productId, cardEl) => {
 };
 
 document.addEventListener('livewire:init', () => {
-    window.Livewire.hook('morph.added', ({ el }) => animateAdded(el));
+    // A Livewire update rebuilds attributes from the server's HTML, which wipes the inline
+    // "opacity: 1" the reveal animation left behind, so revealed sections fell back to the
+    // hidden starting style (the cart went blank after removing an item). Keep them shown.
+    const keepRevealed = (el) => {
+        if (el.nodeType !== 1 || !(el.matches('[data-reveal]') || el.parentElement?.matches('[data-reveal-group]'))) return;
+        el.style.opacity = '1';
+        if (el.dataset.reveal === 'mask') el.style.clipPath = 'none';
+    };
+    window.Livewire.hook('morph.updated', ({ el }) => keepRevealed(el));
+    window.Livewire.hook('morph.added', ({ el }) => { keepRevealed(el); animateAdded(el); });
     window.Livewire.on('cart-updated', (payload) => {
         const n = Array.isArray(payload) ? payload[0]?.count : payload?.count;
         const store = window.Alpine?.store('cart');

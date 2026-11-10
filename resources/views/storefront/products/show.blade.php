@@ -62,10 +62,12 @@
                          :style="z ? `transform: scale(2); transform-origin: ${ox} ${oy}` : ''">
                 </div>
                 @if ($media->count() > 1)
-                    <div class="mt-3 flex gap-3">
+                    {{-- Square (1:1) thumbnails, five to a row across the photo's width. --}}
+                    <div class="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
                         @foreach ($media as $m)
                             <button type="button" @click="active = '{{ $m->getUrl('webp') ?: $m->getUrl() }}'"
-                                    class="h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition"
+                                    aria-label="Show photo {{ $loop->iteration }}"
+                                    class="aspect-square w-full overflow-hidden rounded-xl border-2 bg-surface transition hover:border-fg/40"
                                     :class="active === '{{ $m->getUrl('webp') ?: $m->getUrl() }}' ? 'border-accent' : 'border-line'">
                                 <img src="{{ $m->getUrl('thumb') ?: $m->getUrl() }}" alt="" class="h-full w-full object-cover">
                             </button>

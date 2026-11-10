@@ -289,7 +289,8 @@ export function animateAdded(el) {
     if (addedQueue.length === 1) {
         requestAnimationFrame(() => {
             gsap.fromTo(addedQueue, { opacity: 0, y: 18, scale: 0.98 },
-                { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'expo.out', stagger: 0.035, clearProps: 'transform,opacity' });
+                // Opacity stays set: inside a [data-reveal-group] the stylesheet starts children at 0.
+                { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'expo.out', stagger: 0.035, clearProps: 'transform' });
             addedQueue = [];
         });
     }
