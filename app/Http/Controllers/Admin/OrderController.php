@@ -72,7 +72,7 @@ class OrderController extends Controller
 
     public function show(Order $order, BuyerRefundService $refunds)
     {
-        $order->load('buyer', 'items.seller.sellerProfile', 'items.statusHistory', 'items.returnRequests', 'items.product:id,slug', 'items.product.media', 'items.variant.media');
+        $order->load('buyer', 'items.seller.sellerProfile', 'items.statusHistory.changedBy:id,name', 'items.returnRequests', 'items.product:id,slug', 'items.product.media', 'items.variant.media');
 
         return view('admin.orders.show', [
             'order' => $order,

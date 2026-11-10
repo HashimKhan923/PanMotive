@@ -100,7 +100,7 @@ class OrderController extends Controller
     {
         $this->authorizeOwnership($orderItem);
 
-        $orderItem->load('order.buyer', 'product.media', 'variant.media', 'statusHistory', 'returnRequests');
+        $orderItem->load('order.buyer', 'product.media', 'variant.media', 'statusHistory.changedBy:id,name', 'returnRequests');
 
         // Everything else this buyer bought from this store in the same order.
         $siblings = OrderItem::where('order_id', $orderItem->order_id)
@@ -274,6 +274,21 @@ class OrderController extends Controller
             }))
             ->when($request->filled('from'), fn ($q) => $q->whereDate('created_at', '>=', $request->date('from')))
             ->when($request->filled('to'), fn ($q) => $q->whereDate('created_at', '<=', $request->date('to')));
+    }
+
+    /** A private note on the order for the store team. Buyers never see it; Panmotive staff can. */
+    public function note(Request $request, OrderItem $orderItem)
+    {
+        $this->authorizeOwnership($orderItem);
+        $data = $request->validate(['note' => 'required|string|max:1000']);
+
+        $orderItem->statusHistory()->create([
+            'status' => 'seller_note',
+            'note' => trim($data['note']),
+            'changed_by' => SellerContext::actor()?->id ?? auth()->id(),
+        ]);
+
+        return back()->with('success', 'Note added.');
     }
 
     protected function authorizeOwnership(OrderItem $orderItem): void

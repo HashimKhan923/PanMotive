@@ -77,6 +77,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/orders/{orderItem}/accept', [OrderController::class, 'accept'])->middleware('seller.can:orders.manage')->name('seller.orders.accept');
         Route::post('/orders/{orderItem}/cancel', [OrderController::class, 'cancel'])->middleware('seller.can:orders.manage')->name('seller.orders.cancel');
         Route::post('/orders/{orderItem}/ship', [OrderController::class, 'ship'])->middleware('seller.can:orders.manage')->name('seller.orders.ship');
+        Route::post('/orders/{orderItem}/note', [OrderController::class, 'note'])->middleware('seller.can:orders.manage')->name('seller.orders.note');
         Route::post('/orders/{orderItem}/instant-payout', [OrderController::class, 'instantPayout'])->middleware('seller.can:orders.manage')->name('seller.orders.instant-payout');
 
         // Shipping policies

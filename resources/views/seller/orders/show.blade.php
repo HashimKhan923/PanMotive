@@ -5,18 +5,27 @@
 @section('content')
 @php
     $addr = $item->order->shipping_address ?? [];
+    $placedAt = $item->order->placed_at ?? $item->order->created_at;
+    // Staff notes are for Panmotive's team only; the store sees its own notes and the order's history.
+    $history = $item->statusHistory->reject(fn ($h) => $h->status === 'staff_note')->sortBy('created_at')
+        ->groupBy(fn ($h) => $h->created_at->format('Y-m-d'));
 @endphp
 <div class="max-w-3xl">
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-start gap-3">
         <a href="{{ route('seller.orders.index') }}" class="btn-ghost !p-2" aria-label="Back"><x-ui.icon name="arrow-left" class="w-6 h-6" /></a>
-        <h1 class="text-2xl font-bold">{{ $item->order->order_number }}</h1>
-        <span class="pill">{{ $item->status->label() }}</span>
-        <div class="ml-auto flex gap-2">
+        <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+                <h1 class="whitespace-nowrap text-2xl font-bold">{{ $item->order->order_number }}</h1>
+                <span class="pill whitespace-nowrap">{{ $item->status->label() }}</span>
+            </div>
+            <p class="mt-0.5 text-sm text-muted">Placed {{ $placedAt->format('D, M j, Y').' at '.$placedAt->format('g:i A') }}</p>
+        </div>
+        <div class="ml-auto flex shrink-0 gap-2">
             <a href="{{ route('seller.orders.invoice', $item->order) }}" target="_blank" class="btn-outline btn-sm">
                 <x-ui.icon name="printer" class="w-4 h-4" /> Invoice
             </a>
             <a href="{{ route('seller.fulfilment.packing-slip', $item->order) }}" target="_blank" class="btn-outline btn-sm">
-                <x-ui.icon name="list" class="w-4 h-4" /> Packing slip
+                <x-ui.icon name="list" class="w-4 h-4" /> <span class="whitespace-nowrap">Packing slip</span>
             </a>
         </div>
     </div>
@@ -121,7 +130,8 @@
             @elseif ($item->tracking_number)
                 <div class="card p-6">
                     <h2 class="font-bold">Shipment</h2>
-                    <p class="mt-2 text-sm">{{ $item->carrier }} · <span class="font-mono">{{ $item->tracking_number }}</span>
+                    <p class="mt-2 flex flex-wrap items-center gap-x-1 text-sm">{{ $item->carrier }} · <span class="font-mono">{{ $item->tracking_number }}</span>
+                        <x-copy-button :text="$item->tracking_number" label="Copy tracking number" />
                         @if ($item->trackingUrl())<a href="{{ $item->trackingUrl() }}" target="_blank" rel="noopener" class="ml-2 text-xs font-medium text-accent hover:underline">Track package ↗</a>@endif</p>
                     <p class="mt-1 text-xs text-muted">Shipped {{ optional($item->shipped_at)->format('M j, Y') }}{{ (float) $item->label_fee > 0 ? ' · $'.number_format($item->label_fee, 2).' postage' : '' }}</p>
                     @php($label = \App\Models\ShippingLabel::whereHas('items', fn ($q) => $q->where('order_items.id', $item->id))->whereNotNull('label_url')->latest()->first())
@@ -207,38 +217,61 @@
                 </div>
             @endif
 
-            {{-- timeline --}}
+            {{-- timeline + private notes --}}
             <div class="card p-6">
-                <h2 class="font-bold">History</h2>
-                <ol class="mt-3 space-y-3 text-sm">
-                    @forelse ($item->statusHistory->sortBy('created_at') as $h)
-                        <li class="flex gap-3">
-                            <span class="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent"></span>
-                            <div>
-                                <p class="font-medium">{{ \App\Enums\OrderStatus::tryFrom($h->status)?->label() ?? $h->status }}</p>
-                                @if ($h->note) <p class="text-xs text-muted">{{ $h->note }}</p> @endif
-                                <p class="text-xs text-muted">{{ $h->created_at->format('M j, Y g:i A') }}</p>
-                            </div>
-                        </li>
-                    @empty
-                        <li class="text-muted">No history yet.</li>
-                    @endforelse
-                </ol>
+                <h2 class="font-bold">History and notes</h2>
+                @if (\App\Support\SellerContext::can('orders.manage'))
+                    <form method="POST" action="{{ route('seller.orders.note', $item) }}" class="mt-3">
+                        @csrf
+                        <label for="order-note" class="sr-only">Note</label>
+                        <textarea id="order-note" name="note" rows="2" maxlength="1000" required class="input text-sm" placeholder="Leave a note for this order. Only your store team and Panmotive staff can see it."></textarea>
+                        @error('note') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
+                        <div class="mt-2 flex justify-end"><button class="btn-brand btn-sm">Add note</button></div>
+                    </form>
+                @endif
+                @forelse ($history as $day => $events)
+                    <p class="mt-5 text-xs font-semibold uppercase tracking-wide text-muted">{{ \Illuminate\Support\Carbon::parse($day)->format('l, M j, Y') }}</p>
+                    <ol class="mt-2 space-y-3 border-l border-line pl-4 text-sm">
+                        @foreach ($events as $h)
+                            <li class="relative">
+                                <span class="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full {{ $h->status === 'seller_note' ? 'bg-fg' : 'bg-accent' }} ring-4 ring-surface"></span>
+                                <p class="text-xs text-muted">{{ $h->created_at->format('g:i A') }}</p>
+                                @if ($h->status === 'seller_note')
+                                    <p class="font-medium">Note{{ $h->changedBy ? ' from '.$h->changedBy->name : '' }}</p>
+                                    <p class="whitespace-pre-line text-muted">{{ $h->note }}</p>
+                                @else
+                                    <p class="font-medium">{{ \App\Enums\OrderStatus::tryFrom($h->status)?->label() ?? ucfirst(str_replace('_', ' ', $h->status)) }}</p>
+                                    @if ($h->note) <p class="text-xs text-muted">{{ $h->note }}</p> @endif
+                                @endif
+                            </li>
+                        @endforeach
+                    </ol>
+                @empty
+                    <p class="mt-3 text-sm text-muted">No history yet.</p>
+                @endforelse
             </div>
         </div>
 
         {{-- ship to --}}
-        <aside class="card h-fit p-6">
-            <h2 class="font-bold">Ship to</h2>
+        <aside class="space-y-6">
+        <div class="card h-fit p-6">
+            <div class="flex items-center justify-between gap-2">
+                <h2 class="font-bold">Ship to</h2>
+                @if ($addr)<x-copy-button :text="\App\Support\OrderInsight::addressText($addr)" label="Copy address" />@endif
+            </div>
             <address class="mt-3 not-italic text-sm leading-relaxed">
                 <span class="font-medium">{{ $addr['name'] ?? $item->order->contactName() ?? '—' }}</span><br>
                 {{ $addr['line1'] ?? '' }}<br>
                 @if (!empty($addr['line2'])){{ $addr['line2'] }}<br>@endif
                 {{ $addr['city'] ?? '' }}{{ !empty($addr['state']) ? ', '.$addr['state'] : '' }} {{ $addr['postal_code'] ?? '' }}<br>
                 {{ $addr['country'] ?? '' }}
+                @if (! empty($addr['phone']))<br><a href="tel:{{ preg_replace('/[^0-9+]/', '', $addr['phone']) }}" class="hover:text-accent">{{ $addr['phone'] }}</a>@endif
             </address>
+            @if ($maps = \App\Support\OrderInsight::mapsUrl($addr))
+                <a href="{{ $maps }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center gap-1 text-xs font-medium text-fg underline underline-offset-2">Open in Maps <x-ui.icon name="external" class="w-4 h-4" /></a>
+            @endif
             <p class="mt-4 border-t border-line pt-3 text-xs text-muted">
-                Placed {{ optional($item->order->placed_at ?? $item->order->created_at)->format('M j, Y') }}
+                Placed {{ $placedAt->format('D, M j, Y').' at '.$placedAt->format('g:i A') }}
             </p>
 
             <div class="mt-4 border-t border-line pt-4">
@@ -252,6 +285,20 @@
                     <p class="mt-1 text-xs text-muted">Checked out as a guest.</p>
                 @endif
             </div>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="font-bold">Payment</h2>
+            <dl class="mt-3 space-y-1.5 text-sm">
+                <div class="flex justify-between gap-3"><dt class="text-muted">Paid with</dt><dd class="text-right">{{ \App\Support\OrderInsight::paymentMethod($item->order) }}</dd></div>
+                <div class="flex justify-between gap-3"><dt class="text-muted">Status</dt><dd class="text-right font-medium">{{ \App\Support\OrderInsight::paymentStatus($item) }}</dd></div>
+            </dl>
+        </div>
+
+        <div class="card p-6">
+            <h2 class="font-bold">Order risk check</h2>
+            <x-order-risk :order="$item->order" class="mt-3" />
+        </div>
         </aside>
     </div>
 </div>

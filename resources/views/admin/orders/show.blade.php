@@ -35,7 +35,7 @@
                             @else
                                 {{ $item->seller?->sellerProfile?->business_name ?? 'Unknown seller' }}
                             @endif
-                            @if ($item->tracking_number) · {{ $item->carrier }} {{ $item->tracking_number }} @endif
+                            @if ($item->tracking_number) · {{ $item->carrier }} <span class="font-mono">{{ $item->tracking_number }}</span> <x-copy-button :text="$item->tracking_number" label="Copy tracking number" class="!h-5 !w-5 align-middle" /> @endif
                         </p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
@@ -80,7 +80,8 @@
                     @foreach ($timeline as $event)
                         <li class="relative text-[13px]">
                             <span class="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-accent ring-4 ring-surface"></span>
-                            <p class="font-medium">{{ ucfirst(str_replace('_', ' ', $event->status instanceof \BackedEnum ? $event->status->value : $event->status)) }}</p>
+                            @php($kind = $event->status instanceof \BackedEnum ? $event->status->value : $event->status)
+                            <p class="font-medium">{{ match ($kind) { 'seller_note' => 'Store note'.($event->changedBy ? ' from '.$event->changedBy->name : ''), 'staff_note' => 'Staff note'.($event->changedBy ? ' from '.$event->changedBy->name : '').' (hidden from the seller)', default => \App\Enums\OrderStatus::tryFrom($kind)?->label() ?? ucfirst(str_replace('_', ' ', $kind)) } }}</p>
                             @if ($event->note)<p class="text-muted">{{ $event->note }}</p>@endif
                             <p class="text-xs text-muted">{{ $event->created_at->format('M j, Y g:i A') }}</p>
                         </li>
@@ -99,8 +100,13 @@
     </div>
 
     <div class="space-y-4">
+        <x-admin.card title="Order risk check" subtitle="From Panmotive's own checks at payment.">
+            <x-order-risk :order="$order" :reasons="true" />
+        </x-admin.card>
+
         <x-admin.card title="Payment">
             <dl class="space-y-2 text-[13px] tabular-nums">
+                <div class="flex justify-between"><dt class="text-muted">Paid with</dt><dd>{{ \App\Support\OrderInsight::paymentMethod($order) }}</dd></div>
                 <div class="flex justify-between"><dt class="text-muted">Items</dt><dd>${{ number_format((float) $order->subtotal, 2) }}</dd></div>
                 <div class="flex justify-between"><dt class="text-muted">Shipping</dt><dd>${{ number_format((float) $order->shipping_total, 2) }}</dd></div>
                 <div class="flex justify-between"><dt class="text-muted">Tax</dt><dd>${{ number_format((float) $order->tax_total, 2) }}</dd></div>
@@ -120,19 +126,25 @@
                 @else
                     <p class="font-medium">{{ $order->buyer->name }}</p>
                 @endcan
-                <p class="text-xs text-muted">{{ $order->buyer->email }}</p>
+                <p class="flex items-center gap-1 text-xs text-muted">{{ $order->buyer->email }} <x-copy-button :text="$order->buyer->email" label="Copy email" class="!h-5 !w-5" /></p>
             @else
                 <p class="font-medium">{{ $order->guest_name ?? 'Guest' }}</p>
-                <p class="text-xs text-muted">{{ $order->guest_email }}</p>
+                @if ($order->guest_email)<p class="flex items-center gap-1 text-xs text-muted">{{ $order->guest_email }} <x-copy-button :text="$order->guest_email" label="Copy email" class="!h-5 !w-5" /></p>@endif
             @endif
         </x-admin.card>
 
         <x-admin.card title="Ship to">
+            @if ($address)
+                <x-slot:actions><x-copy-button :text="\App\Support\OrderInsight::addressText($address)" label="Copy address" /></x-slot:actions>
+            @endif
             <address class="space-y-0.5 text-[13px] not-italic text-muted">
                 @foreach (collect($address)->only(['name', 'line1', 'line2', 'address_line1', 'address_line2', 'city', 'state', 'postal_code', 'zip', 'country', 'phone'])->filter() as $line)
                     <p>{{ is_scalar($line) ? $line : '' }}</p>
                 @endforeach
             </address>
+            @if ($maps = \App\Support\OrderInsight::mapsUrl($address))
+                <a href="{{ $maps }}" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center gap-1 text-xs font-medium hover:text-accent">Open in Maps <x-ui.icon name="external" class="w-4 h-4" /></a>
+            @endif
         </x-admin.card>
     </div>
 </div>
