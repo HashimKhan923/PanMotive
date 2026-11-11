@@ -240,6 +240,19 @@ class SystemHealthChecksTest extends TestCase
             ->assertSee('Background worker')->assertSee('Scheduler')->assertSee('Backups')
             ->assertSee('Stripe webhooks arriving')->assertSee('EasyPost webhooks arriving')
             ->assertSee('Real postal address in marketing emails')
+            ->assertSee('Postmark email')->assertSee('Connect Postmark for site emails')
             ->assertDontSee('all running');
+    }
+
+    public function test_postmark_row_needs_both_the_driver_and_the_token(): void
+    {
+        config(['mail.default' => 'log', 'services.postmark.key' => null]);
+        $this->assertFalse($this->launchRow('Connect Postmark for site emails')[1]);
+
+        config(['services.postmark.key' => 'server-token']);
+        $this->assertFalse($this->launchRow('Connect Postmark for site emails')[1]); // token alone isn't enough
+
+        config(['mail.default' => 'postmark']);
+        $this->assertTrue($this->launchRow('Connect Postmark for site emails')[1]);
     }
 }

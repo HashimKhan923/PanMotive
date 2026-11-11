@@ -193,7 +193,14 @@ class SystemController extends Controller
             ['EasyPost shipping', filled(config('services.easypost.key')), 'Buys real shipping labels.'],
             ['AI features', app(AiClient::class)->isConfigured(), 'Listing writer and smart search.'],
             ['Offsite Ads feed key', filled(config('marketplace.offsite_ads.feed_key')), 'Protects your product feed URLs.'],
+            ['Postmark email', $this->postmarkConnected(), 'Delivers receipts, shipping updates and password resets. Replies still go to your Google inbox (support@).'],
         ];
+    }
+
+    private function postmarkConnected(): bool
+    {
+        return config('mail.default') === 'postmark'
+            && filled(config('services.postmark.key') ?? config('services.postmark.token'));
     }
 
     private function hasRealPostalAddress(): bool
@@ -210,6 +217,7 @@ class SystemController extends Controller
         return [
             ['Debug mode off', ! config('app.debug'), 'Debug pages show secrets to visitors.'],
             ['Real email sending', ! in_array(config('mail.default'), ['log', 'array'], true), 'Emails are only written to a log file right now.'],
+            ['Connect Postmark for site emails', $this->postmarkConnected(), 'In Postmark: add panmotive.com under Sender Signatures and put its 2 DNS records (DKIM, Return-Path) on the domain, then request account approval. Then the server token goes in the server settings.'],
             ['Sales tax collected', app(\App\Services\Tax\SalesTaxService::class)->ready(), 'US marketplaces must normally collect it. Needs Stripe Tax active, your state registrations, and SALES_TAX_COLLECTING=true.'],
             ['Terms and Privacy pages published', \App\Models\Page::where('is_published', true)->count() >= 2, 'Add them in Content → Pages.'],
             ['Real postal address in marketing emails', $this->hasRealPostalAddress(), 'US law requires one. Emails show a placeholder right now. Add yours in Settings → Marketing rules.'],
