@@ -48,7 +48,7 @@ class OnboardingWizard extends Component
             'ein' => 'nullable|string|max:20',
         ]);
 
-        SellerProfile::updateOrCreate(
+        $profile = SellerProfile::updateOrCreate(
             ['user_id' => auth()->id()],
             [
                 'business_name' => $this->business_name,
@@ -58,6 +58,14 @@ class OnboardingWizard extends Component
                 'kyc_status' => 'unsubmitted',
             ]
         );
+
+        if ($profile->wasRecentlyCreated) {
+            try {
+                auth()->user()->notify(new \App\Notifications\SellerApplicationReceived($profile->business_name));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
 
         if ($this->sref !== '') {
             app(\App\Services\Seller\SellerReferralService::class)->attach($this->sref, auth()->user());

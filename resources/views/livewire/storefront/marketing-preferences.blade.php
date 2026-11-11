@@ -1,8 +1,27 @@
 <div class="container-x max-w-2xl py-10">
-    <h1 class="text-2xl font-bold sm:text-3xl">Marketing preferences</h1>
-    <p class="mt-1 text-sm text-muted">Choose what promotions stores can send you. Order updates, receipts and messages always arrive.</p>
+    <h1 class="text-2xl font-bold sm:text-3xl">Email &amp; marketing preferences</h1>
+    <p class="mt-1 text-sm text-muted">Choose which emails we send you. Order updates, receipts, refunds, account and security emails always arrive.</p>
 
-    <div class="card mt-6 divide-y divide-line">
+    <h2 class="mt-8 text-sm font-semibold uppercase tracking-wide text-muted">Panmotive updates</h2>
+    <div class="card mt-3 divide-y divide-line">
+        @foreach ($emailTypes as $key => $type)
+            @php($on = ! in_array($key, $emailOff, true))
+            <div class="flex items-center justify-between gap-4 p-5" wire:key="email-{{ $key }}">
+                <div>
+                    <p class="font-semibold">{{ $type['label'] }}</p>
+                    <p class="text-sm text-muted">{{ $type['hint'] }}</p>
+                </div>
+                <button wire:click="toggleEmail('{{ $key }}')" role="switch" aria-checked="{{ $on ? 'true' : 'false' }}"
+                        class="relative h-6 w-11 shrink-0 rounded-full transition {{ $on ? 'bg-accent' : 'bg-line' }}">
+                    <span class="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition {{ $on ? 'left-[22px]' : 'left-0.5' }}"></span>
+                    <span class="sr-only">{{ $type['label'] }} emails</span>
+                </button>
+            </div>
+        @endforeach
+    </div>
+
+    <h2 class="mt-8 text-sm font-semibold uppercase tracking-wide text-muted">Store marketing</h2>
+    <div class="card mt-3 divide-y divide-line">
         <div class="flex items-center justify-between gap-4 p-5">
             <div>
                 <p class="font-semibold">Store promotions by email</p>

@@ -111,8 +111,20 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
-        'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
+        'address' => env('MAIL_FROM_ADDRESS', 'notifications@panmotive.com'),
+        'name' => env('MAIL_FROM_NAME', 'Panmotive'),
     ],
+
+    /*
+    | Every email the site sends has a Reply-To of the support inbox, so a buyer who just hits
+    | "Reply" reaches a person. Store campaigns set their own reply address on top of this.
+    */
+    'reply_to' => [
+        'address' => env('MAIL_REPLY_TO_ADDRESS', 'support@panmotive.com'),
+        'name' => env('MAIL_REPLY_TO_NAME', 'Panmotive Support'),
+    ],
+
+    /* Where problems for the owner go: failed backups, failed emails, system alerts. */
+    'alerts_to' => env('ALERTS_EMAIL', 'admin@panmotive.com'),
 
 ];

@@ -34,7 +34,7 @@
     <div class="border-t border-line">
         <div class="container-x flex flex-col items-center justify-between gap-2 py-5 text-xs text-muted sm:flex-row">
             <span>&copy; {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</span>
-            <span>@if ($supportEmail = config('marketplace.platform.support_email'))<a href="mailto:{{ $supportEmail }}" class="hover:text-accent">{{ $supportEmail }}</a> · @endif Secure checkout by Stripe</span>
+            <span>@if ($supportEmail = \App\Support\MailSettings::supportEmail())<a href="mailto:{{ $supportEmail }}" class="hover:text-accent">{{ $supportEmail }}</a> · @endif Secure checkout by Stripe</span>
         </div>
     </div>
 </footer>

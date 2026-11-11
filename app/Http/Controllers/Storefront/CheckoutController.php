@@ -272,9 +272,7 @@ class CheckoutController extends Controller
             if ($order->buyer) {
                 app(ReferralService::class)->completeIfEligible($order->buyer);
             }
-            foreach ($order->items->groupBy('seller_id') as $sellerId => $items) {
-                User::find($sellerId)?->notify(new NewOrderReceived($order));
-            }
+            app(\App\Services\Orders\OrderPaidNotifier::class)->notify($order);
 
             return redirect()->route('checkout.confirmation', $order->order_number)
                 ->with('success', 'Order placed — fully covered by your credits.');

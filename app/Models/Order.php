@@ -13,7 +13,7 @@ class Order extends Model
         'order_number', 'buyer_id', 'guest_email', 'guest_name', 'status', 'subtotal', 'shipping_total',
         'tax_total', 'shipping_tax', 'tax_calculation_id', 'tax_transaction_id', 'discount_total', 'credits_used', 'coupon_id', 'subscription_id', 'total', 'currency',
         'shipping_address', 'billing_address', 'stripe_payment_intent_id',
-        'placed_at', 'delivered_at', 'auto_confirm_at',
+        'placed_at', 'delivered_at', 'auto_confirm_at', 'confirmation_sent_at', 'payment_reminder_sent_at',
     ];
 
     protected $casts = [
@@ -23,6 +23,8 @@ class Order extends Model
         'placed_at' => 'datetime',
         'delivered_at' => 'datetime',
         'auto_confirm_at' => 'datetime',
+        'confirmation_sent_at' => 'datetime',
+        'payment_reminder_sent_at' => 'datetime',
     ];
 
     public function buyer(): BelongsTo

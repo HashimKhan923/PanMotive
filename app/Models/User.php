@@ -66,6 +66,7 @@ class User extends Authenticatable
             'is_active' => 'boolean',
             'plus_until' => 'datetime',
             'plus_auto_renew' => 'boolean',
+            'email_opt_outs' => 'array',
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at' => 'datetime',

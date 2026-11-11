@@ -4,15 +4,18 @@ namespace App\Notifications;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Notifications\Concerns\QueuesEmail;
+use App\Notifications\Messages\PanmotiveMail;
+use App\Support\OrderMail;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Collection;
 
 /** Tells the buyer a package is on its way, with its tracking number. One message per package. */
-class OrderShipped extends Notification
+class OrderShipped extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueuesEmail;
 
     /** @param  Collection<int, OrderItem>  $items  the lines in this package */
     public function __construct(public Order $order, public Collection $items) {}
@@ -23,28 +26,34 @@ class OrderShipped extends Notification
         return method_exists($notifiable, 'getKey') && $notifiable->getKey() ? ['mail', 'database'] : ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): PanmotiveMail
     {
-        $first = $this->items->first();
+        $items = (new \Illuminate\Database\Eloquent\Collection($this->items->all()))->load('product.media', 'variant.media', 'seller.sellerProfile');
+        $first = $items->first();
+        $store = $first->seller?->sellerProfile?->business_name;
 
-        $mail = (new MailMessage)
+        $mail = PanmotiveMail::to($notifiable, $this->order->contactName())
             ->subject("Your order {$this->order->order_number} has shipped")
-            ->greeting('Hi '.($this->order->contactName() ?: 'there').',')
-            ->line('Good news: your order is on its way.');
+            ->preheader("Good news: your order is on its way. {$first->carrier} tracking {$first->tracking_number}.")
+            ->line('Good news: your order is on its way'.($store ? " from {$store}" : '').'.')
+            ->progress(1)
+            ->facts([
+                'Carrier' => $first->carrier,
+                'Tracking number' => $first->tracking_number,
+                'Order number' => $this->order->order_number,
+            ])
+            ->items(OrderMail::items($items, withStore: false), 'In this package');
 
-        foreach ($this->items as $item) {
-            $mail->line("• {$item->product_title} (qty {$item->quantity})");
+        $orderUrl = OrderMail::orderUrl($this->order);
+
+        if ($url = $first->trackingUrl()) {
+            $mail->action('Track your package', $url)->line('See your order any time: '.$orderUrl);
+        } else {
+            $mail->action('View your order', $orderUrl);
         }
 
-        $mail->line("Carrier: {$first->carrier}")
-            ->line("Tracking number: {$first->tracking_number}");
-
-        // Guests have no order page to log in to; they look their order up on the tracking page.
-        $orderUrl = $this->order->buyer_id ? route('orders.show', $this->order) : route('track.form');
-
-        return $first->trackingUrl()
-            ? $mail->action('Track your package', $first->trackingUrl())->line('See your order any time: '.$orderUrl)
-            : $mail->action('View your order', $orderUrl);
+        return $mail->line('Tracking can take up to a day to show the first scan.')
+            ->reason('You’re getting this email because you placed an order on Panmotive.');
     }
 
     public function toArray(object $notifiable): array

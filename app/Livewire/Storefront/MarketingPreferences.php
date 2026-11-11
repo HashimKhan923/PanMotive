@@ -32,6 +32,18 @@ class MarketingPreferences extends Component
         $this->dispatch('toast', message: 'Resubscribed.');
     }
 
+    /** Switch one optional email (price drops, Q&A answers…) on or off. */
+    public function toggleEmail(string $category): void
+    {
+        $user = auth()->user();
+        abort_unless(array_key_exists($category, \App\Support\EmailPreferences::for($user)), 404);
+
+        $on = ! \App\Support\EmailPreferences::wants($user, $category);
+        \App\Support\EmailPreferences::set($user, $category, $on);
+        $label = \App\Support\EmailPreferences::categories()[$category]['label'];
+        $this->dispatch('toast', message: $label.' emails '.($on ? 'on.' : 'off.'));
+    }
+
     public function toggleSms(): void
     {
         $user = auth()->user();
@@ -56,6 +68,8 @@ class MarketingPreferences extends Component
             'stores' => MarketingUnsubscribe::where('user_id', $user->id)->whereNotNull('seller_id')
                 ->with('seller.sellerProfile')->latest()->get(),
             'smsOn' => $user->sms_opt_in_at !== null,
+            'emailTypes' => \App\Support\EmailPreferences::for($user),
+            'emailOff' => (array) $user->email_opt_outs,
         ]);
     }
 }

@@ -3,12 +3,16 @@
 namespace App\Notifications;
 
 use App\Models\Product;
+use App\Notifications\Concerns\QueuesEmail;
+use App\Notifications\Messages\PanmotiveMail;
+use App\Support\EmailPreferences;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class PriceDropAlert extends Notification
+class PriceDropAlert extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueuesEmail;
 
     public function __construct(
         public Product $product,
@@ -21,7 +25,33 @@ class PriceDropAlert extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ($notifiable->email ?? null) && EmailPreferences::wants($notifiable, 'price_drops') ? ['mail', 'database'] : ['database'];
+    }
+
+    private function dropPct(): int
+    {
+        return $this->oldPrice > 0 ? (int) round(($this->oldPrice - $this->newPrice) / $this->oldPrice * 100) : 0;
+    }
+
+    public function toMail(object $notifiable): PanmotiveMail
+    {
+        $p = $this->product;
+
+        return PanmotiveMail::to($notifiable)
+            ->subject("Price drop: {$p->title} is now ".PanmotiveMail::money($this->newPrice))
+            ->preheader("{$this->dropPct()}% off a part on your wishlist.")
+            ->line('A part on your wishlist just got cheaper.')
+            ->items([[
+                'title' => $p->title,
+                'meta' => 'Was '.PanmotiveMail::money($this->oldPrice),
+                'price' => PanmotiveMail::money($this->newPrice),
+                'image' => $p->getFirstMediaUrl('images', 'thumb') ?: null,
+                'url' => route('products.show', $p->slug),
+            ]])
+            ->facts(['You save' => PanmotiveMail::money($this->oldPrice - $this->newPrice)." ({$this->dropPct()}%)"])
+            ->action('View the part', route('products.show', $p->slug))
+            ->line('Prices and stock can change at any time.')
+            ->optional($notifiable, 'price_drops');
     }
 
     /**
@@ -36,7 +66,7 @@ class PriceDropAlert extends Notification
             'slug' => $this->product->slug,
             'old_price' => round($this->oldPrice, 2),
             'new_price' => round($this->newPrice, 2),
-            'drop_pct' => $this->oldPrice > 0 ? round(($this->oldPrice - $this->newPrice) / $this->oldPrice * 100) : 0,
+            'drop_pct' => $this->dropPct(),
         ];
     }
 }

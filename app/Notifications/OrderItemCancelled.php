@@ -3,14 +3,17 @@
 namespace App\Notifications;
 
 use App\Models\OrderItem;
+use App\Notifications\Concerns\QueuesEmail;
+use App\Notifications\Messages\PanmotiveMail;
+use App\Support\OrderMail;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
 /** Tells the buyer a seller cancelled part (or all) of their order, and what was refunded. */
-class OrderItemCancelled extends Notification
+class OrderItemCancelled extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueuesEmail;
 
     public function __construct(public OrderItem $item, public string $reasonLabel, public float $refunded) {}
 
@@ -20,23 +23,27 @@ class OrderItemCancelled extends Notification
         return method_exists($notifiable, 'getKey') && $notifiable->getKey() ? ['mail', 'database'] : ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): PanmotiveMail
     {
         $order = $this->item->order;
 
-        $mail = (new MailMessage)
+        $mail = PanmotiveMail::to($notifiable, $order->contactName())
             ->subject("Item cancelled from order {$order->order_number}")
-            ->greeting('Hi '.($order->contactName() ?: 'there').',')
+            ->preheader($this->refunded > 0 ? 'Your refund of '.PanmotiveMail::money($this->refunded).' is on its way.' : 'You were not charged for this item.')
             ->line("The seller had to cancel \"{$this->item->product_title}\" from your order {$order->order_number}.")
-            ->line("Reason: {$this->reasonLabel}.");
+            ->items(OrderMail::items([$this->item]))
+            ->facts([
+                'Reason' => $this->reasonLabel,
+                'Refund' => $this->refunded > 0 ? PanmotiveMail::money($this->refunded) : 'Not charged',
+            ]);
 
-        if ($this->refunded > 0) {
-            $mail->line('A refund of $'.number_format($this->refunded, 2).' has been issued to your original payment method / store credit. Card refunds usually appear within 5–10 business days.');
-        } else {
-            $mail->line('You were not charged for this item.');
-        }
+        $mail->line($this->refunded > 0
+            ? 'A refund of $'.number_format($this->refunded, 2).' has been issued to your original payment method / store credit. Card refunds usually appear within 5–10 business days.'
+            : 'You were not charged for this item.');
 
-        return $mail->line('We\'re sorry for the inconvenience.');
+        return $mail->action($order->buyer_id ? 'View your order' : 'Track your order', OrderMail::orderUrl($order))
+            ->line('We\'re sorry for the inconvenience.')
+            ->reason('You’re getting this email because you placed an order on Panmotive.');
     }
 
     public function toArray(object $notifiable): array

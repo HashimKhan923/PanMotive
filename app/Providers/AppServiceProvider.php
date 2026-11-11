@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Event::listen(\Spatie\Backup\Events\BackupHasFailed::class, fn () => \App\Support\Heartbeat::beat('backup-failed'));
 
         $this->configureRateLimiters();
+        $this->configureEmails();
 
         // Nginx hosts like CloudPanel treat any ".js" address as a file on disk and answer 404 before
         // Laravel sees it. Without this script, Livewire and Alpine never start and no button works.
@@ -41,6 +42,53 @@ class AppServiceProvider extends ServiceProvider
             // Re-check the page's team permission on every button press, not just the first load.
             \App\Http\Middleware\SellerAbility::class,
         ]);
+    }
+
+    /** Account emails Laravel sends itself, in Panmotive's words, plus the welcome email and failure alerts. */
+    private function configureEmails(): void
+    {
+        \Illuminate\Auth\Notifications\ResetPassword::toMailUsing(function ($notifiable, string $token) {
+            $url = route('password.reset', ['token' => $token, 'email' => $notifiable->getEmailForPasswordReset()]);
+            $minutes = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
+
+            return \App\Notifications\Messages\PanmotiveMail::to($notifiable)
+                ->subject('Reset your Panmotive password')
+                ->preheader('This link works for '.$minutes.' minutes.')
+                ->line('We got a request to reset the password for your Panmotive account.')
+                ->action('Choose a new password', $url)
+                ->line("This link works for {$minutes} minutes and can only be used once.")
+                ->line('Didn’t ask for this? You can ignore this email. Your password stays the same, and no one can change it without this link.')
+                ->reason('For your security, Panmotive will never ask for your password by email.');
+        });
+
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Registered::class, function ($event) {
+            try {
+                $event->user->notify(new \App\Notifications\WelcomeToPanmotive);
+            } catch (\Throwable $e) {
+                report($e); // a mail hiccup must never stop someone signing up
+            }
+        });
+
+        // An email that still fails after every retry shows up in the admin alert inbox,
+        // so a broken mail setup is noticed instead of silently losing receipts.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Queue\Events\JobFailed::class, function ($event) {
+            $payload = $event->job->payload();
+            if (($payload['displayName'] ?? '') !== \Illuminate\Notifications\SendQueuedNotifications::class) {
+                return;
+            }
+            try {
+                $command = unserialize($payload['data']['command'] ?? '');
+                if (! in_array('mail', (array) ($command->channels ?? []), true)) {
+                    return;
+                }
+                \App\Models\AdminAlert::create([
+                    'type' => 'email_failed',
+                    'message' => 'An email could not be sent ('.class_basename($command->notification).'): '.\Illuminate\Support\Str::limit($event->exception->getMessage(), 300),
+                ]);
+            } catch (\Throwable) {
+                // never let alerting itself break the worker
+            }
+        });
     }
 
     /**

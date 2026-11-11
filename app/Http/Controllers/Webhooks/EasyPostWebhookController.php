@@ -54,6 +54,23 @@ class EasyPostWebhookController extends Controller
             }
         }
 
+        // One "delivered" email per package (a tracking number can cover several lines).
+        if ($status === 'delivered' && $items->isNotEmpty()) {
+            foreach ($items->groupBy('order_id') as $package) {
+                $order = $package->first()->order;
+                try {
+                    $mail = new \App\Notifications\OrderDelivered($order, $package->values());
+                    if ($order->buyer) {
+                        $order->buyer->notify($mail);
+                    } elseif ($order->guest_email) {
+                        \Illuminate\Support\Facades\Notification::route('mail', $order->guest_email)->notify($mail);
+                    }
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+            }
+        }
+
         return response()->json(['ok' => true]);
     }
 

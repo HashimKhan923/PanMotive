@@ -3,14 +3,16 @@
 namespace App\Notifications;
 
 use App\Models\Message;
+use App\Notifications\Concerns\QueuesEmail;
+use App\Notifications\Messages\PanmotiveMail;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
-class NewMessageReceived extends Notification
+class NewMessageReceived extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueuesEmail;
 
     /** $email: only the first unread message in a thread is emailed (see MessagingService::send). */
     public function __construct(public Message $message, public bool $email = false) {}
@@ -44,23 +46,29 @@ class NewMessageReceived extends Notification
             : ($conversation->seller?->sellerProfile?->business_name ?? $this->message->sender?->name ?? 'the seller');
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): PanmotiveMail
     {
         $conversation = $this->message->conversation;
-        $mail = (new MailMessage)
-            ->subject('New message from '.$this->senderName($notifiable).($conversation->subject ? " — {$conversation->subject}" : ''))
-            ->line('"'.Str::limit($this->message->body, 400).'"');
+        $from = $this->senderName($notifiable);
+        $photos = count((array) $this->message->attachments);
 
-        if ($this->message->attachments) {
-            $mail->line('Includes '.count($this->message->attachments).' photo(s).');
+        $mail = PanmotiveMail::to($notifiable)
+            ->subject('New message from '.$from.($conversation->subject ? " — {$conversation->subject}" : ''))
+            ->preheader(Str::limit($this->message->body, 120))
+            ->line("{$from} sent you a message".($conversation->subject ? " about “{$conversation->subject}”" : '').':')
+            ->quote(Str::limit($this->message->body, 600), $from);
+
+        if ($photos) {
+            $mail->line("Includes {$photos} photo".($photos === 1 ? '' : 's').'. Open the message to see '.($photos === 1 ? 'it' : 'them').'.');
         }
 
         if ($this->isSeller($notifiable)) {
-            $mail->line('Buyers expect an answer within '.config('marketplace.messages.response_target_hours', 24).' hours — your response time shows on your seller scorecard.');
+            $mail->forSeller()->line('Buyers expect an answer within '.config('marketplace.messages.response_target_hours', 24).' hours. Your response time shows on your seller scorecard.');
         }
 
         return $mail->action('Reply on Panmotive', $this->url($notifiable))
-            ->line('For your safety, keep conversations and payments on Panmotive.');
+            ->line('For your safety, keep conversations and payments on Panmotive. We never ask for your password or card details by email.')
+            ->reason('Replying to this email won’t reach '.$from.'. Use the button above to reply.');
     }
 
     public function toArray(object $notifiable): array

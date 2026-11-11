@@ -3,15 +3,17 @@
 namespace App\Notifications;
 
 use App\Models\Question;
+use App\Notifications\Concerns\QueuesEmail;
+use App\Notifications\Messages\PanmotiveMail;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
 
 /** Tells a seller a shopper asked a question on one of their listings. */
-class NewProductQuestion extends Notification
+class NewProductQuestion extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueuesEmail;
 
     public function __construct(public Question $question) {}
 
@@ -20,14 +22,25 @@ class NewProductQuestion extends Notification
         return $notifiable->email ? ['mail', 'database'] : ['database'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): PanmotiveMail
     {
-        return (new MailMessage)
-            ->subject('New question on '.Str::limit($this->question->product->title, 60))
-            ->line('A shopper asked:')
-            ->line('"'.Str::limit($this->question->body, 400).'"')
+        $product = $this->question->product;
+
+        return PanmotiveMail::to($notifiable)
+            ->forSeller()
+            ->subject('New question on '.Str::limit($product->title, 60))
+            ->preheader(Str::limit($this->question->body, 120))
+            ->line('A shopper asked a question about your listing:')
+            ->items([[
+                'title' => $product->title,
+                'image' => $product->getFirstMediaUrl('images', 'thumb') ?: null,
+                'url' => route('products.show', $product->slug),
+            ]])
+            ->quote(Str::limit($this->question->body, 600), 'A shopper asked')
             ->line('Your answer appears publicly on the listing — quick, specific answers (fitment, condition, what\'s included) win sales.')
-            ->action('Answer the question', route('seller.questions.index', ['product' => $this->question->product_id]));
+            ->action('Answer the question', route('seller.questions.index', ['product' => $this->question->product_id]))
+            ->line('Try to answer within '.config('marketplace.messages.question_target_hours', 48).' hours.')
+            ->reason('You’re getting this email because you sell on Panmotive.');
     }
 
     public function toArray(object $notifiable): array

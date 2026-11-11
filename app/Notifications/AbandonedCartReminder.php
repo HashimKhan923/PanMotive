@@ -3,13 +3,16 @@
 namespace App\Notifications;
 
 use App\Models\Cart;
+use App\Notifications\Concerns\QueuesEmail;
+use App\Notifications\Messages\PanmotiveMail;
+use App\Support\EmailPreferences;
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class AbandonedCartReminder extends Notification
+class AbandonedCartReminder extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueuesEmail;
 
     public function __construct(public Cart $cart) {}
 
@@ -18,17 +21,27 @@ class AbandonedCartReminder extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return EmailPreferences::wants($notifiable, 'cart_reminders') ? ['mail'] : [];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(object $notifiable): PanmotiveMail
     {
-        $itemCount = $this->cart->items->sum('quantity');
+        $items = $this->cart->items()->with('product.media')->get();
+        $itemCount = $items->sum('quantity');
 
-        return (new MailMessage)
+        return PanmotiveMail::to($notifiable)
             ->subject("You left {$itemCount} item(s) in your cart")
+            ->preheader('Your parts are still in your cart. Stock is limited.')
             ->line('Your parts are still waiting for you — complete your order before they sell out.')
+            ->items($items->take(5)->map(fn ($i) => [
+                'title' => $i->product?->title ?? 'Part',
+                'qty' => (int) $i->quantity,
+                'price' => $i->product ? PanmotiveMail::money($i->product->effectivePrice() * $i->quantity) : null,
+                'image' => $i->product?->getFirstMediaUrl('images', 'thumb') ?: null,
+                'url' => $i->product ? route('products.show', $i->product->slug) : null,
+            ])->all())
             ->action('Complete Your Order', route('cart.index'))
-            ->line('Need help finding the right fit? Reply to this email.');
+            ->line('Need help finding the right fit? Reply to this email.')
+            ->optional($notifiable, 'cart_reminders');
     }
 }

@@ -1,3 +1,4 @@
+@props(['preheader' => null, 'stopUrl' => null, 'stopLabel' => null, 'reason' => null, 'audience' => 'buyer'])
 <x-mail::layout>
     {{-- Header --}}
     <x-slot:header>
@@ -20,8 +21,6 @@
 
     {{-- Footer --}}
     <x-slot:footer>
-        <x-mail::footer>
-            © {{ date('Y') }} {{ config('app.name') }}. @lang('All rights reserved.')
-        </x-mail::footer>
+        <x-mail::footer :stop-url="$stopUrl" :stop-label="$stopLabel" :reason="$reason" :audience="$audience" />
     </x-slot:footer>
 </x-mail::layout>

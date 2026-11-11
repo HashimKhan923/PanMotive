@@ -224,5 +224,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/system/cache', [SystemController::class, 'clearCache'])->name('admin.system.cache');
         Route::post('/system/failed/{uuid}/retry', [SystemController::class, 'retryJob'])->name('admin.system.retry');
         Route::delete('/system/failed/{uuid}', [SystemController::class, 'forgetJob'])->name('admin.system.forget');
+        Route::get('/emails', [\App\Http\Controllers\Admin\EmailController::class, 'index'])->name('admin.emails.index');
+        Route::get('/emails/{key}/preview', [\App\Http\Controllers\Admin\EmailController::class, 'preview'])->where('key', '[a-z_]+')->name('admin.emails.preview');
+        Route::post('/emails/{key}/test', [\App\Http\Controllers\Admin\EmailController::class, 'test'])->where('key', '[a-z_]+')->middleware('throttle:10,1')->name('admin.emails.test');
     });
 });

@@ -24,6 +24,7 @@ class RunMarketplaceMaintenance extends Command
         $expiredOffers = $offers->expireStale();
         // Orders never paid (abandoned at payment, unpaid subscription orders) free their stock.
         $expiredUnpaid = app(\App\Services\Orders\UnpaidOrderService::class)->expireStale();
+        app(\App\Services\Orders\UnpaidOrderService::class)->remindUnpaid();
         $repriced = $repricer->runAll();
         app(\App\Services\Seller\SellerReferralService::class)->sweepExpired();
 

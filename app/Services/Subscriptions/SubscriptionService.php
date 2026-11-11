@@ -185,6 +185,8 @@ class SubscriptionService
 
         if ($order->status === OrderStatus::Paid) {
             $salesTax->recordSale($order); // paid from wallet credit above; card orders record on payment
+            // Receipt + the sellers' new-order alert (card-paid repeats go through the Stripe webhook).
+            app(\App\Services\Orders\OrderPaidNotifier::class)->notify($order);
         }
 
         $sub->buyer->notify(new SubscriptionOrderPlaced($order, $sub));

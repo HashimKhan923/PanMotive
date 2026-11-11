@@ -77,10 +77,8 @@ class StripeWebhookController extends Controller
             app(ReferralService::class)->completeIfEligible($order->buyer);
         }
 
-        // Notify sellers a paid order is waiting for them to accept.
-        foreach ($order->items->groupBy('seller_id') as $sellerId => $items) {
-            User::find($sellerId)?->notify(new NewOrderReceived($order));
-        }
+        // The buyer's receipt, and each seller hears a paid order is waiting for them.
+        app(\App\Services\Orders\OrderPaidNotifier::class)->notify($order);
 
         // Fraud/risk scoring — flagged orders surface in the Phase 5 admin alert inbox.
         $fraud = app(FraudScoringService::class)->score($order);

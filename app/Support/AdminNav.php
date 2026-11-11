@@ -75,6 +75,7 @@ class AdminNav
             ['Platform', [
                 ['admin.settings.index', 'Settings', 'cog', 0, 'settings.manage', null],
                 ['admin.audit.index', 'Audit log', 'clock', 0, 'audit.view', null],
+                ['admin.emails.index', 'Emails', 'mail', 0, 'system.manage', 'admin.emails.*'],
                 ['admin.system.index', 'System health', 'wrench', 0, 'system.manage', null],
             ]],
         ];

@@ -39,6 +39,9 @@ Route::get('/sellers/{sellerProfile}', [\App\Http\Controllers\Storefront\SellerS
 Route::get('/go/{promoLink}', [\App\Http\Controllers\Storefront\PromoLinkController::class, 'go'])->name('promo.go');
 Route::get('/m/unsubscribe/{user}/{seller?}', [\App\Http\Controllers\Marketing\UnsubscribeController::class, 'show'])->middleware('signed')->name('marketing.unsubscribe');
 Route::post('/m/unsubscribe/{user}/{seller?}', [\App\Http\Controllers\Marketing\UnsubscribeController::class, 'store'])->middleware(['signed', 'throttle:20,1']);
+// "Stop these emails" links in optional emails (price drops, Q&A answers…). Signed, no login needed.
+Route::get('/email/stop/{user}/{category}', [\App\Http\Controllers\EmailStopController::class, 'show'])->middleware('signed')->name('email.stop');
+Route::post('/email/stop/{user}/{category}', [\App\Http\Controllers\EmailStopController::class, 'store'])->middleware(['signed', 'throttle:20,1']);
 Route::get('/e/o/{token}', [\App\Http\Controllers\Marketing\TrackingController::class, 'open'])->name('m.open');
 Route::get('/e/c/{token}', [\App\Http\Controllers\Marketing\TrackingController::class, 'click'])->name('m.click');
 Route::get('/e/ao/{token}', [\App\Http\Controllers\Marketing\TrackingController::class, 'automationOpen'])->name('am.open');

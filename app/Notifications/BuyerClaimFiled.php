@@ -3,12 +3,17 @@
 namespace App\Notifications;
 
 use App\Models\BuyerClaim;
+use App\Notifications\Concerns\QueuesEmail;
+use App\Notifications\Messages\PanmotiveMail;
+use App\Support\OrderMail;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class BuyerClaimFiled extends Notification
+/** A buyer opened a claim against the seller (item not received, not as described…). */
+class BuyerClaimFiled extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, QueuesEmail;
 
     public function __construct(public BuyerClaim $claim) {}
 
@@ -17,7 +22,38 @@ class BuyerClaimFiled extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ($notifiable->email ?? null) ? ['mail', 'database'] : ['database'];
+    }
+
+    public function toMail(object $notifiable): PanmotiveMail
+    {
+        $c = $this->claim->loadMissing('orderItem.order', 'orderItem.product.media', 'orderItem.variant.media');
+
+        $mail = PanmotiveMail::to($notifiable)
+            ->forSeller()
+            ->error()
+            ->subject("Action needed: claim {$c->claim_number} on order {$c->orderItem?->order?->order_number}")
+            ->preheader($c->respond_by ? 'Respond by '.$c->respond_by->format('M j').' or the claim may be decided without you.' : 'A buyer opened a claim.')
+            ->line('A buyer opened a claim about an item you sold. Please reply with your side, or refund the buyer to close it.');
+
+        if ($c->orderItem) {
+            $mail->items(OrderMail::items([$c->orderItem], withStore: false));
+        }
+
+        $mail->facts([
+            'Claim number' => $c->claim_number,
+            'Reason' => ucfirst(str_replace('_', ' ', (string) $c->reason)),
+            'Amount' => PanmotiveMail::money($c->amount),
+            'Respond by' => $c->respond_by?->format('D, M j, Y g:i A'),
+        ]);
+
+        if ($c->detail) {
+            $mail->quote($c->detail, 'What the buyer said');
+        }
+
+        return $mail->action('Respond to the claim', route('seller.account-health.index'))
+            ->line('If you don’t respond in time, Panmotive will decide the claim, which usually means a refund for the buyer.')
+            ->reason('You’re getting this email because you sell on Panmotive.');
     }
 
     /**
