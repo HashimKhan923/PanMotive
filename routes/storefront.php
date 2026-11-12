@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 // Catalog
 Route::get('/', fn () => view('storefront.home'))->name('home');
 Route::get('/shop', ProductBrowse::class)->name('products.index');
+Route::get('/search/suggest', \App\Http\Controllers\Storefront\SearchSuggestController::class)->middleware('throttle:120,1')->name('search.suggest');
 Route::get('/deals', [DealsController::class, 'index'])->name('deals.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 

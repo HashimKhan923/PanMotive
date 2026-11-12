@@ -33,13 +33,9 @@
         </a>
 
         {{-- search --}}
-        <form action="{{ route('products.index') }}" method="GET" class="hidden flex-1 md:block">
-            <div class="relative mx-auto max-w-2xl">
-                <x-ui.icon name="search" class="pointer-events-none absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted" />
-                <input name="q" value="{{ request('q') }}" placeholder="Search parts, brands, or part numbers…"
-                       class="input h-10 rounded-full bg-surface-2/60 pl-9 pr-4 text-sm" aria-label="Search products">
-            </div>
-        </form>
+        <div class="hidden flex-1 md:block">
+            <x-search-suggest class="mx-auto max-w-2xl" />
+        </div>
 
         {{-- actions --}}
         <nav class="ml-auto flex items-center gap-1">
@@ -142,9 +138,7 @@
                 <span class="font-bold">Menu</span>
                 <button @click="open = false" class="btn-ghost !p-2"><x-ui.icon name="x" class="w-6 h-6" /></button>
             </div>
-            <form action="{{ route('products.index') }}" method="GET" class="mt-4">
-                <input name="q" placeholder="Search parts…" class="input h-11">
-            </form>
+            <x-search-suggest class="mt-4" placeholder="Search parts…" input-class="input h-11 pl-9" />
             <nav class="mt-4 flex flex-col text-sm">
                 <a href="{{ route('products.index') }}" class="py-2.5 font-semibold">All parts</a>
                 <a href="{{ route('find-parts') }}" class="py-2.5 font-semibold">Find parts for my vehicle</a>

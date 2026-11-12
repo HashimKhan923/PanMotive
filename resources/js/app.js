@@ -52,6 +52,70 @@ window.addEventListener('celebrate', celebrate);
 
 /* --- Alpine stores --- */
 window.addEventListener('alpine:init', () => {
+    /* Search box suggestions (components/search-suggest.blade.php). */
+    window.Alpine.data('searchSuggest', (endpoint) => ({
+        q: '',
+        open: false,
+        loading: false,
+        searched: false,
+        active: -1,
+        results: { products: [], categories: [], brands: [], vehicle: null },
+        recent: [],
+        controller: null,
+        init() {
+            this.q = this.$el.querySelector('input[name=q]')?.value || '';
+            try { this.recent = JSON.parse(localStorage.getItem('pm-recent-searches') || '[]').slice(0, 5); } catch (e) { this.recent = []; }
+        },
+        openPanel() { this.open = true; this.active = -1; if (this.q.trim().length >= 2 && !this.searched) this.fetchSuggestions(); },
+        hasContent() { return this.q.trim().length >= 2 || this.recent.length > 0; },
+        async fetchSuggestions() {
+            const term = this.q.trim();
+            this.open = true;
+            this.active = -1;
+            if (term.length < 2) { this.searched = false; this.results = { products: [], categories: [], brands: [], vehicle: null }; return; }
+            this.controller?.abort();
+            this.controller = new AbortController();
+            this.loading = true;
+            try {
+                const res = await fetch(endpoint + '?q=' + encodeURIComponent(term), { headers: { Accept: 'application/json' }, signal: this.controller.signal });
+                if (res.ok && term === this.q.trim()) { this.results = await res.json(); this.searched = true; }
+            } catch (e) { /* aborted or offline: keep the last results */ }
+            if (term === this.q.trim()) this.loading = false;
+        },
+        links() { return [...this.$el.querySelectorAll('[data-suggest-panel] a[role=option]')]; },
+        move(step) {
+            const items = this.links();
+            if (!items.length) return;
+            this.open = true;
+            this.active = (this.active + step + items.length) % items.length;
+            items[this.active]?.scrollIntoView({ block: 'nearest' });
+        },
+        choose(event) {
+            const items = this.links();
+            if (this.open && this.active >= 0 && items[this.active]) {
+                event.preventDefault();
+                this.remember(this.q.trim().length >= 2 ? this.q : items[this.active].textContent.trim());
+                window.location.href = items[this.active].href;
+            }
+        },
+        remember(term) {
+            term = (term || '').trim();
+            if (term.length < 2) return;
+            this.recent = [term, ...this.recent.filter((t) => t.toLowerCase() !== term.toLowerCase())].slice(0, 5);
+            try { localStorage.setItem('pm-recent-searches', JSON.stringify(this.recent)); } catch (e) {}
+        },
+        clearRecent() { this.recent = []; try { localStorage.removeItem('pm-recent-searches'); } catch (e) {} },
+        searchUrl(term) { return this.$el.action + '?q=' + encodeURIComponent(term); },
+        /* Bold the words the shopper typed. Escapes first, so titles can never inject HTML. */
+        mark(text) {
+            const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            let html = esc(text);
+            const words = this.q.trim().split(/\s+/).filter((w) => w.length >= 2).map((w) => esc(w).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            if (words.length) html = html.replace(new RegExp('(' + words.join('|') + ')', 'gi'), '<mark class="bg-transparent font-bold text-fg">$1</mark>');
+            return html;
+        },
+    }));
+
     /* Theme (the no-flash class is set in <head>) */
     window.Alpine.store('theme', {
         dark: document.documentElement.classList.contains('dark'),
