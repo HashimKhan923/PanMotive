@@ -11,6 +11,6 @@ Your orders: {{ route('orders.index') }}
 {{ $reason }}
 @endif
 @if ($stopUrl)
-Stop {{ $stopLabel ? strtolower($stopLabel).' emails' : 'these emails' }}: {{ $stopUrl }}
+{{ $stopLabel ? 'Turn off “'.$stopLabel.'” emails' : 'Stop these emails' }}: {{ $stopUrl }}
 @endif
 © {{ date('Y') }} Panmotive · The marketplace for auto parts{{ $address ? ' · '.$address : '' }}

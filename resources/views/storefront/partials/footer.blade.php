@@ -9,12 +9,13 @@
             </p>
             <div class="mt-4 flex flex-wrap gap-2 text-xs text-muted">
                 <span class="pill"><x-ui.icon name="shield" class="w-4 h-4" /> Payment held until delivery</span>
+                <a href="{{ route('fit-guarantee') }}" class="pill hover:text-accent"><x-ui.icon name="check" class="w-4 h-4" /> Fit Guarantee</a>
                 <span class="pill"><x-ui.icon name="truck" class="w-4 h-4" /> Independent sellers</span>
             </div>
         </div>
 
         @foreach ([
-            'Shop' => [['All parts', route('products.index')], ["Today's deals", route('deals.index')], ['Brands', route('products.index')]],
+            'Shop' => [['All parts', route('products.index')], ["Today's deals", route('deals.index')], ['Fit Guarantee', route('fit-guarantee')], ['Brands', route('products.index')]],
             'Account' => [['Your orders', route('orders.index')], ['Wallet and credits', route('wallet.index')], ['Log in', route('login')]],
             'Sell' => [['Become a seller', route('seller.onboarding.start')], ['Seller portal', route('seller.dashboard')]],
             ...(($footerPages = cache()->remember('footer.pages', 300, fn () => \App\Models\Page::where('is_published', true)->where('show_in_footer', true)->orderBy('title')->get(['title', 'slug'])))->isNotEmpty()

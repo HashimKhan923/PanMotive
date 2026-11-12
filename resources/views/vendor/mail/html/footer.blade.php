@@ -17,7 +17,7 @@
 <p style="margin:0 0 8px;font-size:12px;line-height:18px;color:#5E6672;text-align:center;">{{ $reason }}</p>
 @endif
 @if ($stopUrl)
-<p style="margin:0 0 8px;font-size:12px;line-height:18px;color:#5E6672;text-align:center;"><a href="{{ $stopUrl }}" style="color:#5E6672;text-decoration:underline;">Stop {{ $stopLabel ? strtolower($stopLabel).' emails' : 'these emails' }}</a> &nbsp;·&nbsp; <a href="{{ route('marketing.preferences') }}" style="color:#5E6672;text-decoration:underline;">Email preferences</a></p>
+<p style="margin:0 0 8px;font-size:12px;line-height:18px;color:#5E6672;text-align:center;"><a href="{{ $stopUrl }}" style="color:#5E6672;text-decoration:underline;">{{ $stopLabel ? 'Turn off “'.$stopLabel.'” emails' : 'Stop these emails' }}</a> &nbsp;·&nbsp; <a href="{{ route('marketing.preferences') }}" style="color:#5E6672;text-decoration:underline;">Email preferences</a></p>
 @endif
 <p style="margin:0;font-size:12px;line-height:18px;color:#8A919C;text-align:center;">© {{ date('Y') }} Panmotive · The marketplace for auto parts{{ $address ? ' · '.$address : '' }}</p>
 </td>

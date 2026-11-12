@@ -62,6 +62,7 @@
 
             {{-- summary --}}
             <div class="space-y-4">
+                @include('storefront.checkout.partials.fit-check')
                 <div class="card p-6">
                     <h2 class="font-bold">Order summary</h2>
 
@@ -74,7 +75,15 @@
                                 <ul class="mt-2 space-y-2 text-sm">
                                     @foreach ($group['lines'] as $line)
                                         <li class="flex justify-between gap-3">
-                                            <span class="text-muted">{{ $line['product']->title }} <span class="text-line">×</span> {{ $line['quantity'] }}</span>
+                                            <span class="text-muted">{{ $line['product']->title }} <span class="text-line">×</span> {{ $line['quantity'] }}
+                                                @if ($fit['vehicle'])
+                                                    @if (app(\App\Services\FitGuarantee::class)->covers($line['product']))
+                                                        <span class="mt-0.5 flex items-center gap-1 text-xs font-medium text-emerald-600"><x-ui.icon name="check" class="h-3.5 w-3.5" /> Fits · Fit Guarantee</span>
+                                                    @else
+                                                        <span class="mt-0.5 flex items-center gap-1 text-xs font-medium text-amber-600"><x-ui.icon name="info" class="h-3.5 w-3.5" /> Fit not confirmed</span>
+                                                    @endif
+                                                @endif
+                                            </span>
                                             <span class="font-medium">${{ number_format($line['line_total'], 2) }}</span>
                                         </li>
                                     @endforeach

@@ -20,7 +20,7 @@ class DisputeController extends Controller
     public function index()
     {
         $items = OrderItem::whereIn('status', [OrderStatus::ReturnRequested, OrderStatus::Disputed])
-            ->with('order.buyer', 'seller.sellerProfile', 'product', 'statusHistory')
+            ->with('order.buyer', 'seller.sellerProfile', 'product', 'statusHistory', 'returnRequests')
             ->latest()->paginate(20);
 
         $claims = BuyerClaim::whereIn('status', ['open', 'seller_responded', 'escalated'])

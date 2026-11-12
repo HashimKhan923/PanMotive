@@ -58,7 +58,12 @@
                             <a href="{{ route('admin.orders.show', $item->order) }}" class="font-medium hover:text-accent">{{ $item->order?->order_number }}</a>
                             <p class="text-xs text-muted">{{ $item->order?->buyer?->name ?? $item->order?->guest_name ?? 'Guest' }}</p>
                         </td>
-                        <td class="max-w-[220px] truncate">{{ $item->product_title }}</td>
+                        <td class="max-w-[220px]">
+                            <span class="block truncate">{{ $item->product_title }}</span>
+                            @if ($item->fit_confirmed && $item->returnRequests->firstWhere('fit_guarantee', true))
+                                <span class="text-xs font-medium text-amber-600">Fit Guarantee · listed for {{ $item->fit_vehicle_label }}</span>
+                            @endif
+                        </td>
                         <td class="whitespace-nowrap text-muted">{{ $item->seller?->sellerProfile?->business_name }}</td>
                         <td class="whitespace-nowrap"><x-admin.status :value="$item->status" :label="$item->status->label()" />
                             @if ($item->payout_released_at)<x-admin.status value="held" label="Seller already paid" />@endif</td>

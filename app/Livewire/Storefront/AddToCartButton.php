@@ -24,6 +24,22 @@ class AddToCartButton extends Component
         }
     }
 
+    /** Out of stock: email me when it's back. Guests sign in first. */
+    public function notifyMe()
+    {
+        if (! auth()->check()) {
+            session(['url.intended' => route('products.show', $this->product->slug)]);
+
+            return $this->redirectRoute('login');
+        }
+
+        \App\Models\StockAlert::updateOrCreate(
+            ['user_id' => auth()->id(), 'product_id' => $this->product->id],
+            ['notified_at' => null],
+        );
+        $this->dispatch('toast', message: 'We’ll email you as soon as it’s back in stock.');
+    }
+
     /** Swap the PDP gallery to this variant's own photo (e.g. the blue one for "Blue") when it has one. */
     public function updatedVariantId(): void
     {

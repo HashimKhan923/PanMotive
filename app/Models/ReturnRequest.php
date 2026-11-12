@@ -12,10 +12,11 @@ class ReturnRequest extends Model
     protected $fillable = [
         'rma_number', 'order_item_id', 'user_id', 'reason', 'detail',
         'status', 'respond_by', 'escalated_at', 'escalated_by',
-        'resolution_note', 'resolved_by', 'resolved_at',
+        'resolution_note', 'resolved_by', 'resolved_at', 'fit_guarantee',
     ];
 
     protected $casts = [
+        'fit_guarantee' => 'boolean',
         'resolved_at' => 'datetime',
         'respond_by' => 'datetime',
         'escalated_at' => 'datetime',

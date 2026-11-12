@@ -17,6 +17,7 @@ class OrderItem extends Model
         'carrier', 'tracking_number', 'shipped_at', 'delivered_at',
         'payout_released_at', 'cashback_credited_at',
         'stock_committed_at', 'cancelled_at', 'cancel_reason', 'cancel_note',
+        'fit_vehicle_id', 'fit_vehicle_label', 'fit_confirmed',
     ];
 
     protected $casts = [
@@ -38,6 +39,7 @@ class OrderItem extends Model
         'affiliate_fee' => 'decimal:2',
         'label_fee' => 'decimal:2',
         'seller_payout_amount' => 'decimal:2',
+        'fit_confirmed' => 'boolean',
     ];
 
     public function order(): BelongsTo

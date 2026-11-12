@@ -74,6 +74,9 @@
                             {{ $activeReturn->reason }}
                             @if ($activeReturn->resolution_note) — {{ $activeReturn->resolution_note }} @endif
                         </p>
+                        @if ($activeReturn->fit_guarantee)
+                            <p class="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-emerald-600"><x-ui.icon name="shield" class="h-4 w-4" /> Covered by the Fit Guarantee: full refund, free return shipping.</p>
+                        @endif
 
                         <ol class="mt-2 space-y-1 border-t border-line pt-2 text-xs text-muted">
                             @foreach ($activeReturn->events as $e)
@@ -112,10 +115,21 @@
                                 @csrf
                                 <h3 class="font-semibold">Request a return</h3>
                                 <label class="label" for="rr-reason-{{ $item->id }}">Reason</label>
+                                @if ($item->fit_confirmed)
+                                    <p class="flex items-start gap-1.5 rounded-lg bg-emerald-500/10 p-2.5 text-xs text-emerald-700 dark:text-emerald-400">
+                                        <x-ui.icon name="shield" class="mt-px h-4 w-4 shrink-0" />
+                                        <span>Listed as fitting your {{ $item->fit_vehicle_label }}, so the <a href="{{ route('fit-guarantee') }}" class="font-semibold underline">Fit Guarantee</a> covers it: full refund and free return shipping if it doesn't fit.</span>
+                                    </p>
+                                @endif
                                 <select id="rr-reason-{{ $item->id }}" name="reason" class="input text-sm" required>
                                     <option value="">Choose a reason…</option>
+                                    @if ($item->fit_confirmed)
+                                        <option>{{ \App\Services\FitGuarantee::REASON }}</option>
+                                    @else
+                                        <option>Doesn't fit my vehicle</option>
+                                    @endif
+                                    <option>{{ \App\Services\FitGuarantee::WRONG_ORDER_REASON }}</option>
                                     <option>Wrong part received</option>
-                                    <option>Doesn't fit my vehicle</option>
                                     <option>Arrived damaged or defective</option>
                                     <option>No longer needed</option>
                                     <option>Better price elsewhere</option>

@@ -82,6 +82,7 @@ Route::get('/checkout/confirmation/{orderNumber}', [CheckoutController::class, '
 
 // Guest order tracking (order number + email)
 Route::get('/track', [TrackController::class, 'form'])->name('track.form');
+Route::view('/fit-guarantee', 'storefront.fit-guarantee')->name('fit-guarantee');
 Route::post('/track', [TrackController::class, 'lookup'])->middleware('throttle:10,1')->name('track.lookup');
 
 // Authenticated buyer area

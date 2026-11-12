@@ -48,6 +48,7 @@ class ReturnController extends Controller
                 ->selectRaw('order_items.product_title, count(*) as c')->groupBy('order_items.product_title')
                 ->orderByDesc('c')->limit(4)->pluck('c', 'product_title'),
             'refundPreview' => fn (ReturnRequest $r) => $refunds->paidForLine($r->orderItem),
+            'fitRecord' => app(\App\Services\FitGuarantee::class)->sellerRecord($sellerId),
         ]);
     }
 
@@ -75,7 +76,9 @@ class ReturnController extends Controller
 
         return back()->with('success', match ($data['decision']) {
             'approve' => 'Return approved — the buyer has your instructions.',
-            'reject' => 'Return declined — the buyer has been told why.',
+            'reject' => $returnRequest->fit_guarantee
+                ? 'This is a Fit Guarantee return, so Panmotive will review it and decide. We’ll let you know.'
+                : 'Return declined — the buyer has been told why.',
             'receive' => 'Marked as received'.($request->boolean('restock') ? ' and put back in stock.' : '.'),
             default => '$'.number_format((float) $refunded, 2).' refunded to the buyer.',
         });

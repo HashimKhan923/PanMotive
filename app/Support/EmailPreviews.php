@@ -34,6 +34,11 @@ class EmailPreviews
             'payment_reminder' => ['label' => 'Finish paying reminder', 'group' => 'Buyers', 'when' => 'Halfway to the unpaid-order deadline.'],
             'unpaid_cancelled' => ['label' => 'Unpaid order cancelled', 'group' => 'Buyers', 'when' => 'When an order is never paid.'],
             'price_drop' => ['label' => 'Wishlist price drop', 'group' => 'Buyers', 'when' => 'When a wishlist part gets cheaper. Can be turned off.'],
+            'back_in_stock' => ['label' => 'Back in stock', 'group' => 'Buyers', 'when' => 'When a part someone asked about is restocked. Can be turned off.'],
+            'did_it_fit' => ['label' => 'Did it fit? + review', 'group' => 'Buyers', 'when' => '3 days after delivery, once per order. Can be turned off.'],
+            'browse' => ['label' => 'Parts you looked at', 'group' => 'Buyers', 'when' => '2–48 hours after viewing without buying, max once a week. Can be turned off.'],
+            'garage_tip' => ['label' => 'Add your vehicle tip', 'group' => 'Buyers', 'when' => '2 days after signing up, if no vehicle yet. Once.'],
+            'winback' => ['label' => 'Picks for your vehicle', 'group' => 'Buyers', 'when' => '90 days after the last order, max twice a year. Can be turned off.'],
             'new_order' => ['label' => 'New order', 'group' => 'Sellers', 'when' => 'When a buyer pays for the seller’s items.'],
             'payout' => ['label' => 'Payout released', 'group' => 'Sellers', 'when' => 'When the buyer receives the order. Can be turned off.'],
             'application_received' => ['label' => 'Application received', 'group' => 'Sellers', 'when' => 'When someone applies to sell.'],
@@ -80,6 +85,11 @@ class EmailPreviews
             'payment_reminder' => [new \App\Notifications\OrderPaymentReminder($s['order']), $s['buyer']],
             'unpaid_cancelled' => [new \App\Notifications\UnpaidOrderCancelled($s['order']), (new AnonymousNotifiable)->route('mail', 'guest@example.com')],
             'price_drop' => [new \App\Notifications\PriceDropAlert($s['product'], 189.99, 159.99), $s['buyer']],
+            'back_in_stock' => [new \App\Notifications\BackInStock($s['product']), $s['buyer']],
+            'did_it_fit' => [new \App\Notifications\DidItFit($s['order'], $s['shipped']), $s['buyer']],
+            'browse' => [new \App\Notifications\BrowseReminder(collect([$s['product'], $s['second']])), $s['buyer']],
+            'garage_tip' => [new \App\Notifications\GarageTip, $s['buyer']],
+            'winback' => [new \App\Notifications\WinBack(collect([$s['product'], $s['second']]), '2018 Toyota Camry', route('products.index')), $s['buyer']],
             'new_order' => [new \App\Notifications\NewOrderReceived($s['order']), $s['seller']],
             'payout' => [new \App\Notifications\SellerPayoutReleased($s['order']->items->first()), $s['seller']],
             'application_received' => [new \App\Notifications\SellerApplicationReceived('Rivera Auto Parts'), $s['seller']],
@@ -124,6 +134,7 @@ class EmailPreviews
                 'product_sku' => $p->sku, 'quantity' => $qty, 'unit_price' => $price, 'line_total' => $line,
                 'commission_rate' => 10, 'platform_fee_amount' => round($line * .1, 2), 'seller_payout_amount' => round($line * .9, 2),
                 'status' => OrderStatus::Shipped, 'carrier' => 'UPS', 'tracking_number' => '1Z999AA10123456784', 'shipped_at' => now(),
+                'fit_confirmed' => $p === $product, 'fit_vehicle_label' => '2018 Toyota Camry',
             ]);
         }
         $subtotal = (float) $order->items()->sum('line_total');
@@ -133,7 +144,7 @@ class EmailPreviews
         $member = SellerTeamMember::create(['owner_id' => $seller->id, 'email' => 'staff@example.com', 'name' => 'Sam', 'role' => 'staff', 'status' => 'invited', 'invited_at' => now()]);
 
         return [
-            'buyer' => $buyer, 'seller' => $seller->fresh(), 'product' => $product, 'order' => $order,
+            'buyer' => $buyer, 'seller' => $seller->fresh(), 'product' => $product, 'second' => $second, 'order' => $order,
             'shipped' => $order->items, 'member' => $member,
         ];
     }

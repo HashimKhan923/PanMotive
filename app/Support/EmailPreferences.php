@@ -21,6 +21,11 @@ class EmailPreferences
             'review_replies' => ['label' => 'Replies to your reviews', 'hint' => 'When a store replies to a review you wrote.', 'seller' => false],
             'price_drops' => ['label' => 'Price drops', 'hint' => 'When a part on your wishlist gets cheaper.', 'seller' => false],
             'cart_reminders' => ['label' => 'Cart reminders', 'hint' => 'A reminder when you leave parts in your cart.', 'seller' => false],
+            'back_in_stock' => ['label' => 'Back in stock', 'hint' => 'When a part you asked about is available again.', 'seller' => false],
+            'browse_reminders' => ['label' => 'Parts you looked at', 'hint' => 'A reminder of parts you viewed but didn’t buy.', 'seller' => false],
+            'fit_checks' => ['label' => 'Did it fit?', 'hint' => 'A check-in after delivery, with help if something’s wrong and a chance to leave a review.', 'seller' => false],
+            'tips' => ['label' => 'Tips', 'hint' => 'Getting-started tips, like adding your vehicle so you only see parts that fit.', 'seller' => false],
+            'winback' => ['label' => 'Picks for your vehicle', 'hint' => 'An occasional email with parts for your vehicle if you haven’t ordered in a while.', 'seller' => false],
             'seller_offers' => ['label' => 'Offers from buyers', 'hint' => 'When a buyer makes, accepts or declines an offer on your listings.', 'seller' => true],
             'payouts' => ['label' => 'Payouts', 'hint' => 'Each time money from a delivered order is released to you.', 'seller' => true],
         ];

@@ -144,7 +144,7 @@ class EmailsTest extends TestCase
 
         $this->assertContains('mail', $drop->via($buyer));
         $html = (string) $drop->toMail($buyer)->render();
-        $this->assertStringContainsString('Stop price drops emails', $html);
+        $this->assertStringContainsString('Turn off “Price drops” emails', $html);
 
         $url = EmailPreferences::stopUrl($buyer, 'price_drops');
         $this->get($url)->assertOk()->assertSee('Stop price drops emails?');

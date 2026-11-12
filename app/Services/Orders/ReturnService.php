@@ -44,6 +44,13 @@ class ReturnService
             throw new RuntimeException('Tell the buyer why the return is declined — they\'ll see it and can escalate to Panmotive.');
         }
 
+        // Fit Guarantee returns can't be refused by the seller: disagreeing sends it to Panmotive.
+        if ($action === 'reject' && $rma->fit_guarantee) {
+            $this->disputeFit($rma, $actor, $note);
+
+            return null;
+        }
+
         $item = $rma->orderItem;
         $refunded = null;
 
@@ -104,5 +111,22 @@ class ReturnService
         $rma->user?->notify(new ReturnUpdated($rma->fresh('orderItem'), $step, $refunded));
 
         return $refunded;
+    }
+
+    /** The seller says a Fit Guarantee part does fit: Panmotive reviews instead of a refusal. */
+    public function disputeFit(ReturnRequest $rma, User $actor, ?string $note): void
+    {
+        if ($rma->escalated_at) {
+            return;
+        }
+
+        $rma->update(['escalated_at' => now(), 'escalated_by' => 'seller']);
+        $rma->log('escalated', 'seller', $actor->id, 'Seller disputes the fit: '.($note ?: 'no reason given'));
+
+        \App\Models\AdminAlert::create([
+            'type' => 'fit_guarantee_dispute',
+            'message' => "Fit Guarantee return {$rma->rma_number} disputed by the seller ({$rma->orderItem->product_title}, listed for the buyer’s {$rma->orderItem->fit_vehicle_label}). Please decide.",
+            'related_order_item_id' => $rma->order_item_id,
+        ]);
     }
 }

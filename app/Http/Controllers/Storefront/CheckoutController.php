@@ -47,6 +47,7 @@ class CheckoutController extends Controller
             'shippingFree' => $ship['free'],
             'couponCode' => session('checkout.coupon_code'),
             'taxCollecting' => app(SalesTaxService::class)->enabled(),
+            'fit' => app(\App\Services\FitGuarantee::class)->check($lines),
         ]);
     }
 
@@ -219,6 +220,8 @@ class CheckoutController extends Controller
                     'platform_fee_amount' => $split['platform_fee_amount'],
                     'seller_payout_amount' => $split['seller_payout_amount'],
                     'status' => OrderStatus::Placed,
+                    // Fit Guarantee: which car this was bought for, and whether the listing covered it.
+                    ...app(\App\Services\FitGuarantee::class)->snapshot($product),
                 ]);
             }
 

@@ -41,6 +41,10 @@ class SellerReturnRequested extends Notification implements ShouldQueue
             $mail->quote($r->detail, 'What the buyer said');
         }
 
+        if ($r->fit_guarantee) {
+            $mail->line("This is a Fit Guarantee return: your listing said the part fits the buyer's {$r->orderItem->fit_vehicle_label}. Please send a prepaid return label (or refund without a return). If you believe it does fit, choose “Disagree” and Panmotive will decide.");
+        }
+
         return $mail->action('Review the return', route('seller.returns.index'))
             ->line('If you don’t respond in time, Panmotive may step in and decide the return for you.')
             ->reason('You’re getting this email because you sell on Panmotive.');

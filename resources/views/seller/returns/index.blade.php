@@ -12,11 +12,19 @@
     @endif
 
     {{-- insights --}}
-    <div class="mt-6 grid gap-3 lg:grid-cols-4">
+    <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <div class="card p-4"><p class="text-xs uppercase tracking-wide text-muted">Open</p><p class="mt-1 text-2xl font-bold">{{ $openCount }}</p>
             @if ($overdueCount)<p class="text-xs font-semibold text-rose-600">{{ $overdueCount }} past the 48h deadline</p>@else<p class="text-xs text-muted">none overdue</p>@endif</div>
         <div class="card p-4"><p class="text-xs uppercase tracking-wide text-muted">Return rate (90 days)</p>
             <p class="mt-1 text-2xl font-bold {{ $returnRate > 5 ? 'text-amber-600' : '' }}">{{ $returnRate }}%</p><p class="text-xs text-muted">of items sold</p></div>
+        <div class="card p-4"><p class="text-xs uppercase tracking-wide text-muted">Fitment accuracy (90 days)</p>
+            @if ($fitRecord['rate'] === null)
+                <p class="mt-1 text-2xl font-bold">—</p><p class="text-xs text-muted">needs 5+ sales with a confirmed fit</p>
+            @else
+                <p class="mt-1 text-2xl font-bold {{ $fitRecord['rate'] > 3 ? 'text-amber-600' : 'text-emerald-600' }}">{{ number_format(100 - $fitRecord['rate'], 1) }}%</p>
+                <p class="text-xs text-muted">{{ $fitRecord['returns'] }} "doesn't fit" of {{ $fitRecord['sold'] }} sold</p>
+            @endif
+        </div>
         <div class="card p-4"><p class="text-xs uppercase tracking-wide text-muted">Top reasons</p>
             <ul class="mt-1 space-y-0.5 text-sm">
                 @forelse ($topReasons as $reason => $n)<li class="flex justify-between gap-2"><span class="truncate">{{ $reason }}</span><span class="text-muted">{{ $n }}</span></li>
@@ -52,6 +60,12 @@
                             @if ($rma->orderItem->order->buyer) · {{ $rma->orderItem->order->buyer->name }} @endif
                         </p>
                         <p class="mt-1 text-sm"><span class="text-muted">Reason:</span> {{ $rma->reason }}</p>
+                        @if ($rma->fit_guarantee)
+                            <p class="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-300">
+                                <x-ui.icon name="shield" class="mt-px h-4 w-4 shrink-0" />
+                                <span><strong>Fit Guarantee return.</strong> Your listing said this part fits the buyer's {{ $rma->orderItem->fit_vehicle_label }}. Please send the buyer a prepaid return label or refund without a return. If you believe it does fit, choose "Disagree" and Panmotive will decide.</span>
+                            </p>
+                        @endif
                         @if ($rma->detail) <p class="mt-1 text-sm text-muted">"{{ $rma->detail }}"</p> @endif
                         @if ($rma->resolution_note) <p class="mt-1 text-xs text-muted">Your note: {{ $rma->resolution_note }}</p> @endif
                     </div>
@@ -99,7 +113,13 @@
                                 <button name="decision" value="approve" class="btn-accent btn-sm">Approve return</button>
                                 <button name="decision" value="refund_without_return" class="btn-outline btn-sm"
                                         onclick="return confirm('Refund now and let the buyer keep the item? Best for low-value parts where return shipping costs more than the item.')">Refund — no return needed</button>
-                                <button name="decision" value="reject" class="btn-ghost btn-sm text-muted hover:text-rose-600">Decline</button>
+                                @if ($rma->fit_guarantee)
+                                    @unless ($rma->escalated_at)
+                                        <button name="decision" value="reject" class="btn-ghost btn-sm text-muted hover:text-rose-600">Disagree — ask Panmotive to decide</button>
+                                    @endunless
+                                @else
+                                    <button name="decision" value="reject" class="btn-ghost btn-sm text-muted hover:text-rose-600">Decline</button>
+                                @endif
                             @elseif ($s === 'approved')
                                 <label class="mr-2 flex items-center gap-2 text-sm">
                                     <input type="checkbox" name="restock" value="1" checked class="rounded border-line text-accent focus:ring-accent">

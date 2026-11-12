@@ -59,13 +59,23 @@ class ReturnController extends Controller
                 .$orderItem->returnDeadline()->format('M j, Y').'. You can still contact the seller or open a claim.');
         }
 
+        // Fit Guarantee: only when the listing covered the buyer's vehicle at checkout.
+        $guaranteed = $data['reason'] === \App\Services\FitGuarantee::REASON
+            && app(\App\Services\FitGuarantee::class)->applies($orderItem);
+
         $rma = ReturnRequest::create([
             'order_item_id' => $orderItem->id,
             'user_id' => auth()->id(),
             'reason' => $data['reason'],
             'detail' => $data['detail'] ?? null,
             'status' => 'requested',
+            'fit_guarantee' => $guaranteed,
         ]);
+
+        if ($guaranteed) {
+            $rma->log('note', 'system', null, 'Covered by the Panmotive Fit Guarantee: the listing said it fits the buyer’s '
+                .$orderItem->fit_vehicle_label.'. The seller pays return shipping and can’t decline it without Panmotive review.');
+        }
 
         $orderItem->update(['status' => OrderStatus::ReturnRequested]);
         $orderItem->statusHistory()->create([

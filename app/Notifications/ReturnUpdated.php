@@ -47,6 +47,10 @@ class ReturnUpdated extends Notification implements ShouldQueue
             }, ['Requested', 'Approved', 'Received', 'Refunded'])
             ->items(OrderMail::items([$item]));
 
+        if ($r->fit_guarantee && in_array($this->step, ['approved', 'refunded'], true)) {
+            $mail->line('This return is covered by the Panmotive Fit Guarantee, so return shipping is free for you.');
+        }
+
         if ($this->step === 'approved') {
             $mail->line('Pack the item securely and send it back to the seller. Keep the tracking number until your refund arrives.');
             if ($r->resolution_note) {

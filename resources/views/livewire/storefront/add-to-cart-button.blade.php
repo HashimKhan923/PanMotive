@@ -47,6 +47,11 @@
         </button>
     @else
         <button disabled class="btn-outline h-12 w-full !py-0 opacity-60">Out of stock</button>
+        @if (auth()->check() && \App\Models\StockAlert::where('user_id', auth()->id())->where('product_id', $product->id)->whereNull('notified_at')->exists())
+            <p class="mt-2 flex items-center justify-center gap-1.5 text-sm font-medium text-emerald-600"><x-ui.icon name="check" class="h-4 w-4" /> We'll email you when it's back</p>
+        @else
+            <button type="button" wire:click="notifyMe" class="btn-accent mt-2 h-11 w-full !py-0"><x-ui.icon name="bell" class="h-5 w-5" /> Email me when it's back</button>
+        @endif
     @endif
 
     @if ($added)

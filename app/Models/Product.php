@@ -29,6 +29,14 @@ class Product extends Model implements HasMedia
             }
         });
 
+        // Back-in-stock emails for shoppers who asked to be told.
+        static::updated(function (Product $product) {
+            if ($product->wasChanged('quantity')
+                && \App\Services\Marketing\StockAlertService::cameBack($product->getOriginal('quantity'), $product->quantity)) {
+                \Illuminate\Support\Facades\DB::afterCommit(fn () => app(\App\Services\Marketing\StockAlertService::class)->restocked($product));
+            }
+        });
+
         // Queued SEO regeneration (never synchronous). Skipped entirely when no
         // AI key is configured so it isn't a no-op job on every save.
         if (! config('services.anthropic.key')) {
@@ -209,7 +217,12 @@ class Product extends Model implements HasMedia
 
         $total = (int) $active->sum('quantity');
         if ((int) $this->quantity !== $total) {
+            $before = (int) $this->quantity;
             $this->forceFill(['quantity' => $total])->saveQuietly();
+
+            if (\App\Services\Marketing\StockAlertService::cameBack($before, $total)) {
+                \Illuminate\Support\Facades\DB::afterCommit(fn () => app(\App\Services\Marketing\StockAlertService::class)->restocked($this));
+            }
         }
     }
 

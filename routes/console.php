@@ -13,6 +13,8 @@ Schedule::call(fn () => \App\Support\Heartbeat::beat('scheduler'))->everyMinute(
 
 Schedule::command('orders:auto-confirm-deliveries')->daily();
 Schedule::command('carts:send-abandoned-reminders')->hourly();
+// Browse reminder, add-your-car tip, did-it-fit check, win-back. Runs at :20 so it doesn't pile on the hour.
+Schedule::command('emails:lifecycle')->hourlyAt(20)->withoutOverlapping();
 Schedule::command('marketplace:maintain')->hourly();
 
 // Backups (spatie/laravel-backup → s3-backups disk).
