@@ -10,13 +10,15 @@ class CampaignRecipient extends Model
 {
     protected $fillable = [
         'marketing_campaign_id', 'user_id', 'token', 'sent_at', 'opened_at',
-        'clicks', 'clicked_at', 'converted_order_id', 'conversion_value', 'failure',
+        'clicks', 'clicked_at', 'converted_order_id', 'conversion_value', 'failure', 'bounced_at', 'complained_at',
     ];
 
     protected $casts = [
         'sent_at' => 'datetime',
         'opened_at' => 'datetime',
         'clicked_at' => 'datetime',
+        'bounced_at' => 'datetime',
+        'complained_at' => 'datetime',
         'conversion_value' => 'decimal:2',
     ];
 
@@ -38,5 +40,10 @@ class CampaignRecipient extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function clicksLog(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CampaignClick::class);
     }
 }

@@ -35,9 +35,34 @@ class Campaigns extends Component
             'channel' => 'required|in:'.(CampaignSender::smsAvailable() ? 'email,sms' : 'email'),
             'audienceType' => 'required|in:'.implode(',', array_keys(AudienceResolver::TYPES)),
             'subject' => 'required_if:channel,email|nullable|string|max:120',
-            'body' => 'required|string|max:5000',
+            'body' => 'required_if:channel,sms|nullable|string|max:5000',
             'scheduledAt' => 'nullable|date|after:now',
         ];
+    }
+
+    public function mount(): void
+    {
+        // Coming back from the designer ("Done — choose who gets it") reopens the form.
+        if ($id = (int) request()->query('edit')) {
+            $c = MarketingCampaign::where('seller_id', auth()->id())->find($id);
+            if ($c && in_array($c->status, ['draft', 'scheduled', 'failed'], true)) {
+                $this->edit($c->id);
+            }
+        }
+    }
+
+    /** Save the details as a draft and open the drag-and-drop designer. */
+    public function design()
+    {
+        $this->validate(['name' => 'required|string|max:120', 'audienceType' => 'required|in:'.implode(',', array_keys(AudienceResolver::TYPES))]);
+        abort_unless(\App\Support\SellerContext::can('marketing'), 403);
+        $campaign = $this->editingId ? $this->owned($this->editingId) : new MarketingCampaign(['seller_id' => auth()->id(), 'status' => 'draft']);
+        $campaign->fill([
+            'channel' => 'email', 'name' => $this->name, 'audience' => ['type' => $this->audienceType],
+            'subject' => $this->subject ?: null, 'preview' => $this->preview ?: null, 'body' => $this->body ?: '',
+        ])->save();
+
+        return $this->redirectRoute('seller.campaigns.design', $campaign);
     }
 
     /** People this campaign can actually reach (opted-out and blocked buyers excluded). */
@@ -67,7 +92,7 @@ class Campaigns extends Component
         $this->audienceType = $c->audience['type'] ?? 'all_customers';
         $this->subject = $c->subject ?? '';
         $this->preview = $c->preview ?? '';
-        $this->body = $c->body;
+        $this->body = (string) $c->body;
         $this->when = $c->scheduled_at ? 'later' : 'now';
         $this->scheduledAt = $c->scheduled_at?->format('Y-m-d\TH:i');
         $this->showForm = true;
@@ -83,7 +108,15 @@ class Campaigns extends Component
         $this->audienceType = $c->audience['type'] ?? 'all_customers';
         $this->subject = $c->subject ?? '';
         $this->preview = $c->preview ?? '';
-        $this->body = $c->body;
+        $this->body = (string) $c->body;
+        // Copy the design too, then save so the copy can be opened in the designer straight away.
+        if ($c->channel === 'email' && $c->design) {
+            $copy = MarketingCampaign::create([
+                'seller_id' => auth()->id(), 'channel' => 'email', 'name' => $this->name, 'audience' => $c->audience,
+                'subject' => $c->subject, 'preview' => $c->preview, 'body' => '', 'design' => $c->design, 'status' => 'draft',
+            ]);
+            $this->editingId = $copy->id;
+        }
     }
 
     public function delete(int $id): void
@@ -118,6 +151,9 @@ class Campaigns extends Component
         }
 
         $campaign = $this->editingId ? $this->owned($this->editingId) : new MarketingCampaign(['seller_id' => auth()->id()]);
+        if (($sendNow || $this->when === 'later') && $this->channel === 'email' && ! $this->readyToSend($campaign)) {
+            return;
+        }
         $scheduled = ($this->when === 'later' && $this->scheduledAt) ? Carbon::parse($this->scheduledAt) : null;
 
         $campaign->fill([
@@ -126,7 +162,7 @@ class Campaigns extends Component
             'audience' => ['type' => $this->audienceType],
             'subject' => $this->channel === 'email' ? $this->subject : null,
             'preview' => $this->preview ?: null,
-            'body' => $this->body,
+            'body' => (string) $this->body,
             'status' => $scheduled ? 'scheduled' : 'draft',
             'scheduled_at' => $scheduled,
         ])->save();
@@ -149,6 +185,11 @@ class Campaigns extends Component
         $campaign = $this->owned($id);
         if (app(CampaignSender::class)->weeklyLimitReached(auth()->id())) {
             $this->dispatch('toast', message: 'Weekly campaign limit reached — schedule it for later instead.');
+
+            return;
+        }
+        if ($campaign->channel === 'email' && ! $this->readyToSend($campaign)) {
+            $this->dispatch('toast', message: 'Open the design and fix the items marked “Fix” first.');
 
             return;
         }
@@ -178,6 +219,23 @@ class Campaigns extends Component
             new \App\Mail\CampaignMail($rendered['subject'].' [TEST]', $rendered['preview'], $rendered['body'], null, $store)
         );
         $this->dispatch('toast', message: 'Test sent to '.auth()->user()->email);
+    }
+
+    /** An email needs a design with nothing marked "Fix" in the quality check. */
+    private function readyToSend(MarketingCampaign $campaign): bool
+    {
+        // Older plain-text email campaigns (written before the designer) still send as they are.
+        if (empty($campaign->design) && trim((string) ($this->body ?: $campaign->body)) !== '' && trim((string) ($this->body ?: $campaign->body)) !== 'Hi {{name}},') {
+            return true;
+        }
+        $errors = collect(\App\Services\Marketing\CampaignDesign::quality($this->subject ?: $campaign->subject, $this->preview ?: $campaign->preview, $campaign->design ?? [], auth()->id()))
+            ->where('level', 'error');
+        if ($errors->isEmpty()) {
+            return true;
+        }
+        $this->addError('name', 'Before sending: '.$errors->pluck('text')->implode(' '));
+
+        return false;
     }
 
     private function owned(int $id): MarketingCampaign

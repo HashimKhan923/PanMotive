@@ -200,6 +200,12 @@ return [
         'campaigns_per_week' => (int) env('MARKETING_CAMPAIGNS_PER_WEEK', 3),    // per store
         // Placeholder until the real registered address is set in .env.
         'postal_address' => env('MARKETING_POSTAL_ADDRESS') ?: 'Panmotive, Inc. · 2100 Commerce St · Dallas, TX 75201 · USA',
+        // Campaign email: which mailer sends it (e.g. "postmark"; blank = the normal one) and Postmark's
+        // broadcast stream. Until a bulk provider is connected, campaigns are capped per day across the
+        // whole site so they can't use up the Gmail sending limit that order receipts depend on.
+        'campaign_mailer' => env('CAMPAIGN_MAILER'),
+        'postmark_stream' => env('POSTMARK_BROADCAST_STREAM'),
+        'campaign_daily_cap' => (int) env('CAMPAIGN_DAILY_CAP', 300),
         'announcement_cooldown_hours' => 24,
         'affiliate_hold_days' => (int) env('AFFILIATE_HOLD_DAYS', 30), // commission payable once the return window has passed
     ],

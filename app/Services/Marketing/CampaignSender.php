@@ -43,11 +43,43 @@ class CampaignSender
         return $this->sentThisWeek($sellerId) >= (int) config('marketplace.marketing.campaigns_per_week', 3);
     }
 
+    /** Campaign emails sent across the whole site today (for the daily cap while on Gmail). */
+    public static function sentToday(): int
+    {
+        return \App\Models\CampaignRecipient::where('sent_at', '>=', now()->startOfDay())->count();
+    }
+
+    /** How many more campaign emails may go out today; null = no cap (a bulk email service is connected). */
+    public static function remainingToday(): ?int
+    {
+        if (\App\Support\MailSettings::bulkReady() || in_array(config('mail.default'), ['log', 'array'], true)) {
+            return null;
+        }
+
+        return max(0, (int) config('marketplace.marketing.campaign_daily_cap', 300) - self::sentToday());
+    }
+
+    /** Campaigns paused by the daily cap carry on the next day (called from the hourly job). */
+    public function resumeCapped(): int
+    {
+        $n = 0;
+        MarketingCampaign::where('status', 'capped')->orderBy('sent_at')->each(function ($c) use (&$n) {
+            if (self::remainingToday() === 0) {
+                return false;
+            }
+            $this->send($c);
+            $n++;
+        });
+
+        return $n;
+    }
+
     public function send(MarketingCampaign $campaign): void
     {
-        if (! in_array($campaign->status, ['draft', 'scheduled', 'failed'], true)) {
+        if (! in_array($campaign->status, ['draft', 'scheduled', 'failed', 'capped'], true)) {
             return;
         }
+        $resuming = $campaign->status === 'capped';
 
         if (in_array($campaign->seller?->sellerProfile?->status, ['suspended', 'rejected'], true) || $campaign->seller?->is_active === false) {
             $campaign->update(['status' => 'failed', 'stats' => array_merge($campaign->stats ?? [], ['error' => 'This store is not active.'])]);
@@ -61,7 +93,7 @@ class CampaignSender
             return;
         }
 
-        if ($this->weeklyLimitReached($campaign->seller_id)) {
+        if (! $resuming && $this->weeklyLimitReached($campaign->seller_id)) {
             $campaign->update(['status' => 'failed', 'stats' => array_merge($campaign->stats ?? [], [
                 'error' => 'Weekly limit of '.config('marketplace.marketing.campaigns_per_week').' campaigns reached — try again in a few days.',
             ])]);
@@ -69,39 +101,59 @@ class CampaignSender
             return;
         }
 
-        $campaign->update(['status' => 'sending', 'sent_at' => now()]);
+        $campaign->update(['status' => 'sending', 'sent_at' => $campaign->sent_at ?? now()]);
 
         $store = $campaign->seller->sellerProfile?->business_name ?? 'the store';
         $type = $campaign->audience['type'] ?? 'all_customers';
+        $designed = $campaign->channel === 'email' && ! empty($campaign->design);
+        $renderer = app(CampaignRenderer::class);
+        $mailer = config('marketplace.marketing.campaign_mailer') ?: null;
+        $budget = $campaign->channel === 'email' ? self::remainingToday() : null;
+        $capped = false;
 
-        $sent = 0;
         $this->reachable($campaign->seller_id, $type, $campaign->channel)
-            ->chunkById(200, function ($users) use ($campaign, $store, &$sent) {
+            ->chunkById(200, function ($users) use ($campaign, $store, $designed, $renderer, $mailer, &$budget, &$capped) {
                 foreach ($users as $user) {
                     $recipient = $campaign->recipients()->firstOrCreate(['user_id' => $user->id]);
                     if ($recipient->sent_at) {
                         continue; // a retried send never mails the same person twice
                     }
-                    $rendered = $this->render($campaign, $user, $store, $recipient->token);
+                    if ($budget !== null && $budget <= 0) {
+                        $capped = true;
+
+                        return false; // the rest go tomorrow
+                    }
 
                     try {
                         if ($campaign->channel === 'sms') {
+                            $rendered = $this->render($campaign, $user, $store, $recipient->token);
                             $this->sendSms($user, Str::limit(strip_tags($rendered['body']), 300, '')."\nReply STOP to opt out.");
+                        } elseif ($designed) {
+                            $out = $renderer->render($campaign, $user, $recipient->token, 'send');
+                            Mail::mailer($mailer)->to($user->email)->send(new \App\Mail\DesignedCampaignMail(
+                                $out['subject'], $out['html'], $store, $campaign->seller?->email,
+                                $this->consent->unsubscribeUrl($user, $campaign->seller_id),
+                            ));
                         } else {
-                            Mail::to($user->email)->send(new CampaignMail(
+                            $rendered = $this->render($campaign, $user, $store, $recipient->token);
+                            Mail::mailer($mailer)->to($user->email)->send(new CampaignMail(
                                 $rendered['subject'], $rendered['preview'], $rendered['body'],
                                 $this->consent->unsubscribeUrl($user, $campaign->seller_id), $store,
                             ));
                         }
                         $recipient->update(['sent_at' => now(), 'failure' => null]);
-                        $sent++;
+                        if ($budget !== null) {
+                            $budget--;
+                        }
                     } catch (\Throwable $e) {
                         $recipient->update(['failure' => Str::limit($e->getMessage(), 120)]);
                     }
                 }
             });
 
-        $campaign->update(['status' => 'sent', 'stats' => array_merge($campaign->stats ?? [], ['recipients' => $sent])]);
+        $waiting = $capped ? $this->reachable($campaign->seller_id, $type, $campaign->channel)
+            ->whereNotIn('users.id', $campaign->recipients()->whereNotNull('sent_at')->select('user_id'))->count() : 0;
+        $campaign->update(['status' => $capped ? 'capped' : 'sent', 'stats' => array_merge($campaign->stats ?? [], ['waiting' => $waiting])]);
         $this->refreshStats($campaign);
     }
 
@@ -113,8 +165,12 @@ class CampaignSender
 
         $campaign->update(['stats' => array_merge($campaign->stats ?? [], [
             'recipients' => $r()->whereNotNull('sent_at')->count(),
+            'failed' => $r()->whereNull('sent_at')->whereNotNull('failure')->count(),
             'opened' => $r()->whereNotNull('opened_at')->count(),
             'clicked' => $r()->whereNotNull('clicked_at')->count(),
+            'clicks' => \App\Models\CampaignClick::where('marketing_campaign_id', $campaign->id)->where('is_bot', false)->count(),
+            'bounced' => $r()->whereNotNull('bounced_at')->count(),
+            'complaints' => $r()->whereNotNull('complained_at')->count(),
             'converted' => $r()->whereNotNull('converted_order_id')->count(),
             'revenue' => (float) $r()->sum('conversion_value'),
             'unsubscribed' => \App\Models\MarketingUnsubscribe::where('seller_id', $campaign->seller_id)

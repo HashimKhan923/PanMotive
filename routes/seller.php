@@ -123,6 +123,12 @@ Route::middleware(['auth'])->group(function () {
 
         // Campaigns (email / SMS)
         Route::get('/campaigns', Campaigns::class)->middleware('seller.can:marketing')->name('seller.campaigns.index');
+        Route::middleware('seller.can:marketing')->group(function () {
+            Route::get('/campaigns/{campaign}/design', \App\Livewire\Seller\CampaignDesigner::class)->name('seller.campaigns.design');
+            Route::get('/campaigns/{campaign}/report', \App\Livewire\Seller\CampaignReport::class)->name('seller.campaigns.report');
+            Route::get('/campaigns/{campaign}/preview', [\App\Http\Controllers\Seller\CampaignEmailController::class, 'preview'])->name('seller.campaigns.preview');
+            Route::get('/campaigns/{campaign}/export', [\App\Http\Controllers\Seller\CampaignEmailController::class, 'export'])->name('seller.campaigns.export');
+        });
 
         // Marketing automations + insights
         Route::get('/automations', Automations::class)->middleware('seller.can:marketing')->name('seller.automations.index');

@@ -61,7 +61,7 @@ class TrackingController extends Controller
     }
 
     /** Click-through — records the click, drops an attribution cookie, redirects. */
-    public function click(string $token)
+    public function click(\Illuminate\Http\Request $request, string $token)
     {
         $recipient = CampaignRecipient::with('campaign.seller.sellerProfile')->where('token', $token)->first();
 
@@ -69,14 +69,36 @@ class TrackingController extends Controller
             return redirect()->route('home');
         }
 
-        $recipient->increment('clicks');
-        \App\Models\MarketingEvent::click($recipient->campaign->seller_id, 'email', $recipient->marketing_campaign_id);
-        $recipient->forceFill(['clicked_at' => $recipient->clicked_at ?? now()])->save();
-
-        Cookie::queue('pm_campaign', $token, 60 * 24 * 7); // 7-day conversion window
-
         $profile = $recipient->campaign->seller->sellerProfile;
+        $fallback = $profile?->slug ? route('sellers.show', $profile) : route('home');
 
-        return redirect()->to($profile?->slug ? route('sellers.show', $profile) : route('home'));
+        // Designed emails say which link was clicked and where it goes. The address is signed, so
+        // nobody can turn our click links into a redirect to some other site.
+        $key = (string) $request->query('k', 'link');
+        $url = (string) $request->query('u', '');
+        $valid = $url !== '' && preg_match('~^https?://~i', $url)
+            && hash_equals(\App\Services\Marketing\CampaignRenderer::sign($token, $key, $url), (string) $request->query('s', ''));
+        $target = $valid ? $url : $fallback;
+
+        // Email security scanners open every link the moment an email arrives. Keep their
+        // clicks out of the seller's numbers.
+        $bot = $request->isMethod('HEAD')
+            || preg_match('/bot|crawl|spider|preview|scan|python|curl|wget|headless|barracuda|mimecast|proofpoint|safelinks|urldefense/i', (string) $request->userAgent())
+            || ($recipient->sent_at && $recipient->sent_at->diffInSeconds(now()) < 10);
+
+        \App\Models\CampaignClick::create([
+            'marketing_campaign_id' => $recipient->marketing_campaign_id, 'campaign_recipient_id' => $recipient->id,
+            'link_key' => \Illuminate\Support\Str::limit(preg_replace('/[^a-z0-9:_-]/i', '', $key), 40, ''),
+            'url' => \Illuminate\Support\Str::limit($target, 500, ''), 'is_bot' => (bool) $bot, 'clicked_at' => now(),
+        ]);
+
+        if (! $bot) {
+            $recipient->increment('clicks');
+            \App\Models\MarketingEvent::click($recipient->campaign->seller_id, 'email', $recipient->marketing_campaign_id);
+            $recipient->forceFill(['clicked_at' => $recipient->clicked_at ?? now()])->save();
+            Cookie::queue('pm_campaign', $token, 60 * 24 * 7); // 7-day conversion window
+        }
+
+        return redirect()->to($target);
     }
 }

@@ -111,6 +111,7 @@ class CampaignsTest extends TestCase
         $this->get(route('m.open', $recipient->token))->assertOk()->assertHeader('content-type', 'image/gif');
         $this->assertNotNull($recipient->fresh()->opened_at);
 
+        $this->travel(1)->minutes(); // a click seconds after sending is an email scanner, not a person
         $this->get(route('m.click', $recipient->token))
             ->assertRedirect(route('sellers.show', $seller->sellerProfile))
             ->assertCookie('pm_campaign', $recipient->token);

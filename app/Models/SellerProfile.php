@@ -14,7 +14,7 @@ class SellerProfile extends Model
         'kyc_status', 'commission_rate_override', 'rating', 'rating_count',
         'shipping_settings', 'bio', 'return_policy', 'vacation_mode',
         'vacation_message', 'logo_path', 'handling_fee', 'free_shipping_threshold',
-        'ad_credit', 'banner_path', 'announcement', 'announcement_until', 'featured_product_ids',
+        'ad_credit', 'email_brand', 'banner_path', 'announcement', 'announcement_until', 'featured_product_ids',
         'referral_bonus_pct', 'referral_bonus_until', 'theme', 'loyalty', 'offsite_ads_opt_out',
         'ship_from', 'return_window_days', 'return_shipping', 'vacation_until', 'vacation_pause_sales',
     ];
@@ -33,6 +33,7 @@ class SellerProfile extends Model
         'announcement_until' => 'datetime',
         'announcement_notified_at' => 'datetime',
         'featured_product_ids' => 'array',
+        'email_brand' => 'array',
         'referral_bonus_pct' => 'decimal:2',
         'referral_bonus_until' => 'datetime',
         'theme' => 'array',

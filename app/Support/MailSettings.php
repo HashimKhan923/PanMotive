@@ -31,6 +31,14 @@ class MailSettings
         return ! in_array(config('mail.default'), ['log', 'array', null, ''], true);
     }
 
+    /** True when campaigns go through a service built for bulk email (not Gmail). */
+    public static function bulkReady(): bool
+    {
+        $mailer = config('marketplace.marketing.campaign_mailer') ?: config('mail.default');
+
+        return in_array($mailer, ['postmark', 'ses', 'ses-v2', 'resend', 'mailgun'], true);
+    }
+
     public static function mailerLabel(): string
     {
         return match ((string) config('mail.default')) {

@@ -10,12 +10,13 @@ class MarketingCampaign extends Model
 {
     protected $fillable = [
         'seller_id', 'channel', 'name', 'subject', 'preview', 'body',
-        'audience', 'status', 'scheduled_at', 'sent_at', 'stats',
+        'audience', 'status', 'scheduled_at', 'sent_at', 'stats', 'design',
     ];
 
     protected $casts = [
         'audience' => 'array',
         'stats' => 'array',
+        'design' => 'array',
         'scheduled_at' => 'datetime',
         'sent_at' => 'datetime',
     ];
