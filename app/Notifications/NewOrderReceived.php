@@ -51,9 +51,12 @@ class NewOrderReceived extends Notification implements ShouldQueue
 
         return PanmotiveMail::to($notifiable)
             ->forSeller()
-            ->subject("New order {$this->order->order_number}: you’ll earn ".PanmotiveMail::money($earn))
-            ->preheader(($shipBy ? 'Ship it by '.$shipBy->format('D, M j').'. ' : '').'The buyer has paid.')
-            ->line('Good news: you have a new paid order. Accept it and ship it on time to keep your seller rating high.')
+            ->useWords('new_order', [
+                'order_number' => $this->order->order_number, 'earnings' => PanmotiveMail::money($earn),
+                'ship_by' => $shipBy?->format('D, M j') ?? 'soon',
+                'ship_to' => trim(($ship['city'] ?? '').(! empty($ship['state']) ? ', '.$ship['state'] : '')),
+            ])
+            ->intro()
             ->items(OrderMail::items($items, withStore: false), 'Items to ship')
             ->totals([
                 ['Items', PanmotiveMail::money($items->sum('line_total'))],
@@ -65,8 +68,8 @@ class NewOrderReceived extends Notification implements ShouldQueue
                 'Ship by' => $shipBy?->format('D, M j, Y'),
                 'Ship to' => trim(($ship['city'] ?? '').(! empty($ship['state']) ? ', '.$ship['state'] : '')),
             ])
-            ->action('Accept and ship', $first ? route('seller.orders.show', $first) : route('seller.orders.index', ['status' => 'new']))
-            ->line('You’ll be paid after the buyer receives the order.')
+            ->button($first ? route('seller.orders.show', $first) : route('seller.orders.index', ['status' => 'new']))
+            ->outro()
             ->reason('You’re getting this email because you sell on Panmotive.');
     }
 

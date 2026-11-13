@@ -27,11 +27,10 @@ class SellerRejected extends Notification implements ShouldQueue
     {
         return PanmotiveMail::to($notifiable)
             ->forSeller()
-            ->subject('Update on your Panmotive seller application')
-            ->preheader('We couldn’t approve your application this time.')
-            ->line('Thank you for applying to sell on Panmotive. We reviewed your application and couldn’t approve it this time.')
+            ->useWords('seller_rejected')
+            ->intro()
             ->quote($this->reason, 'Reason')
-            ->line('If you can fix this, or think we got it wrong, just reply to this email and our team will take another look.')
+            ->outro()
             ->reason('You’re getting this email because you applied to sell on Panmotive.');
     }
 

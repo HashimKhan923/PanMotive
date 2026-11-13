@@ -24,12 +24,11 @@ class SellerApplicationReceived extends Notification implements ShouldQueue
     {
         return PanmotiveMail::to($notifiable)
             ->forSeller()
-            ->subject('We received your seller application')
-            ->preheader('Our team usually reviews applications within 1–2 business days.')
-            ->line("Thanks for applying to sell on Panmotive as {$this->storeName}. Our team will review your application, usually within 1–2 business days.")
+            ->useWords('application_received', ['store' => $this->storeName])
+            ->intro()
             ->progress(0, ['Applied', 'In review', 'Approved'])
-            ->line('While you wait, you can finish your setup: add your shipping settings and connect payouts, so you can start selling the moment you’re approved.')
-            ->action('Finish your setup', route('seller.onboarding.start'))
+            ->button(route('seller.onboarding.start'))
+            ->outro()
             ->reason('You’re getting this email because you applied to sell on Panmotive.');
     }
 }

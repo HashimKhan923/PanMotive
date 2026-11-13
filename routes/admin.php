@@ -225,7 +225,10 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/system/failed/{uuid}/retry', [SystemController::class, 'retryJob'])->name('admin.system.retry');
         Route::delete('/system/failed/{uuid}', [SystemController::class, 'forgetJob'])->name('admin.system.forget');
         Route::get('/emails', [\App\Http\Controllers\Admin\EmailController::class, 'index'])->name('admin.emails.index');
-        Route::get('/emails/{key}/preview', [\App\Http\Controllers\Admin\EmailController::class, 'preview'])->where('key', '[a-z_]+')->name('admin.emails.preview');
+        Route::match(['get', 'post'], '/emails/{key}/preview', [\App\Http\Controllers\Admin\EmailController::class, 'preview'])->where('key', '[a-z_]+')->name('admin.emails.preview');
+        Route::get('/emails/{key}/edit', [\App\Http\Controllers\Admin\EmailController::class, 'edit'])->where('key', '[a-z_]+')->name('admin.emails.edit');
+        Route::put('/emails/{key}', [\App\Http\Controllers\Admin\EmailController::class, 'update'])->where('key', '[a-z_]+')->name('admin.emails.update');
+        Route::delete('/emails/{key}', [\App\Http\Controllers\Admin\EmailController::class, 'reset'])->where('key', '[a-z_]+')->name('admin.emails.reset');
         Route::post('/emails/{key}/test', [\App\Http\Controllers\Admin\EmailController::class, 'test'])->where('key', '[a-z_]+')->middleware('throttle:10,1')->name('admin.emails.test');
     });
 });

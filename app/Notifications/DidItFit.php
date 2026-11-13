@@ -35,9 +35,8 @@ class DidItFit extends Notification implements ShouldQueue
         $guaranteed = $items->contains(fn ($i) => $i->fit_confirmed);
 
         $mail = PanmotiveMail::to($notifiable, $this->order->contactName())
-            ->subject('Did everything fit?')
-            ->preheader('Tell us how it went, or get help if something’s wrong.')
-            ->line("Your order {$this->order->order_number} arrived a few days ago. We hope the install went smoothly!")
+            ->useWords('did_it_fit', ['order_number' => $this->order->order_number])
+            ->intro()
             ->items(OrderMail::items($items));
 
         $mail->line($guaranteed
@@ -45,8 +44,8 @@ class DidItFit extends Notification implements ShouldQueue
             : 'Something not right? You can message the seller or start a return from your order page.');
 
         return $mail
-            ->action('Write a review', $first?->product ? route('products.show', $first->product->slug).'#reviews' : OrderMail::orderUrl($this->order))
-            ->line('Did it fit and work? A quick, honest review (good or bad) tells other owners of your vehicle whether this part is right for them.')
+            ->button($first?->product ? route('products.show', $first->product->slug).'#reviews' : OrderMail::orderUrl($this->order))
+            ->outro()
             ->line('Need help instead? Open your order: '.OrderMail::orderUrl($this->order))
             ->optional($notifiable, 'fit_checks');
     }

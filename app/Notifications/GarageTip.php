@@ -21,16 +21,15 @@ class GarageTip extends Notification implements ShouldQueue
     public function toMail(object $notifiable): PanmotiveMail
     {
         return PanmotiveMail::to($notifiable)
-            ->subject('Add your vehicle and only see parts that fit')
-            ->preheader('Takes 10 seconds. Parts listed for your vehicle are covered by the Fit Guarantee.')
-            ->line('The fastest way to find the right part: tell us what you drive.')
+            ->useWords('garage_tip')
+            ->intro()
             ->facts([
                 'See only parts that fit' => 'Filter every search to your vehicle',
                 'Green “Fits” check' => 'On every listing made for your vehicle',
                 'Fit Guarantee' => 'Doesn’t fit? Full refund, free return',
             ], 'Why add your vehicle')
-            ->action('Add your vehicle', route('home').'#garage')
-            ->line('It takes about 10 seconds: pick the year, make and model.')
+            ->button(route('home').'#garage')
+            ->outro()
             ->optional($notifiable, 'tips');
     }
 }

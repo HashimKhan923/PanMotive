@@ -52,12 +52,10 @@ class AppServiceProvider extends ServiceProvider
             $minutes = (int) config('auth.passwords.'.config('auth.defaults.passwords').'.expire', 60);
 
             return \App\Notifications\Messages\PanmotiveMail::to($notifiable)
-                ->subject('Reset your Panmotive password')
-                ->preheader('This link works for '.$minutes.' minutes.')
-                ->line('We got a request to reset the password for your Panmotive account.')
-                ->action('Choose a new password', $url)
-                ->line("This link works for {$minutes} minutes and can only be used once.")
-                ->line('Didn’t ask for this? You can ignore this email. Your password stays the same, and no one can change it without this link.')
+                ->useWords('password_reset', ['minutes' => $minutes])
+                ->intro()
+                ->button($url, 'Choose a new password')
+                ->outro()
                 ->reason('For your security, Panmotive will never ask for your password by email.');
         });
 

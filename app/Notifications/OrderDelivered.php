@@ -32,17 +32,15 @@ class OrderDelivered extends Notification implements ShouldQueue
 
         $mail = PanmotiveMail::to($notifiable, $this->order->contactName())
             ->success()
-            ->subject("Delivered: your order {$this->order->order_number}")
-            ->preheader('Your package has arrived. Tell us how it went.')
-            ->line('Your package has been delivered. We hope the parts fit perfectly!')
+            ->useWords('order_delivered', ['order_number' => $this->order->order_number, 'return_days' => $days])
+            ->intro()
             ->progress(2)
-            ->items(OrderMail::items($items), 'Delivered')
-            ->line("Something wrong? Wrong part, damaged, or not there? You can ask for a return from your order page within {$days} days.");
+            ->items(OrderMail::items($items), 'Delivered');
 
         if ($this->order->buyer_id) {
             $product = $items->first()?->product;
-            $mail->action('Leave a review', $product ? route('products.show', $product->slug).'#reviews' : OrderMail::orderUrl($this->order))
-                ->line('Reviews help other drivers find the right part, and help good sellers grow.');
+            $mail->button($product ? route('products.show', $product->slug).'#reviews' : OrderMail::orderUrl($this->order))
+                ->outro();
         } else {
             $mail->action('View your order', OrderMail::orderUrl($this->order));
         }

@@ -28,9 +28,11 @@ class OrderItemCancelled extends Notification implements ShouldQueue
         $order = $this->item->order;
 
         $mail = PanmotiveMail::to($notifiable, $order->contactName())
-            ->subject("Item cancelled from order {$order->order_number}")
-            ->preheader($this->refunded > 0 ? 'Your refund of '.PanmotiveMail::money($this->refunded).' is on its way.' : 'You were not charged for this item.')
-            ->line("The seller had to cancel \"{$this->item->product_title}\" from your order {$order->order_number}.")
+            ->useWords('item_cancelled', [
+                'order_number' => $order->order_number, 'product' => $this->item->product_title, 'reason' => $this->reasonLabel,
+                'refund' => $this->refunded > 0 ? PanmotiveMail::money($this->refunded) : '$0.00',
+            ])
+            ->intro()
             ->items(OrderMail::items([$this->item]))
             ->facts([
                 'Reason' => $this->reasonLabel,
@@ -41,8 +43,10 @@ class OrderItemCancelled extends Notification implements ShouldQueue
             ? 'A refund of $'.number_format($this->refunded, 2).' has been issued to your original payment method / store credit. Card refunds usually appear within 5–10 business days.'
             : 'You were not charged for this item.');
 
-        return $mail->action($order->buyer_id ? 'View your order' : 'Track your order', OrderMail::orderUrl($order))
-            ->line('We\'re sorry for the inconvenience.')
+        return $mail->when($order->buyer_id,
+                fn ($m) => $m->button(OrderMail::orderUrl($order)),
+                fn ($m) => $m->action('Track your order', OrderMail::orderUrl($order)))
+            ->outro()
             ->reason('You’re getting this email because you placed an order on Panmotive.');
     }
 

@@ -27,9 +27,8 @@ class BackInStock extends Notification implements ShouldQueue
         $p = $this->product;
 
         return PanmotiveMail::to($notifiable)
-            ->subject("Back in stock: {$p->title}")
-            ->preheader('The part you asked about is available again. Stock is limited.')
-            ->line('Good news: the part you asked us to watch is back in stock.')
+            ->useWords('back_in_stock', ['product' => $p->title, 'price' => PanmotiveMail::money($p->effectivePrice())])
+            ->intro()
             ->items([[
                 'title' => $p->title,
                 'meta' => 'Sold by '.($p->seller?->sellerProfile?->business_name ?? 'a Panmotive seller'),
@@ -37,8 +36,8 @@ class BackInStock extends Notification implements ShouldQueue
                 'image' => $p->getFirstMediaUrl('images', 'thumb') ?: null,
                 'url' => route('products.show', $p->slug),
             ]])
-            ->action('Get it now', route('products.show', $p->slug))
-            ->line('Stock can sell out again quickly, so we can’t hold it for you.')
+            ->button(route('products.show', $p->slug))
+            ->outro()
             ->optional($notifiable, 'back_in_stock');
     }
 

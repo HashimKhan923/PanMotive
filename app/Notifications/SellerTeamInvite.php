@@ -29,16 +29,15 @@ class SellerTeamInvite extends Notification implements ShouldQueue
         $url = route('seller.team.accept', $this->member->invite_token);
         $days = \App\Services\Seller\TeamService::INVITE_TTL_DAYS;
 
+        $role = ucfirst(str_replace('_', ' ', (string) $this->member->role));
+
         return PanmotiveMail::to($notifiable)
-            ->greeting('Hello!')
             ->forSeller()
-            ->subject("You've been invited to help run {$store} on Panmotive")
-            ->preheader("{$store} added you to their seller team.")
-            ->line("{$store} has invited you to their seller team with the role of \"{$this->member->role}\".")
-            ->facts(['Store' => $store, 'Your role' => ucfirst(str_replace('_', ' ', (string) $this->member->role)), 'Invitation expires' => now()->addDays($days)->format('M j, Y')])
-            ->action('Accept invitation', $url)
-            ->line('If you don\'t have a Panmotive account yet, you\'ll be able to create one — use this same email address.')
-            ->line('This invitation expires in '.$days.' days.')
+            ->useWords('team_invite', ['store' => $store, 'role' => $role, 'days' => $days])
+            ->intro()
+            ->facts(['Store' => $store, 'Your role' => $role, 'Invitation expires' => now()->addDays($days)->format('M j, Y')])
+            ->button($url)
+            ->outro()
             ->reason('Not expecting this? You can ignore this email. Nothing happens unless you accept.');
     }
 }

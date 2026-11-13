@@ -14,13 +14,69 @@ use Symfony\Component\Mime\Email;
  */
 class PanmotiveMail extends MailMessage
 {
+    /** The recipient's first name, for the {first_name} placeholder. */
+    protected string $firstName = '';
+
+    /** This email's words (from App\Support\EmailTemplates), once useWords() is called. */
+    protected array $words = [];
+
+    /** Unsaved wording from the admin editor, used only for its live preview. */
+    public static ?array $draft = null;
+
     /** Start an email to this person, greeting them by first name. */
     public static function to(object $notifiable, ?string $name = null): static
     {
         $name ??= $notifiable instanceof User ? $notifiable->name : null;
         $first = trim(strtok((string) $name, ' ') ?: '');
 
-        return (new static)->greeting($first !== '' ? "Hi {$first}," : 'Hi there,');
+        $mail = (new static)->greeting($first !== '' ? "Hi {$first}," : 'Hi there,');
+        $mail->firstName = $first;
+
+        return $mail;
+    }
+
+    /**
+     * Use the admin-editable words for this email: subject, preview line and greeting now;
+     * then intro(), button() and outro() place the rest where the email wants them.
+     */
+    public function useWords(string $key, array $vars = []): static
+    {
+        $vars = ['first_name' => $this->firstName !== '' ? $this->firstName : 'there'] + $vars;
+        $this->words = \App\Support\EmailTemplates::get($key, $vars, static::$draft);
+
+        $this->subject($this->words['subject']);
+        if ($this->words['preheader'] !== '') {
+            $this->preheader($this->words['preheader']);
+        }
+        if ($this->words['greeting'] !== '') {
+            $this->greeting($this->words['greeting']);
+        }
+
+        return $this;
+    }
+
+    public function intro(): static
+    {
+        foreach (\App\Support\EmailTemplates::paragraphs($this->words['intro'] ?? '') as $paragraph) {
+            $this->line($paragraph);
+        }
+
+        return $this;
+    }
+
+    /** The main button, with the template's label (falls back when the label is blank). */
+    public function button(string $url, string $fallback = 'Open Panmotive'): static
+    {
+        return $this->action(($this->words['button'] ?? '') !== '' ? $this->words['button'] : $fallback, $url);
+    }
+
+    public function outro(): static
+    {
+        foreach (\App\Support\EmailTemplates::paragraphs($this->words['outro'] ?? '') as $paragraph) {
+            $this->line($paragraph);
+        }
+
+        return $this;
     }
 
     public function preheader(string $text): static

@@ -27,16 +27,15 @@ class SellerApproved extends Notification implements ShouldQueue
 
         return PanmotiveMail::to($notifiable)
             ->forSeller()
-            ->subject('You’re approved! Your Panmotive store is ready')
-            ->preheader('Add your first listing and start selling.')
-            ->line('Great news: '.($store ? "{$store} has" : 'your store has').' been approved, and you can start selling on Panmotive today.')
+            ->useWords('seller_approved', ['store' => $store ?: 'your store'])
+            ->intro()
             ->facts([
                 '1. Connect payouts' => 'So we can pay you',
                 '2. Add your first listing' => 'Photos, price, fitment',
                 '3. Set your shipping' => 'Carrier and handling time',
             ], 'Get set up in 3 steps')
-            ->action('Go to your seller dashboard', route('seller.dashboard'))
-            ->line('Listings with clear photos and exact fitment (year, make, model) sell faster and get fewer returns.')
+            ->button(route('seller.dashboard'))
+            ->outro()
             ->reason('You’re getting this email because you applied to sell on Panmotive.');
     }
 

@@ -3,7 +3,7 @@
 @section('title', 'Emails')
 
 @section('content')
-<x-admin.header title="Emails" subtitle="Every email Panmotive sends, exactly as people receive it. Previews use sample data and change nothing." />
+<x-admin.header title="Emails" subtitle="Every email Panmotive sends, exactly as people receive it. Pick one, preview it, and use “Edit words” to change what it says." />
 
 @unless ($sending)
     <div class="mb-4 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-[13px]">
@@ -13,7 +13,8 @@
 @endunless
 
 <div class="grid gap-4 xl:grid-cols-3"
-     x-data="{ key: @js(array_key_first(\App\Support\EmailPreviews::catalog())), base: @js(route('admin.emails.preview', 'emailkey')) }">
+     x-data="{ key: @js(array_key_first(\App\Support\EmailPreviews::catalog())), base: @js(route('admin.emails.preview', 'emailkey')),
+               editBase: @js(route('admin.emails.edit', 'emailkey')), editable: @js(array_keys(\App\Support\EmailTemplates::defaults())) }">
     <div class="space-y-4">
         <x-admin.card title="Sender settings" subtitle="Set on the server. Change them there if the addresses change.">
             <dl class="space-y-3 text-[13px]">
@@ -36,7 +37,9 @@
                                     class="flex w-full items-start gap-3 px-5 py-3 text-left transition">
                                 <x-ui.icon name="mail" class="mt-0.5 h-4 w-4 shrink-0 text-muted" />
                                 <span class="min-w-0">
-                                    <span class="block text-[13px] font-medium" :class="key === @js($key) && 'text-accent'">{{ $email['label'] }}</span>
+                                    <span class="block text-[13px] font-medium" :class="key === @js($key) && 'text-accent'">{{ $email['label'] }}
+                                        @if (in_array($key, $edited, true))<span class="ml-1 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400">Edited</span>@endif
+                                    </span>
                                     <span class="block text-xs text-muted">{{ $email['when'] }}</span>
                                 </span>
                             </button>
@@ -50,6 +53,7 @@
     <div class="xl:col-span-2">
         <x-admin.card title="Preview" subtitle="Desktop width. Email apps on phones show the same layout, stacked.">
             <x-slot:actions>
+                <a x-show="editable.includes(key)" :href="editBase.replace('emailkey', key)" class="btn-outline btn-sm"><x-ui.icon name="cog" class="h-4 w-4" /> Edit words</a>
                 <a :href="base.replace('emailkey', key)" target="_blank" rel="noopener" class="btn-ghost btn-sm"><x-ui.icon name="external" class="h-4 w-4" /> Open</a>
                 <form method="POST" :action="base.replace('emailkey', key).replace('/preview', '/test')">
                     @csrf

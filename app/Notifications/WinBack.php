@@ -25,12 +25,12 @@ class WinBack extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): PanmotiveMail
     {
-        $mail = PanmotiveMail::to($notifiable)
-            ->subject($this->vehicle ? "New parts for your {$this->vehicle}" : 'Parts picked for you')
-            ->preheader('Fresh listings from Panmotive sellers.')
-            ->line($this->vehicle
-                ? "It’s been a while! Here are some parts listed for your {$this->vehicle}. Each one shows the green “Fits” check and is covered by the Fit Guarantee."
-                : 'It’s been a while! Here are some popular parts from Panmotive sellers. Add your vehicle to see only parts that fit.');
+        $mail = PanmotiveMail::to($notifiable);
+        // The editable version is for buyers with a vehicle; others get a general one.
+        $this->vehicle
+            ? $mail->useWords('winback', ['vehicle' => $this->vehicle])->intro()
+            : $mail->subject('Parts picked for you')->preheader('Fresh listings from Panmotive sellers.')
+                ->line('It’s been a while! Here are some popular parts from Panmotive sellers. Add your vehicle to see only parts that fit.');
 
         if ($this->products->isNotEmpty()) {
             $mail->items($this->products->map(fn (Product $p) => [
@@ -42,7 +42,7 @@ class WinBack extends Notification implements ShouldQueue
             ])->all());
         }
 
-        return $mail->action('Shop parts', $this->shopUrl ?? route('products.index'))
+        return ($this->vehicle ? $mail->button($this->shopUrl ?? route('products.index'), 'Shop parts')->outro() : $mail->action('Shop parts', $this->shopUrl ?? route('products.index')))
             ->optional($notifiable, 'winback');
     }
 }

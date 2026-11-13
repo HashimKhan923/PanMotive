@@ -29,9 +29,8 @@ class OrderConfirmation extends Notification implements ShouldQueue
         $stores = OrderMail::storeCount($order->items);
 
         $mail = PanmotiveMail::to($notifiable, $order->contactName())
-            ->subject("Order confirmed: {$order->order_number}")
-            ->preheader('Thanks for your order. We’ll email you again as soon as it ships.')
-            ->line('Thanks for your order! We’ve told the seller, and we’ll email you again as soon as it ships.');
+            ->useWords('order_confirmation', ['order_number' => $order->order_number, 'order_total' => PanmotiveMail::money($order->total)])
+            ->intro();
 
         if ($stores > 1) {
             $mail->line("Your parts come from {$stores} different stores, so they may arrive in separate packages.");
@@ -47,10 +46,10 @@ class OrderConfirmation extends Notification implements ShouldQueue
             ->items(OrderMail::items($order->items), 'Your order')
             ->totals(OrderMail::totals($order))
             ->facts(OrderMail::addressLines($order->shipping_address), 'Shipping to')
-            ->action($order->buyer_id ? 'View your order' : 'Track your order', OrderMail::orderUrl($order))
-            ->line($order->buyer_id
-                ? 'Need to change something? Message the seller from your order page as soon as you can, before it ships.'
-                : 'To check on this order later, use the Track an order page with your order number and this email address.')
+            ->when($order->buyer_id,
+                fn ($m) => $m->button(OrderMail::orderUrl($order))->outro(),
+                fn ($m) => $m->action('Track your order', OrderMail::orderUrl($order))
+                    ->line('To check on this order later, use the Track an order page with your order number and this email address.'))
             ->reason('You’re getting this email because you placed an order on Panmotive.');
     }
 }

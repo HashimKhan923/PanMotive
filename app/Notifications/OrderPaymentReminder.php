@@ -27,13 +27,15 @@ class OrderPaymentReminder extends Notification implements ShouldQueue
         $deadline = $this->order->created_at->copy()->addHours((int) config('marketplace.unpaid_order_hours', 48));
 
         return PanmotiveMail::to($notifiable)
-            ->subject("Finish paying for order {$this->order->order_number}")
-            ->preheader('We’re holding your parts until '.$deadline->format('M j, g:i A').'.')
-            ->line('Your order isn’t paid yet. We’re holding these parts for you until '.$deadline->format('l, M j \a\t g:i A').'.')
+            ->useWords('payment_reminder', [
+                'order_number' => $this->order->order_number, 'order_total' => PanmotiveMail::money($this->order->total),
+                'deadline' => $deadline->format('l, M j \a\t g:i A'),
+            ])
+            ->intro()
             ->items(OrderMail::items($this->order->items()->with('product.media', 'variant.media', 'seller.sellerProfile')->get()))
             ->totals(OrderMail::totals($this->order))
-            ->action('Pay now', route('orders.pay', $this->order))
-            ->line('If your card was declined, you can try a different card on the same page. After the deadline the order is cancelled and you won’t be charged.')
+            ->button(route('orders.pay', $this->order))
+            ->outro()
             ->reason('You’re getting this email because you started an order on Panmotive.');
     }
 }

@@ -51,13 +51,17 @@ class EmailPreviews
         ];
     }
 
-    /** @return array{subject: string, html: string} */
-    public static function render(string $key): array
+    /**
+     * @param  array<string, string|null>|null  $draft  unsaved wording from the editor
+     * @return array{subject: string, html: string}
+     */
+    public static function render(string $key, ?array $draft = null): array
     {
         abort_unless(array_key_exists($key, self::catalog()), 404);
 
         // Nothing created for the preview may start a background job (search, SEO, webhooks).
         Queue::fake();
+        \App\Notifications\Messages\PanmotiveMail::$draft = $draft;
 
         DB::beginTransaction();
         try {
@@ -69,6 +73,7 @@ class EmailPreviews
             });
         } finally {
             DB::rollBack();
+            \App\Notifications\Messages\PanmotiveMail::$draft = null;
         }
     }
 

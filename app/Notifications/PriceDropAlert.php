@@ -38,9 +38,11 @@ class PriceDropAlert extends Notification implements ShouldQueue
         $p = $this->product;
 
         return PanmotiveMail::to($notifiable)
-            ->subject("Price drop: {$p->title} is now ".PanmotiveMail::money($this->newPrice))
-            ->preheader("{$this->dropPct()}% off a part on your wishlist.")
-            ->line('A part on your wishlist just got cheaper.')
+            ->useWords('price_drop', [
+                'product' => $p->title, 'old_price' => PanmotiveMail::money($this->oldPrice), 'new_price' => PanmotiveMail::money($this->newPrice),
+                'percent' => $this->dropPct(), 'savings' => PanmotiveMail::money($this->oldPrice - $this->newPrice),
+            ])
+            ->intro()
             ->items([[
                 'title' => $p->title,
                 'meta' => 'Was '.PanmotiveMail::money($this->oldPrice),
@@ -49,8 +51,8 @@ class PriceDropAlert extends Notification implements ShouldQueue
                 'url' => route('products.show', $p->slug),
             ]])
             ->facts(['You save' => PanmotiveMail::money($this->oldPrice - $this->newPrice)." ({$this->dropPct()}%)"])
-            ->action('View the part', route('products.show', $p->slug))
-            ->line('Prices and stock can change at any time.')
+            ->button(route('products.show', $p->slug))
+            ->outro()
             ->optional($notifiable, 'price_drops');
     }
 

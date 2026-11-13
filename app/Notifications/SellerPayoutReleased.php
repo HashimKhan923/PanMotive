@@ -29,17 +29,16 @@ class SellerPayoutReleased extends Notification implements ShouldQueue
 
         return PanmotiveMail::to($notifiable)
             ->forSeller()
-            ->subject("You’ve been paid {$amount} for order {$item->order->order_number}")
-            ->preheader('The buyer received their order, so your money is on its way.')
-            ->line('The buyer received their order, so we’ve released your money.')
+            ->useWords('payout', ['amount' => $amount, 'order_number' => $item->order->order_number])
+            ->intro()
             ->items(OrderMail::items([$item], withStore: false))
             ->totals([
                 ['Sale', PanmotiveMail::money($item->line_total)],
                 ['Panmotive fee', '−'.PanmotiveMail::money($item->platform_fee_amount)],
                 ['Paid to you', $amount, true],
             ])
-            ->line('It usually reaches your bank in 2–3 business days, depending on your bank.')
-            ->action('See your payouts', route('seller.payouts.index'))
+            ->button(route('seller.payouts.index'))
+            ->outro()
             ->optional($notifiable, 'payouts');
     }
 

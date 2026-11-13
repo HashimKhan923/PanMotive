@@ -33,9 +33,11 @@ class OrderShipped extends Notification implements ShouldQueue
         $store = $first->seller?->sellerProfile?->business_name;
 
         $mail = PanmotiveMail::to($notifiable, $this->order->contactName())
-            ->subject("Your order {$this->order->order_number} has shipped")
-            ->preheader("Good news: your order is on its way. {$first->carrier} tracking {$first->tracking_number}.")
-            ->line('Good news: your order is on its way'.($store ? " from {$store}" : '').'.')
+            ->useWords('order_shipped', [
+                'order_number' => $this->order->order_number, 'carrier' => $first->carrier,
+                'tracking_number' => $first->tracking_number, 'store' => $store ?: 'the seller',
+            ])
+            ->intro()
             ->progress(1)
             ->facts([
                 'Carrier' => $first->carrier,
@@ -47,12 +49,12 @@ class OrderShipped extends Notification implements ShouldQueue
         $orderUrl = OrderMail::orderUrl($this->order);
 
         if ($url = $first->trackingUrl()) {
-            $mail->action('Track your package', $url)->line('See your order any time: '.$orderUrl);
+            $mail->button($url)->line('See your order any time: '.$orderUrl);
         } else {
             $mail->action('View your order', $orderUrl);
         }
 
-        return $mail->line('Tracking can take up to a day to show the first scan.')
+        return $mail->outro()
             ->reason('You’re getting this email because you placed an order on Panmotive.');
     }
 
