@@ -37,6 +37,10 @@ class PromoLink extends Model
     /** Links made by Social Studio report as "social" in Marketing insights. */
     public function channel(): string
     {
+        if (str_starts_with((string) $this->label, 'Link in bio')) {
+            return 'bio';
+        }
+
         return SocialPostTarget::where('promo_link_id', $this->id)->exists() ? 'social' : 'promo_link';
     }
 

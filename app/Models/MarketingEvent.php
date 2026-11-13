@@ -18,6 +18,7 @@ class MarketingEvent extends Model
         'automation' => 'Automations',
         'promo_link' => 'Tracked links',
         'social' => 'Social posts',
+        'bio' => 'Link in bio',
         'ads' => 'Sponsored ads',
         'affiliate' => 'Affiliates',
         'offsite_ads' => 'Offsite Ads',

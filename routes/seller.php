@@ -152,6 +152,8 @@ Route::middleware(['auth'])->group(function () {
 
         // Social studio
         Route::get('/social', SocialStudio::class)->middleware('seller.can:marketing')->name('seller.social.index');
+        Route::get('/social/image/product/{product}', [\App\Http\Controllers\Seller\SocialImageController::class, 'product'])->middleware('seller.can:marketing')->name('seller.social.image');
+        Route::get('/social/image/logo', [\App\Http\Controllers\Seller\SocialImageController::class, 'logo'])->middleware('seller.can:marketing')->name('seller.social.logo');
         Route::get('/social/connect/{platform}', [SocialConnectController::class, 'connect'])->middleware('seller.can:marketing')->name('seller.social.connect');
         Route::get('/social/callback/{platform}', [SocialConnectController::class, 'callback'])->middleware('seller.can:marketing')->name('seller.social.callback');
         Route::delete('/social/accounts/{socialAccount}', [SocialConnectController::class, 'disconnect'])->middleware('seller.can:marketing')->name('seller.social.disconnect');

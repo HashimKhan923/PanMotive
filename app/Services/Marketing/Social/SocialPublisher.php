@@ -29,7 +29,7 @@ class SocialPublisher
                 continue;
             }
 
-            $result = $this->send($post, $account, $target->link());
+            $result = $this->send($post, $account, $target->link(), $target->caption);
             $target->update([
                 'social_account_id' => $account->id,
                 'status' => $result['status'],
@@ -46,13 +46,13 @@ class SocialPublisher
         return $post;
     }
 
-    private function send(SocialPost $post, SocialAccount $account, ?string $link): array
+    private function send(SocialPost $post, SocialAccount $account, ?string $link, ?string $caption = null): array
     {
         $endpoint = config("services.social.{$account->platform}.endpoint");
 
         try {
             $res = Http::withToken($account->access_token)->timeout(15)->post($endpoint, [
-                'text' => $this->body($post, $account->platform, $link),
+                'text' => $this->body($post, $account->platform, $link, $caption),
                 'link' => $link,
                 'media_url' => $post->media_path ? asset('storage/'.$post->media_path) : null,
             ]);
@@ -65,10 +65,10 @@ class SocialPublisher
         }
     }
 
-    private function body(SocialPost $post, string $platform, ?string $link): string
+    private function body(SocialPost $post, string $platform, ?string $link, ?string $caption = null): string
     {
         $limit = PlatformRegistry::config($platform)['char_limit'] ?? 2000;
-        $text = trim($post->body);
+        $text = trim($caption ?: $post->body); // each channel can have its own wording
         if ($link && ! str_contains($text, $link)) {
             $text .= "\n".$link;
         }

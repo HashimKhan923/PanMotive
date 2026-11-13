@@ -36,6 +36,7 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 // Offsite Ads catalog feed (Google Merchant RSS — also read by Meta, Pinterest, Microsoft).
 Route::get('/feeds/offsite/{channel}.xml', [\App\Http\Controllers\Storefront\OffsiteFeedController::class, 'show'])
     ->where('channel', '[a-z]+')->name('feeds.offsite');
+Route::get('/@{slug}', [\App\Http\Controllers\Storefront\LinkInBioController::class, 'show'])->where('slug', '[A-Za-z0-9-]+')->name('bio.show');
 Route::get('/sellers/{sellerProfile}', [\App\Http\Controllers\Storefront\SellerStoreController::class, 'show'])->name('sellers.show');
 Route::get('/go/{promoLink}', [\App\Http\Controllers\Storefront\PromoLinkController::class, 'go'])->name('promo.go');
 Route::get('/m/unsubscribe/{user}/{seller?}', [\App\Http\Controllers\Marketing\UnsubscribeController::class, 'show'])->middleware('signed')->name('marketing.unsubscribe');

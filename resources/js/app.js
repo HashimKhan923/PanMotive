@@ -52,6 +52,141 @@ window.addEventListener('celebrate', celebrate);
 
 /* --- Alpine stores --- */
 window.addEventListener('alpine:init', () => {
+    /* Social studio image maker: branded post images in every app's size, drawn on a canvas. */
+    window.Alpine.data('pmPostImage', (init) => ({
+        ...init,
+        design: 'new_arrival', size: 'square', headline: '', sub: '', badge: '', textPos: 'bottom', reviewId: null,
+        busy: false, error: '', img: null, logoImg: null,
+        sizes: {
+            square: { w: 1080, h: 1080, short: 'Square', label: 'Instagram & Facebook · 1080×1080' },
+            story: { w: 1080, h: 1920, short: 'Story', label: 'Stories, Reels & TikTok · 1080×1920' },
+            wide: { w: 1200, h: 630, short: 'Wide', label: 'Facebook, X & LinkedIn · 1200×630' },
+            pin: { w: 1000, h: 1500, short: 'Pin', label: 'Pinterest · 1000×1500' },
+        },
+        designs: {
+            new_arrival: { label: 'New arrival' }, sale: { label: 'Sale' }, fitment: { label: 'Fits your car' }, review: { label: 'Review' },
+            restock: { label: 'Back in stock' }, bundle: { label: 'Bundle deal' }, upgrade: { label: 'Upgrade' }, tip: { label: 'Tip of the week' },
+        },
+        init() {
+            if (!this.productId && this.products.length) this.productId = this.products[0].id;
+            if (this.logo) { const l = new Image(); l.onload = () => { this.logoImg = l; this.draw(); }; l.src = this.logo; }
+            this.applyDesign(); this.load();
+        },
+        product() { return this.products.find((p) => p.id === this.productId) || null; },
+        review() { return this.reviews.find((r) => r.id === this.reviewId) || this.reviews[0] || null; },
+        applyDesign() {
+            const p = this.product();
+            const r = this.review();
+            const map = {
+                new_arrival: ['Just landed', p?.title || '', 'NEW'],
+                sale: ['Sale', p ? (p.was ? `${p.was} → ${p.price}` : p.price) : '', p?.off ? `−${p.off}%` : 'SALE'],
+                fitment: [p?.title || '', p?.fits ? `✓ Fits ${p.fits}` : '✓ Check fitment on our listing', 'FITS'],
+                review: [r ? `“${r.text}”` : 'Add a 4–5 star review first', r ? `— ${r.name}${r.product ? ', ' + r.product : ''}` : '', '★★★★★'],
+                restock: ['Back in stock', p?.title || '', 'RESTOCKED'],
+                bundle: ['Bundle & save', p?.title || '', 'DEAL'],
+                upgrade: ['Upgrade your ride', p?.title || '', p?.price || ''],
+                tip: ['Tip of the week', 'Check your brake pads every 10,000 miles. Squealing or grinding means it’s time.', 'TIP'],
+            }[this.design];
+            [this.headline, this.sub, this.badge] = map;
+        },
+        load() {
+            const p = this.product();
+            this.img = null; this.error = '';
+            if (!p) return this.draw();
+            const i = new Image();
+            i.onload = () => { this.img = i; this.draw(); };
+            i.onerror = () => { this.error = 'That product photo could not be loaded.'; this.draw(); };
+            i.src = p.image;
+        },
+        wrap(ctx, text, maxW) {
+            const words = String(text).split(/\s+/); const lines = []; let line = '';
+            for (const w of words) { const t = line ? line + ' ' + w : w; if (ctx.measureText(t).width > maxW && line) { lines.push(line); line = w; } else line = t; }
+            if (line) lines.push(line); return lines;
+        },
+        cover(ctx, img, x, y, w, h) {
+            const s = Math.max(w / img.width, h / img.height); const iw = img.width * s; const ih = img.height * s;
+            ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); ctx.drawImage(img, x + (w - iw) / 2, y + (h - ih) / 2, iw, ih); ctx.restore();
+        },
+        draw() {
+            const c = this.$refs.canvas; if (!c) return;
+            const { w, h } = this.sizes[this.size]; c.width = w; c.height = h;
+            const ctx = c.getContext('2d'); const u = Math.min(w, h) / 1080; const color = this.color || '#E51B2B';
+            const font = (weight, px) => `${weight} ${Math.round(px * u)}px Inter, Arial, sans-serif`;
+            ctx.fillStyle = '#15191E'; ctx.fillRect(0, 0, w, h);
+            const textOnly = this.design === 'tip' || this.design === 'review';
+
+            if (textOnly) {
+                const g = ctx.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#15191E'); g.addColorStop(1, color);
+                ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+                if (this.img && this.design === 'tip') { ctx.globalAlpha = 0.18; this.cover(ctx, this.img, 0, 0, w, h); ctx.globalAlpha = 1; }
+            } else if (this.img) {
+                if (this.design === 'upgrade' && w > h) { ctx.fillStyle = color; ctx.fillRect(0, 0, w * 0.45, h); this.cover(ctx, this.img, w * 0.45, 0, w * 0.55, h); }
+                else this.cover(ctx, this.img, 0, 0, w, h);
+            }
+
+            // Readable text band.
+            const pad = 70 * u; const top = this.textPos === 'top';
+            if (!textOnly && !(this.design === 'upgrade' && w > h)) {
+                const g = ctx.createLinearGradient(0, top ? 0 : h, 0, top ? h * 0.6 : h * 0.4);
+                g.addColorStop(0, 'rgba(21,25,30,.92)'); g.addColorStop(1, 'rgba(21,25,30,0)');
+                ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+            }
+
+            // Badge.
+            if (this.badge) {
+                ctx.font = font(800, this.design === 'sale' ? 96 : 40); const bw = ctx.measureText(this.badge).width + 56 * u; const bh = (this.design === 'sale' ? 130 : 72) * u;
+                const bx = w - bw - pad; const by = top ? h - bh - pad : pad;
+                ctx.fillStyle = this.design === 'fitment' ? '#18794E' : color;
+                ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, bw, bh, 18 * u) : ctx.rect(bx, by, bw, bh); ctx.fill();
+                ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle'; ctx.fillText(this.badge, bx + 28 * u, by + bh / 2 + 2 * u);
+            }
+
+            // Headline + sub text.
+            const area = this.design === 'upgrade' && w > h ? w * 0.45 - pad * 2 : w - pad * 2;
+            const big = textOnly ? (this.design === 'review' ? 60 : 84) : 78;
+            ctx.textBaseline = 'alphabetic'; ctx.fillStyle = '#fff';
+            ctx.font = font(800, big); const hl = this.wrap(ctx, this.headline, area).slice(0, textOnly ? 7 : 3);
+            ctx.font = font(600, 40); const sl = this.wrap(ctx, this.sub, area).slice(0, 4);
+            const lh = big * 1.12 * u; const sh = 52 * u;
+            const block = hl.length * lh + (sl.length ? 24 * u + sl.length * sh : 0);
+            let y = textOnly ? (h - block) / 2 + lh * 0.8 : (top ? pad + 140 * u + lh * 0.8 : h - pad - 70 * u - block + lh * 0.8);
+            if (this.design === 'upgrade' && w > h) y = (h - block) / 2 + lh * 0.8;
+            ctx.font = font(800, big); hl.forEach((l) => { ctx.fillText(l, pad, y); y += lh; });
+            if (sl.length) {
+                y += 24 * u - lh + sh; ctx.font = font(600, 40);
+                ctx.fillStyle = this.design === 'fitment' ? '#6EE7B7' : 'rgba(255,255,255,.9)';
+                sl.forEach((l) => { ctx.fillText(l, pad, y); y += sh; });
+            }
+
+            // Store mark.
+            ctx.font = font(700, 34); ctx.fillStyle = '#fff'; ctx.textBaseline = 'middle';
+            const my = top ? h - pad : pad + 20 * u; const name = this.store;
+            if (this.logoImg) { const s = 64 * u; ctx.drawImage(this.logoImg, pad, my - s / 2, s, s); ctx.fillText(name, pad + s + 16 * u, my); }
+            else { ctx.fillStyle = color; ctx.fillRect(pad, my - 22 * u, 8 * u, 44 * u); ctx.fillStyle = '#fff'; ctx.fillText(name, pad + 22 * u, my); }
+            ctx.textBaseline = 'alphabetic';
+        },
+        file(name) {
+            return new Promise((res) => this.$refs.canvas.toBlob((b) => res(new File([b], name, { type: 'image/png' })), 'image/png'));
+        },
+        async use() {
+            this.busy = true; this.error = '';
+            try {
+                const f = await this.file(`${this.design}-${this.size}.png`);
+                await new Promise((ok, fail) => this.$wire.upload('media', f, ok, fail));
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Image added to your post.' } }));
+            } catch (e) { this.error = 'Could not add the image. Try Download, then upload it.'; }
+            this.busy = false;
+        },
+        download() {
+            const a = document.createElement('a'); a.download = `${this.design}-${this.size}.png`; a.href = this.$refs.canvas.toDataURL('image/png'); a.click();
+        },
+        async downloadAll() {
+            const keep = this.size;
+            for (const s of Object.keys(this.sizes)) { this.size = s; this.draw(); this.download(); await new Promise((r) => setTimeout(r, 300)); }
+            this.size = keep; this.draw();
+        },
+    }));
+
     /* Seller email designer (livewire/seller/campaign-designer.blade.php). The server re-checks
        everything on save (CampaignDesign::sanitize), so this only has to be pleasant to use. */
     window.Alpine.data('pmDesigner', (init) => ({

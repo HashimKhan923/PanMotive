@@ -26,6 +26,8 @@ class RunMarketplaceMaintenance extends Command
         $expiredUnpaid = app(\App\Services\Orders\UnpaidOrderService::class)->expireStale();
         // Campaigns paused by the daily email cap pick up where they left off.
         app(\App\Services\Marketing\CampaignSender::class)->resumeCapped();
+        // Social studio auto-queue: one product post a day for stores that switched it on.
+        app(\App\Services\Marketing\Social\SocialToolkit::class)->runQueue();
         app(\App\Services\Orders\UnpaidOrderService::class)->remindUnpaid();
         $repriced = $repricer->runAll();
         app(\App\Services\Seller\SellerReferralService::class)->sweepExpired();
