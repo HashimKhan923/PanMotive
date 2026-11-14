@@ -22,27 +22,6 @@
     @if ($tab === 'compose')
         <div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <form wire:submit="publish" class="card h-max space-y-4 p-6" data-reveal>
-                {{-- create with AI for every app --}}
-                <div class="rounded-xl bg-gradient-to-br from-[#15191E] to-[#3a1216] p-4 text-white" x-data="pmAiRenderer()" @pm-ai-render.window="render($event.detail)">
-                    <p class="flex items-center gap-2 font-semibold"><x-ui.icon name="sparkles" class="h-5 w-5" /> Create with AI for every app</p>
-                    <p class="mt-1 text-xs text-white/70">Pick the apps and a listing below, choose a goal, and AI writes a caption and designs an image for each app in its right size.</p>
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
-                        <select wire:model="aiGoal" class="input h-9 !w-auto !bg-white/10 text-sm !text-white">
-                            <option value="new" class="text-black">New arrival</option>
-                            <option value="sale" class="text-black">Sale</option>
-                            <option value="fitment" class="text-black">Fits your car</option>
-                            <option value="restock" class="text-black">Back in stock</option>
-                            <option value="review" class="text-black">Customer review</option>
-                            <option value="tip" class="text-black">Tip of the week</option>
-                        </select>
-                        <button type="button" wire:click="aiCreate" wire:loading.attr="disabled" wire:target="aiCreate" :disabled="working" class="btn-accent btn-sm">
-                            <span wire:loading.remove wire:target="aiCreate" x-text="working ? 'Designing images…' : 'Create my post'"></span>
-                            <span wire:loading wire:target="aiCreate">Writing captions…</span>
-                        </button>
-                        <a href="{{ route('seller.social.design', ['product' => $productId]) }}" class="btn-ghost btn-sm !text-white hover:!bg-white/10">Or design it yourself →</a>
-                    </div>
-                </div>
-
                 <div>
                     <label class="label">Channels</label>
                     <div class="flex flex-wrap gap-2">
@@ -128,14 +107,6 @@
                         <label class="label mb-0" for="ss-media">Image</label>
                         <a href="{{ route('seller.social.design', ['product' => $productId]) }}" class="text-xs font-semibold text-accent hover:underline">Open the designer →</a>
                     </div>
-                    @if ($channelPreviews)
-                        <div class="my-2 flex flex-wrap gap-2">
-                            @foreach ($channelPreviews as $platform => $url)
-                                <figure class="w-20 text-center" wire:key="ci-{{ $platform }}"><img src="{{ $url }}" alt="" class="h-20 w-20 rounded-lg object-cover ring-1 ring-line"><figcaption class="mt-0.5 truncate text-[10px] text-muted">{{ $platforms[$platform]['label'] ?? $platform }}</figcaption></figure>
-                            @endforeach
-                            <button type="button" wire:click="$set('channelImages', [])" class="self-center text-xs text-muted hover:text-rose-600">Remove</button>
-                        </div>
-                    @endif
                     @if ($designImage && ! $media)
                         <div class="my-2 flex items-center gap-3">
                             <img src="{{ $designImage }}" alt="" class="h-20 w-20 rounded-lg object-cover ring-1 ring-line">
@@ -144,7 +115,7 @@
                             <button type="button" wire:click="$set('design', null)" class="text-xs text-muted hover:text-rose-600">Remove</button>
                         </div>
                     @endif
-                    @if ($myDesigns->isNotEmpty() && ! $designImage && ! $media && ! $channelPreviews)
+                    @if ($myDesigns->isNotEmpty() && ! $designImage && ! $media)
                         <div class="my-2 flex gap-2 overflow-x-auto pb-1">
                             @foreach ($myDesigns as $d)
                                 <button type="button" wire:click="$set('design', {{ $d->id }})" class="shrink-0 overflow-hidden rounded-lg ring-1 ring-line hover:ring-accent" title="{{ $d->name }}" wire:key="md-{{ $d->id }}"><img src="{{ $d->imageUrl() }}" alt="" class="h-16 w-16 object-cover"></button>
@@ -238,7 +209,7 @@
                     <div class="mt-3 space-y-4">
                         @forelse (array_slice($channels, 0, 4) as $c)
                             @php($text = trim((string) ($captions[$c] ?? $body)))
-                            @php($img = $channelPreviews[$c] ?? $baseImg)
+                            @php($img = $baseImg)
                             @php($limit = $platforms[$c]['char_limit'] ?? 5000)
                             @php($tags = preg_match_all('/#\w+/', $text))
                             <div wire:key="pv-{{ $c }}" class="overflow-hidden rounded-xl border border-line bg-white text-[#15191E]">

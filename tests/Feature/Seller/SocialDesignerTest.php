@@ -19,7 +19,7 @@ use Livewire\Livewire;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
-/** Free-hand social designer, saved designs, and "Create with AI for every app". */
+/** Free-hand social designer and saved designs. */
 class SocialDesignerTest extends TestCase
 {
     use RefreshDatabase;
@@ -94,42 +94,6 @@ class SocialDesignerTest extends TestCase
 
         $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
         Livewire::actingAs($this->seller)->test(SocialDesigner::class, ['design' => $theirs->id]);
-    }
-
-    public function test_ai_create_writes_a_caption_and_asks_for_an_image_for_every_app(): void
-    {
-        $p = $this->product();
-
-        Livewire::actingAs($this->seller)->test(SocialStudio::class)
-            ->set('channels', ['facebook', 'pinterest', 'tiktok'])->set('productId', $p->id)->set('aiGoal', 'sale')
-            ->call('aiCreate')
-            ->assertSet('captions.facebook', fn ($c) => is_string($c) && $c !== '')
-            ->assertSet('captions.pinterest', fn ($c) => is_string($c) && $c !== '')
-            ->assertDispatched('pm-ai-render', fn ($name, $params) => $params['goal'] === 'sale'
-                && $params['platforms'] === ['facebook', 'pinterest', 'tiktok']
-                && $params['data']['title'] === $p->title
-                && str_contains((string) $params['data']['image'], '/social/image/product/'));
-    }
-
-    public function test_each_app_keeps_its_own_ai_image_when_posting(): void
-    {
-        $p = $this->product();
-
-        Livewire::actingAs($this->seller)->test(SocialStudio::class)
-            ->set('channels', ['facebook', 'pinterest'])->set('productId', $p->id)->set('body', 'New pads')
-            ->set('channelImages.facebook', UploadedFile::fake()->image('facebook-square.png', 1080, 1080))
-            ->set('channelImages.pinterest', UploadedFile::fake()->image('pinterest-pin.png', 1000, 1500))
-            ->call('publish')
-            ->assertHasNoErrors();
-
-        $post = SocialPost::with('targets')->firstOrFail();
-        $fb = $post->targets->firstWhere('platform', 'facebook')->media_path;
-        $pin = $post->targets->firstWhere('platform', 'pinterest')->media_path;
-        $this->assertNotEmpty($fb);
-        $this->assertNotEmpty($pin);
-        $this->assertNotSame($fb, $pin);
-        Storage::disk('public')->assertExists($fb);
-        Storage::disk('public')->assertExists($pin);
     }
 
     public function test_uploaded_design_photos_are_only_served_to_their_owner(): void

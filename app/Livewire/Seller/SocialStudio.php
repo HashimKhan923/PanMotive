@@ -44,11 +44,6 @@ class SocialStudio extends Component
     #[Url]
     public ?int $design = null;
 
-    /** One image per app, made by "Create with AI for every app". */
-    public array $channelImages = [];
-
-    public string $aiGoal = 'new';
-
     // compose
     public string $body = '';
     public ?int $productId = null;
@@ -94,43 +89,6 @@ class SocialStudio extends Component
         $this->dispatch('toast', message: 'A caption for each app is ready. Edit any of them below.');
     }
 
-    /**
-     * "Create with AI for every app": a caption for each app now, and an image for each app drawn
-     * in the browser from the best-suited template (so Pinterest gets a tall pin, X a wide card).
-     */
-    public function aiCreate(MarketingCopyService $copy): void
-    {
-        abort_unless(in_array($this->aiGoal, ['new', 'sale', 'fitment', 'restock', 'review', 'tip'], true), 422);
-        $this->validate(['channels' => 'required|array|min:1'], ['channels.required' => 'Pick at least one app first.']);
-        $this->generateAll($copy);
-        $this->channelImages = [];
-        $this->dispatch('pm-ai-render', goal: $this->aiGoal, platforms: array_values(array_unique($this->channels)), data: $this->templateData());
-    }
-
-    /** What the image templates fill in: the chosen product, store, logo, colour and a review. */
-    private function templateData(): array
-    {
-        $sp = auth()->user()->sellerProfile;
-        $p = $this->productId ? Product::where('seller_id', auth()->id())->with('media', 'fitments.make', 'fitments.model')->find($this->productId)
-            : Product::where('seller_id', auth()->id())->where('status', 'active')->whereHas('media')->with('media', 'fitments.make', 'fitments.model')->latest('id')->first();
-        $review = Review::whereHas('product', fn ($q) => $q->where('seller_id', auth()->id()))->where('status', 'published')->where('rating', '>=', 4)->with('user:id,name')->latest()->first();
-        $price = $p ? $p->effectivePrice() : null;
-
-        return [
-            'title' => $p?->title ?? ($sp?->business_name ?? 'Our store'),
-            'price' => $price !== null ? '$'.number_format($price, 2) : '',
-            'was' => $p && $price < (float) $p->price ? '$'.number_format((float) $p->price, 2) : null,
-            'off' => $p && $price < (float) $p->price && (float) $p->price > 0 ? (int) round((1 - $price / (float) $p->price) * 100) : null,
-            'fits' => $p?->fitments->first() ? trim($p->fitments->first()->year.' '.$p->fitments->first()->make?->name.' '.$p->fitments->first()->model?->name) : null,
-            'image' => $p && $p->getFirstMedia('images') ? route('seller.social.image', $p) : null,
-            'store' => $sp?->business_name ?? 'My store',
-            'logo' => $sp?->logo_path ? route('seller.social.logo') : null,
-            'color' => \App\Services\Marketing\CampaignDesign::brand($sp?->email_brand)['color'],
-            'review' => $review ? ['text' => Str::limit((string) $review->body, 180), 'name' => Str::before((string) $review->user?->name, ' ') ?: 'A customer', 'rating' => (int) $review->rating] : null,
-            'headline' => ['new' => 'Just landed', 'sale' => 'Sale on now', 'fitment' => 'Made for your car', 'restock' => 'Back in stock', 'review' => 'What customers say', 'tip' => 'Tip of the week'][$this->aiGoal] ?? null,
-        ];
-    }
-
     public function clearCaption(string $platform): void
     {
         unset($this->captions[$platform]);
@@ -145,16 +103,13 @@ class SocialStudio extends Component
             'channels.*' => 'in:'.implode(',', array_keys(PlatformRegistry::all())),
             'captions.*' => 'nullable|string|max:5000',
             'media' => 'nullable|image|max:8192',
-            'channelImages.*' => 'nullable|image|max:12288',
             'scheduledAt' => 'nullable|date|after:now',
         ], ['channels.required' => 'Pick at least one channel.']);
 
         $product = $this->productId ? Product::where('seller_id', auth()->id())->find($this->productId) : null;
         $path = $this->media ? $this->media->store('social/'.auth()->id(), 'public') : null;
         $designImage = $this->design ? \App\Models\SocialDesign::where('seller_id', auth()->id())->find($this->design)?->image_path : null;
-        $perApp = collect($this->channelImages)->filter(fn ($f) => is_object($f) && method_exists($f, 'store'))
-            ->map(fn ($f) => $f->store('social/'.auth()->id(), 'public'));
-        $path ??= $designImage ?? $perApp->first();
+        $path ??= $designImage;
         $scheduled = $this->when === 'later' && $this->scheduledAt ? Carbon::parse($this->scheduledAt) : null;
         $accounts = SocialAccount::where('seller_id', auth()->id())->where('status', 'connected')->pluck('id', 'platform');
 
@@ -181,7 +136,6 @@ class SocialStudio extends Component
                 'platform' => $platform,
                 'status' => 'pending',
                 'caption' => $caption !== '' && $caption !== trim($this->body) ? $caption : null,
-                'media_path' => $perApp[$platform] ?? null,
             ]);
         }
 
@@ -198,7 +152,7 @@ class SocialStudio extends Component
             $this->dispatch('toast', message: 'Scheduled for '.$scheduled->format('M j, g:i A').' — share kits will be ready then.');
         }
 
-        $this->reset('body', 'productId', 'media', 'when', 'scheduledAt', 'captions', 'channelImages', 'design');
+        $this->reset('body', 'productId', 'media', 'when', 'scheduledAt', 'captions', 'design');
         $this->tab = 'posts';
     }
 
@@ -363,7 +317,6 @@ class SocialStudio extends Component
             'bioStats' => ['views' => (int) $sp?->bio_views, 'clicks' => (int) $bioLinks->sum('clicks'), 'orders' => (int) $bioLinks->sum('orders'), 'revenue' => (float) $bioLinks->sum('revenue')],
             'designImage' => $this->design ? \App\Models\SocialDesign::where('seller_id', $sellerId)->find($this->design)?->imageUrl() : null,
             'myDesigns' => \App\Models\SocialDesign::where('seller_id', $sellerId)->latest('updated_at')->limit(8)->get(['id', 'name', 'image_path']),
-            'channelPreviews' => collect($this->channelImages)->filter(fn ($f) => is_object($f) && method_exists($f, 'temporaryUrl'))->map(fn ($f) => $f->temporaryUrl())->all(),
             'coupons' => Coupon::where('seller_id', $sellerId)->whereNull('user_id')->where('is_active', true)->get(['id', 'code', 'type', 'value']),
         ]);
     }

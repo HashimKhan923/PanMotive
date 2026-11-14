@@ -110,27 +110,6 @@ window.addEventListener('alpine:init', () => {
         },
     }));
 
-    /* "Create with AI for every app": draws each app's image from a template and uploads it. */
-    window.Alpine.data('pmAiRenderer', () => ({
-        working: false,
-        async render(detail) {
-            this.working = true;
-            try {
-                const mod = await import('./social-editor');
-                const tpl = await import('./social-templates');
-                for (const platform of detail.platforms) {
-                    const plan = { size: tpl.PLATFORM_SIZE[platform] || 'square', template: tpl.pickTemplate(detail.goal, platform) };
-                    const file = await mod.renderTemplate(plan.template, plan.size, detail.data, `${platform}-${plan.size}.png`);
-                    await new Promise((ok, fail) => this.$wire.upload(`channelImages.${platform}`, file, ok, fail));
-                }
-                window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Images made for every app. Check the previews, then post.' } }));
-            } catch (e) {
-                window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Some images could not be made. Try again.', kind: 'error' } }));
-            }
-            this.working = false;
-        },
-    }));
-
     /* Social studio image maker: branded post images in every app's size, drawn on a canvas. */
     window.Alpine.data('pmPostImage', (init) => ({
         ...init,
