@@ -13,7 +13,7 @@ class SocialPostTarget extends Model
 {
     protected $fillable = [
         'social_post_id', 'social_account_id', 'promo_link_id', 'platform', 'status',
-        'external_id', 'permalink', 'error', 'metrics', 'published_at', 'caption',
+        'external_id', 'permalink', 'error', 'metrics', 'published_at', 'caption', 'media_path',
     ];
 
     protected $casts = ['metrics' => 'array', 'published_at' => 'datetime'];

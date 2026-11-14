@@ -28,4 +28,14 @@ class SocialImageController extends Controller
 
         return response()->file(\Illuminate\Support\Facades\Storage::disk('public')->path($path), ['Cache-Control' => 'private, max-age=3600']);
     }
+
+    /** An image the seller uploaded into a design (only their own folder). */
+    public function upload(string $path)
+    {
+        abort_unless(preg_match('/^[A-Za-z0-9]{20,60}\.(jpg|jpeg|png|webp|gif)$/', $path), 404);
+        $file = 'social/'.auth()->id().'/uploads/'.$path;
+        abort_unless(\Illuminate\Support\Facades\Storage::disk('public')->exists($file), 404);
+
+        return response()->file(\Illuminate\Support\Facades\Storage::disk('public')->path($file), ['Cache-Control' => 'private, max-age=3600']);
+    }
 }

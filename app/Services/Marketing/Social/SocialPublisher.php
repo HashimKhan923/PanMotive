@@ -29,7 +29,7 @@ class SocialPublisher
                 continue;
             }
 
-            $result = $this->send($post, $account, $target->link(), $target->caption);
+            $result = $this->send($post, $account, $target->link(), $target->caption, $target->media_path);
             $target->update([
                 'social_account_id' => $account->id,
                 'status' => $result['status'],
@@ -46,7 +46,7 @@ class SocialPublisher
         return $post;
     }
 
-    private function send(SocialPost $post, SocialAccount $account, ?string $link, ?string $caption = null): array
+    private function send(SocialPost $post, SocialAccount $account, ?string $link, ?string $caption = null, ?string $media = null): array
     {
         $endpoint = config("services.social.{$account->platform}.endpoint");
 
@@ -54,7 +54,7 @@ class SocialPublisher
             $res = Http::withToken($account->access_token)->timeout(15)->post($endpoint, [
                 'text' => $this->body($post, $account->platform, $link, $caption),
                 'link' => $link,
-                'media_url' => $post->media_path ? asset('storage/'.$post->media_path) : null,
+                'media_url' => ($media ?: $post->media_path) ? asset('storage/'.($media ?: $post->media_path)) : null,
             ]);
 
             return $res->successful()

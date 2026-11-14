@@ -22,6 +22,27 @@
     @if ($tab === 'compose')
         <div class="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <form wire:submit="publish" class="card h-max space-y-4 p-6" data-reveal>
+                {{-- create with AI for every app --}}
+                <div class="rounded-xl bg-gradient-to-br from-[#15191E] to-[#3a1216] p-4 text-white" x-data="pmAiRenderer()" @pm-ai-render.window="render($event.detail)">
+                    <p class="flex items-center gap-2 font-semibold"><x-ui.icon name="sparkles" class="h-5 w-5" /> Create with AI for every app</p>
+                    <p class="mt-1 text-xs text-white/70">Pick the apps and a listing below, choose a goal, and AI writes a caption and designs an image for each app in its right size.</p>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <select wire:model="aiGoal" class="input h-9 !w-auto !bg-white/10 text-sm !text-white">
+                            <option value="new" class="text-black">New arrival</option>
+                            <option value="sale" class="text-black">Sale</option>
+                            <option value="fitment" class="text-black">Fits your car</option>
+                            <option value="restock" class="text-black">Back in stock</option>
+                            <option value="review" class="text-black">Customer review</option>
+                            <option value="tip" class="text-black">Tip of the week</option>
+                        </select>
+                        <button type="button" wire:click="aiCreate" wire:loading.attr="disabled" wire:target="aiCreate" :disabled="working" class="btn-accent btn-sm">
+                            <span wire:loading.remove wire:target="aiCreate" x-text="working ? 'Designing images…' : 'Create my post'"></span>
+                            <span wire:loading wire:target="aiCreate">Writing captions…</span>
+                        </button>
+                        <a href="{{ route('seller.social.design', ['product' => $productId]) }}" class="btn-ghost btn-sm !text-white hover:!bg-white/10">Or design it yourself →</a>
+                    </div>
+                </div>
+
                 <div>
                     <label class="label">Channels</label>
                     <div class="flex flex-wrap gap-2">
@@ -103,7 +124,33 @@
                 @endif
 
                 <div>
-                    <label class="label" for="ss-media">Image</label>
+                    <div class="flex items-center justify-between">
+                        <label class="label mb-0" for="ss-media">Image</label>
+                        <a href="{{ route('seller.social.design', ['product' => $productId]) }}" class="text-xs font-semibold text-accent hover:underline">Open the designer →</a>
+                    </div>
+                    @if ($channelPreviews)
+                        <div class="my-2 flex flex-wrap gap-2">
+                            @foreach ($channelPreviews as $platform => $url)
+                                <figure class="w-20 text-center" wire:key="ci-{{ $platform }}"><img src="{{ $url }}" alt="" class="h-20 w-20 rounded-lg object-cover ring-1 ring-line"><figcaption class="mt-0.5 truncate text-[10px] text-muted">{{ $platforms[$platform]['label'] ?? $platform }}</figcaption></figure>
+                            @endforeach
+                            <button type="button" wire:click="$set('channelImages', [])" class="self-center text-xs text-muted hover:text-rose-600">Remove</button>
+                        </div>
+                    @endif
+                    @if ($designImage && ! $media)
+                        <div class="my-2 flex items-center gap-3">
+                            <img src="{{ $designImage }}" alt="" class="h-20 w-20 rounded-lg object-cover ring-1 ring-line">
+                            <span class="text-xs text-muted">From your designer</span>
+                            <a href="{{ route('seller.social.design', ['design' => $design]) }}" class="text-xs text-accent hover:underline">Edit</a>
+                            <button type="button" wire:click="$set('design', null)" class="text-xs text-muted hover:text-rose-600">Remove</button>
+                        </div>
+                    @endif
+                    @if ($myDesigns->isNotEmpty() && ! $designImage && ! $media && ! $channelPreviews)
+                        <div class="my-2 flex gap-2 overflow-x-auto pb-1">
+                            @foreach ($myDesigns as $d)
+                                <button type="button" wire:click="$set('design', {{ $d->id }})" class="shrink-0 overflow-hidden rounded-lg ring-1 ring-line hover:ring-accent" title="{{ $d->name }}" wire:key="md-{{ $d->id }}"><img src="{{ $d->imageUrl() }}" alt="" class="h-16 w-16 object-cover"></button>
+                            @endforeach
+                        </div>
+                    @endif
                     @if ($media && method_exists($media, 'temporaryUrl'))
                         <div class="mb-2 flex items-center gap-3">
                             <img src="{{ $media->temporaryUrl() }}" alt="" class="h-20 w-20 rounded-lg object-cover ring-1 ring-line">
@@ -187,10 +234,11 @@
                 {{-- how it looks on each app --}}
                 <div class="card p-5" data-reveal>
                     <p class="font-semibold">How it looks</p>
-                    @php($img = $media && method_exists($media, 'temporaryUrl') ? $media->temporaryUrl() : null)
+                    @php($baseImg = $media && method_exists($media, 'temporaryUrl') ? $media->temporaryUrl() : $designImage)
                     <div class="mt-3 space-y-4">
                         @forelse (array_slice($channels, 0, 4) as $c)
                             @php($text = trim((string) ($captions[$c] ?? $body)))
+                            @php($img = $channelPreviews[$c] ?? $baseImg)
                             @php($limit = $platforms[$c]['char_limit'] ?? 5000)
                             @php($tags = preg_match_all('/#\w+/', $text))
                             <div wire:key="pv-{{ $c }}" class="overflow-hidden rounded-xl border border-line bg-white text-[#15191E]">
@@ -359,7 +407,8 @@
                         @foreach ($post->targets as $t)
                             @php($caption = Str::limit(trim($t->caption ?: $post->body), $platforms[$t->platform]['char_limit'] ?? 2000, ''))
                             @php($link = $t->link())
-                            @php($share = $link ? \App\Services\Marketing\Social\PlatformRegistry::shareUrl($t->platform, $link, $caption, $image) : null)
+                            @php($timage = $t->media_path ? asset('storage/'.$t->media_path) : $image)
+                            @php($share = $link ? \App\Services\Marketing\Social\PlatformRegistry::shareUrl($t->platform, $link, $caption, $timage) : null)
                             <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line p-3" wire:key="t-{{ $t->id }}"
                                 x-data="{ copied: false, copy() { navigator.clipboard.writeText(@js($caption.($link ? "\n".$link : ''))); this.copied = true; setTimeout(() => this.copied = false, 1500) } }">
                                 <div class="min-w-0">
@@ -378,7 +427,7 @@
                                 @if (in_array($t->status, ['share_kit', 'shared'], true))
                                     <div class="flex flex-wrap gap-1.5">
                                         <button type="button" @click="copy()" class="btn-ghost btn-sm text-xs"><x-ui.icon name="copy" class="w-4 h-4" /> <span x-text="copied ? 'Copied!' : 'Copy caption + link'"></span></button>
-                                        @if ($image)<a href="{{ $image }}" download class="btn-ghost btn-sm text-xs"><x-ui.icon name="download" class="w-4 h-4" /> Image</a>@endif
+                                        @if ($timage)<a href="{{ $timage }}" download class="btn-ghost btn-sm text-xs"><x-ui.icon name="download" class="w-4 h-4" /> Image</a>@endif
                                         @if ($share)<a href="{{ $share }}" target="_blank" rel="noopener" class="btn-accent btn-sm text-xs">Share ↗</a>@endif
                                         @if ($t->status === 'share_kit')
                                             <button wire:click="markShared({{ $t->id }})" class="btn-ghost btn-sm text-xs">I posted it</button>

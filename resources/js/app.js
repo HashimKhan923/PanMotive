@@ -52,6 +52,85 @@ window.addEventListener('celebrate', celebrate);
 
 /* --- Alpine stores --- */
 window.addEventListener('alpine:init', () => {
+    /* Free-hand social designer page (livewire/seller/social-designer.blade.php). Fabric.js is
+       loaded only here, so the rest of the site stays light. */
+    window.Alpine.data('pmSocialDesigner', (init) => ({
+        ...init,
+        ed: null, mod: null, ready: false, tab: 'templates', sel: null, layersList: [], thumbs: {}, busy: false, error: '',
+        headline: '', tip: '',
+        stickers: ['🔥', '⭐', '✅', '🚗', '🔧', '⚡', '💯', '🏁', '🛞', '🎉', '👉', '❗', 'NEW', 'SALE', 'HOT', '★★★★★'],
+        colors: ['#E51B2B', '#15191E', '#FFFFFF', '#FFD166', '#18794E', '#1D4ED8', '#7C3AED', '#EA580C', '#F5F6F8', '#5E6672'],
+        backgrounds: ['#FFFFFF', '#15191E', '#F5F6F8', '#E51B2B', '#FFD166', ['#15191E', '#E51B2B'], ['#1D4ED8', '#7C3AED'], ['#0E1114', '#5E6672'], ['#EA580C', '#FFD166']],
+        async init() {
+            const mod = await import('./social-editor');
+            this.mod = mod;
+            this.ed = mod.createEditor(this.$refs.canvas, this.$refs.wrap, {
+                size: this.size,
+                onChange: () => { this.layersList = this.ed?.layers() || []; this.sel = this.ed?.props(); },
+                onSelect: () => { this.sel = this.ed.props(); this.layersList = this.ed.layers(); },
+            });
+            await document.fonts?.load?.('800 40px Inter').catch(() => {});
+            if (this.canvasJson) await this.ed.load(this.canvasJson, this.size);
+            else await this.ed.applyTemplate(this.size === 'story' ? 'story_poster' : 'clean_product', this.data());
+            this.ready = true; this.layersList = this.ed.layers(); this.makeThumbs();
+            window.addEventListener('designer-image', (e) => this.ed.addImage(e.detail.url, 'Uploaded image'));
+        },
+        product() { return this.products.find((p) => p.id === this.productId) || this.products[0] || null; },
+        data() {
+            const p = this.product();
+            return { title: p?.title || 'Your part name', price: p?.price || '$49.99', was: p?.was, off: p?.off, fits: p?.fits, image: p?.image,
+                store: this.store, logo: this.logo, color: this.color, review: this.reviews[0] || null, headline: this.headline, tip: this.tip };
+        },
+        async makeThumbs() {
+            const size = this.ed.size; const out = {};
+            for (const key of Object.keys(this.mod.TEMPLATES)) { try { out[key] = await this.mod.renderThumb(key, size, this.data()); } catch (e) { out[key] = null; } }
+            this.thumbs = out;
+        },
+        async useTemplate(key) { if (this.layersList.length > 2 && !confirm('Replace your design with this template?')) return; await this.ed.applyTemplate(key, this.data()); },
+        async changeSize(size) { await this.ed.setSize(size, true); this.size = size; this.makeThumbs(); },
+        setProp(k, v) { this.ed.set(k, v); this.sel = this.ed.props(); },
+        async save(thenPost = false) {
+            this.busy = true; this.error = '';
+            try {
+                const file = await this.ed.toFile('design.png');
+                await new Promise((ok, fail) => this.$wire.upload('png', file, ok, fail));
+                await this.$wire.save(this.ed.toJSON(), this.ed.size, thenPost);
+            } catch (e) { this.error = 'Could not save. Check your connection and try again.'; }
+            this.busy = false;
+        },
+        download() { const a = document.createElement('a'); a.download = 'panmotive-post.png'; a.href = this.ed.toDataURL(); a.click(); },
+        key(e) {
+            if (!this.ed || ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || this.ed.canvas.getActiveObject()?.isEditing) return;
+            const k = e.key.toLowerCase();
+            if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); e.shiftKey ? this.ed.redo() : this.ed.undo(); }
+            else if ((e.ctrlKey || e.metaKey) && k === 'y') { e.preventDefault(); this.ed.redo(); }
+            else if ((e.ctrlKey || e.metaKey) && k === 'd') { e.preventDefault(); this.ed.duplicate(); }
+            else if (k === 'delete' || k === 'backspace') { e.preventDefault(); this.ed.remove(); }
+            else if (k.startsWith('arrow')) { e.preventDefault(); const s = e.shiftKey ? 20 : 4; this.ed.nudge(k === 'arrowleft' ? -s : k === 'arrowright' ? s : 0, k === 'arrowup' ? -s : k === 'arrowdown' ? s : 0); }
+        },
+    }));
+
+    /* "Create with AI for every app": draws each app's image from a template and uploads it. */
+    window.Alpine.data('pmAiRenderer', () => ({
+        working: false,
+        async render(detail) {
+            this.working = true;
+            try {
+                const mod = await import('./social-editor');
+                const tpl = await import('./social-templates');
+                for (const platform of detail.platforms) {
+                    const plan = { size: tpl.PLATFORM_SIZE[platform] || 'square', template: tpl.pickTemplate(detail.goal, platform) };
+                    const file = await mod.renderTemplate(plan.template, plan.size, detail.data, `${platform}-${plan.size}.png`);
+                    await new Promise((ok, fail) => this.$wire.upload(`channelImages.${platform}`, file, ok, fail));
+                }
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Images made for every app. Check the previews, then post.' } }));
+            } catch (e) {
+                window.dispatchEvent(new CustomEvent('toast', { detail: { message: 'Some images could not be made. Try again.', kind: 'error' } }));
+            }
+            this.working = false;
+        },
+    }));
+
     /* Social studio image maker: branded post images in every app's size, drawn on a canvas. */
     window.Alpine.data('pmPostImage', (init) => ({
         ...init,
