@@ -55,17 +55,17 @@ class SocialStudioUpgradeTest extends TestCase
         $p = $this->product();
 
         Livewire::actingAs($this->seller)->test(SocialStudio::class)
-            ->set('channels', ['facebook', 'x'])->set('productId', $p->id)
+            ->set('channels', ['facebook', 'instagram'])->set('productId', $p->id)
             ->call('generateAll')
             ->assertSet('captions.facebook', fn ($c) => is_string($c) && $c !== '')
-            ->assertSet('captions.x', fn ($c) => mb_strlen($c) <= 280)
+            ->assertSet('captions.instagram', fn ($c) => mb_strlen($c) <= 2200)
             ->set('body', 'Main caption')
-            ->set('captions.x', 'Short one for X #brakes')
+            ->set('captions.instagram', 'Short one for Instagram #brakes')
             ->call('publish');
 
         $post = SocialPost::with('targets')->firstOrFail();
-        $this->assertSame('Short one for X #brakes', $post->targets->firstWhere('platform', 'x')->caption);
-        $this->assertSame('share_kit', $post->targets->firstWhere('platform', 'x')->status);
+        $this->assertSame('Short one for Instagram #brakes', $post->targets->firstWhere('platform', 'instagram')->caption);
+        $this->assertSame('share_kit', $post->targets->firstWhere('platform', 'instagram')->status);
     }
 
     public function test_plan_my_week_schedules_a_post_a_day_and_posts_can_be_moved(): void

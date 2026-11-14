@@ -100,7 +100,7 @@ class SocialStudio extends Component
         $this->validate([
             'body' => 'required|string|max:5000',
             'channels' => 'required|array|min:1',
-            'channels.*' => 'in:'.implode(',', array_keys(PlatformRegistry::all())),
+            'channels.*' => 'in:'.implode(',', PlatformRegistry::ACTIVE),
             'captions.*' => 'nullable|string|max:5000',
             'media' => 'nullable|image|max:8192',
             'scheduledAt' => 'nullable|date|after:now',
@@ -172,7 +172,7 @@ class SocialStudio extends Component
     public function planWeek(SocialToolkit $toolkit): void
     {
         abort_unless(SellerContext::can('marketing'), 403);
-        $channels = array_values(array_intersect($this->channels ?: ['facebook', 'instagram'], array_keys(PlatformRegistry::all())));
+        $channels = array_values(array_intersect($this->channels ?: ['facebook', 'instagram'], PlatformRegistry::ACTIVE)) ?: ['facebook', 'instagram'];
         $made = $toolkit->planWeek(auth()->id(), $channels ?: ['facebook'], 7, $this->tone);
         $this->dispatch('toast', message: $made ? "{$made} posts planned for the next ".($made === 1 ? 'day' : $made.' days').'. Edit or move them on the calendar.' : 'Add photos to your in-stock listings first, then try again.');
         $this->tab = 'calendar';
@@ -203,7 +203,7 @@ class SocialStudio extends Component
             'queue.days' => 'array',
             'queue.days.*' => 'integer|min:1|max:7',
             'queue.channels' => 'array|min:1',
-            'queue.channels.*' => 'in:'.implode(',', array_keys(PlatformRegistry::all())),
+            'queue.channels.*' => 'in:'.implode(',', PlatformRegistry::ACTIVE),
             'queue.tone' => 'in:friendly,expert,hype,deal',
         ], ['queue.channels.min' => 'Pick at least one app for the queue.'])['queue'];
         $this->storeSettings('queue', $q);
@@ -278,6 +278,11 @@ class SocialStudio extends Component
 
         return view('livewire.seller.social-studio', [
             'platforms' => PlatformRegistry::all(),
+            'active' => PlatformRegistry::active(),
+            'soon' => PlatformRegistry::soon(),
+            'metaReady' => \App\Services\Marketing\Social\MetaClient::configured(),
+            'metaPages' => collect(\App\Http\Controllers\Seller\SocialConnectController::pendingPages())
+                ->map(fn ($p) => \Illuminate\Support\Arr::only($p, ['id', 'name', 'picture', 'ig_username']))->all(),
             'accounts' => $accounts,
             'posts' => $posts,
             'products' => $products,

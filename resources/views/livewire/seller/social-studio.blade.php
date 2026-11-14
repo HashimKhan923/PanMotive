@@ -12,7 +12,7 @@
     </div>
 
     <div class="mt-6 flex gap-1 overflow-x-auto border-b border-line text-sm">
-        @foreach (['compose' => 'Compose', 'calendar' => 'Calendar', 'posts' => 'Posts & results', 'bio' => 'Link in bio', 'accounts' => 'Auto-posting'] as $key => $label)
+        @foreach (['compose' => 'Compose', 'calendar' => 'Calendar', 'posts' => 'Posts & results', 'bio' => 'Link in bio', 'accounts' => 'Connected accounts'] as $key => $label)
             <button wire:click="$set('tab', '{{ $key }}')"
                     class="-mb-px shrink-0 border-b-2 px-3 py-2 font-medium transition {{ $tab === $key ? 'border-accent text-fg' : 'border-transparent text-muted hover:text-fg' }}">{{ $label }}</button>
         @endforeach
@@ -25,15 +25,20 @@
                 <div>
                     <label class="label">Channels</label>
                     <div class="flex flex-wrap gap-2">
-                        @foreach ($platforms as $key => $cfg)
+                        @foreach ($active as $key => $cfg)
                             <label class="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-line px-3 py-1.5 text-sm has-[:checked]:border-accent has-[:checked]:bg-accent/5">
                                 <input type="checkbox" value="{{ $key }}" wire:model.live="channels" class="rounded border-line text-accent focus:ring-accent">
                                 {{ $cfg['label'] }}
                                 @if (($accounts[$key] ?? null)?->isLive() && $autoPost[$key])<span class="text-[10px] font-semibold text-emerald-600">AUTO</span>@endif
                             </label>
                         @endforeach
+                        @foreach ($soon as $key => $cfg)
+                            <span class="inline-flex cursor-not-allowed items-center gap-1.5 rounded-lg border border-dashed border-line px-3 py-1.5 text-sm text-muted opacity-70" title="Coming soon">
+                                {{ $cfg['label'] }} <span class="rounded bg-surface-2 px-1 text-[10px] font-semibold uppercase">Soon</span>
+                            </span>
+                        @endforeach
                     </div>
-                    <p class="mt-1 text-xs text-muted">Channels marked AUTO post by themselves. The rest get a share kit — caption, image and a one-tap share button.</p>
+                    <p class="mt-1 text-xs text-muted">Apps marked AUTO post by themselves. Others get a share kit — caption, image and a share button. <a href="{{ route('seller.social.index', ['tab' => 'accounts']) }}" class="text-accent hover:underline">Connect Facebook & Instagram</a></p>
                     @error('channels') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                 </div>
 
@@ -298,7 +303,7 @@
                 <div>
                     <p class="label">Apps</p>
                     <div class="flex flex-wrap gap-1.5">
-                        @foreach ($platforms as $key => $cfg)
+                        @foreach ($active as $key => $cfg)
                             <label class="inline-flex cursor-pointer items-center gap-1 rounded-md border border-line px-2 py-1 text-xs has-[:checked]:border-accent has-[:checked]:bg-accent/5">
                                 <input type="checkbox" value="{{ $key }}" wire:model="queue.channels" class="h-3 w-3 rounded border-line text-accent">{{ $cfg['label'] }}
                             </label>
@@ -385,7 +390,7 @@
                                 <div class="min-w-0">
                                     <p class="text-sm font-medium">{{ $platforms[$t->platform]['label'] ?? $t->platform }}
                                         <span class="ml-1 text-xs font-normal {{ match ($t->status) { 'published', 'shared' => 'text-emerald-600', 'failed' => 'text-rose-500', default => 'text-muted' } }}">
-                                            {{ match ($t->status) { 'share_kit' => 'ready to share', 'shared' => 'shared by you', 'published' => 'auto-posted', default => $t->status } }}
+                                            {{ match ($t->status) { 'share_kit' => 'ready to share', 'shared' => 'shared by you', 'published' => 'auto-posted', 'failed' => 'not posted', default => $t->status } }}
                                         </span>
                                         @if ($t->caption)<span class="ml-1 rounded bg-surface-2 px-1 text-[10px] text-muted">own caption</span>@endif
                                     </p>
@@ -395,8 +400,11 @@
                                         @if ($t->error) · <span class="text-rose-500">{{ $t->error }}</span>@endif
                                     </p>
                                 </div>
-                                @if (in_array($t->status, ['share_kit', 'shared'], true))
+                                @if (in_array($t->status, ['share_kit', 'shared', 'failed'], true))
                                     <div class="flex flex-wrap gap-1.5">
+                                        @if ($t->status === 'failed')
+                                            <button wire:click="retry({{ $post->id }})" wire:loading.attr="disabled" class="btn-outline btn-sm text-xs">Retry</button>
+                                        @endif
                                         <button type="button" @click="copy()" class="btn-ghost btn-sm text-xs"><x-ui.icon name="copy" class="w-4 h-4" /> <span x-text="copied ? 'Copied!' : 'Copy caption + link'"></span></button>
                                         @if ($timage)<a href="{{ $timage }}" download class="btn-ghost btn-sm text-xs"><x-ui.icon name="download" class="w-4 h-4" /> Image</a>@endif
                                         @if ($share)<a href="{{ $share }}" target="_blank" rel="noopener" class="btn-accent btn-sm text-xs">Share ↗</a>@endif
@@ -480,29 +488,89 @@
 
     {{-- ========== AUTO-POSTING ========== --}}
     @elseif ($tab === 'accounts')
-        <div class="mt-6 grid gap-3 sm:grid-cols-2">
-            @foreach ($platforms as $key => $cfg)
-                @php($acc = $accounts[$key] ?? null)
-                <div class="card flex items-center justify-between p-4">
-                    <div>
-                        <p class="font-semibold">{{ $cfg['label'] }}</p>
-                        <p class="text-xs text-muted">
-                            @if ($acc?->isLive() && $autoPost[$key]) {{ $acc->handle }} · auto-posting on
-                            @elseif ($autoPost[$key]) Connect to post automatically
-                            @else Share kit · auto-posting not available yet @endif
-                        </p>
+        @php($fb = $accounts['facebook'] ?? null)
+        @php($ig = $accounts['instagram'] ?? null)
+        <div class="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
+            <div class="space-y-4">
+                {{-- Facebook + Instagram: one connection --}}
+                <div class="card p-6" data-reveal>
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold">Facebook & Instagram</h2>
+                            <p class="mt-1 text-sm text-muted">Connect once and your posts go straight to <strong>your own</strong> Facebook Page and Instagram — no copying or downloading.</p>
+                        </div>
+                        @if ($metaReady)
+                            <a href="{{ route('seller.social.connect', 'facebook') }}" class="btn-accent btn-sm">{{ $fb ? 'Reconnect' : 'Connect Facebook & Instagram' }}</a>
+                        @else
+                            <span class="rounded-full bg-surface-2 px-3 py-1 text-xs font-semibold text-muted">Coming very soon</span>
+                        @endif
                     </div>
-                    @if ($acc)
-                        <form method="POST" action="{{ route('seller.social.disconnect', $acc) }}">
-                            @csrf @method('DELETE')
-                            <button class="btn-ghost btn-sm text-muted hover:text-rose-500">Disconnect</button>
+
+                    @if ($metaPages)
+                        <form method="POST" action="{{ route('seller.social.page') }}" class="mt-5 rounded-xl border border-accent/40 bg-accent/5 p-4">
+                            @csrf
+                            <p class="font-semibold">Which Facebook Page should your posts go to?</p>
+                            <div class="mt-3 space-y-2">
+                                @foreach ($metaPages as $i => $pg)
+                                    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-line bg-surface p-3 has-[:checked]:border-accent">
+                                        <input type="radio" name="page" value="{{ $pg['id'] }}" @checked($i === 0) class="text-accent">
+                                        @if ($pg['picture'])<img src="{{ $pg['picture'] }}" alt="" class="h-8 w-8 rounded-full">@endif
+                                        <span class="text-sm"><span class="font-medium">{{ $pg['name'] }}</span>
+                                            <span class="block text-xs text-muted">{{ $pg['ig_username'] ? 'Instagram: @'.$pg['ig_username'] : 'No Instagram linked' }}</span></span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <button class="btn-accent btn-sm mt-3">Use this Page</button>
                         </form>
-                    @elseif ($autoPost[$key])
-                        <a href="{{ route('seller.social.connect', $key) }}" class="btn-outline btn-sm">Connect</a>
                     @endif
+
+                    <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                        @foreach (['facebook' => $fb, 'instagram' => $ig] as $key => $acc)
+                            <div class="flex items-center justify-between gap-3 rounded-xl border border-line p-4">
+                                <div class="min-w-0">
+                                    <p class="font-semibold">{{ $platforms[$key]['label'] }}</p>
+                                    <p class="truncate text-xs {{ $acc?->isLive() ? 'text-emerald-600' : ($acc?->status === 'expired' ? 'text-rose-500' : 'text-muted') }}">
+                                        @if ($acc?->isLive() && $autoPost[$key]) ✓ {{ $acc->handle }} · posts automatically
+                                        @elseif ($acc?->status === 'expired') Connection expired — press Reconnect
+                                        @elseif ($key === 'instagram' && $fb) No Instagram business account linked to your Page
+                                        @else Not connected · share kit @endif
+                                    </p>
+                                </div>
+                                @if ($acc)
+                                    <form method="POST" action="{{ route('seller.social.disconnect', $acc) }}" onsubmit="return confirm('Disconnect {{ $platforms[$key]['label'] }}? Posts there will use the share kit again.')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn-ghost btn-sm text-xs text-muted hover:text-rose-500">Disconnect</button>
+                                    </form>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
-            @endforeach
+
+                {{-- the rest --}}
+                <div class="card p-6" data-reveal>
+                    <h2 class="font-semibold">More apps</h2>
+                    <p class="mt-1 text-sm text-muted">These are coming soon. Until then, post the same caption and image yourself — your tracked links still count every click and sale.</p>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @foreach ($soon as $key => $cfg)
+                            <span class="inline-flex items-center gap-1.5 rounded-lg border border-dashed border-line px-3 py-1.5 text-sm text-muted">{{ $cfg['label'] }} <span class="rounded bg-surface-2 px-1 text-[10px] font-semibold uppercase">Coming soon</span></span>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            {{-- what the seller needs --}}
+            <aside class="card h-max p-6" data-reveal>
+                <h2 class="font-semibold">Before you connect</h2>
+                <ol class="mt-3 space-y-3 text-sm">
+                    <li class="flex gap-2"><span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-[11px] font-bold text-white">1</span><span>A <strong>Facebook business Page</strong> for your store (not your personal profile), and you are its <strong>admin</strong>.</span></li>
+                    <li class="flex gap-2"><span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-[11px] font-bold text-white">2</span><span>For Instagram: switch it to a <strong>Business or Creator</strong> account (Instagram → Settings → Account type).</span></li>
+                    <li class="flex gap-2"><span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-[11px] font-bold text-white">3</span><span><strong>Link Instagram to your Facebook Page</strong> (Page settings → Linked accounts → Instagram).</span></li>
+                    <li class="flex gap-2"><span class="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent text-[11px] font-bold text-white">4</span><span>Press <strong>Connect</strong>, log in to Facebook, tick your Page and Instagram, and allow posting.</span></li>
+                </ol>
+                <p class="mt-4 rounded-lg bg-surface-2 p-3 text-xs text-muted">Instagram doesn't make links in captions clickable, so Instagram posts say "link in bio". Put your <a href="{{ route('seller.social.index', ['tab' => 'bio']) }}" class="text-accent hover:underline">Link in bio</a> page in your Instagram profile.</p>
+                <p class="mt-3 text-xs text-muted">Panmotive only posts what you send from Social studio. You can disconnect any time.</p>
+            </aside>
         </div>
-        <p class="mt-4 text-xs text-muted">Auto-posting turns on per platform once Panmotive's app for it is approved. Until then, share kits get your post out in two taps — with the same tracked links and sales reporting.</p>
     @endif
 </div>

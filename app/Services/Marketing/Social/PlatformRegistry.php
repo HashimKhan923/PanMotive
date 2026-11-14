@@ -16,9 +16,29 @@ class PlatformRegistry
         'youtube' => ['label' => 'YouTube Community', 'char_limit' => 2200, 'needs_media' => false, 'hashtags' => true],
     ];
 
+    /** Apps sellers can use today. The rest show as "Coming soon". */
+    public const ACTIVE = ['facebook', 'instagram'];
+
     public static function all(): array
     {
         return self::PLATFORMS;
+    }
+
+    /** Facebook and Instagram — the apps sellers can post to now. */
+    public static function active(): array
+    {
+        return array_intersect_key(self::PLATFORMS, array_flip(self::ACTIVE));
+    }
+
+    /** Apps shown as "Coming soon". */
+    public static function soon(): array
+    {
+        return array_diff_key(self::PLATFORMS, array_flip(self::ACTIVE));
+    }
+
+    public static function isActive(string $key): bool
+    {
+        return in_array($key, self::ACTIVE, true);
     }
 
     public static function label(string $key): string
@@ -37,15 +57,12 @@ class PlatformRegistry
     }
 
     /**
-     * Auto-posting needs real platform app credentials (OAuth + publish endpoint). Without them
-     * the studio works as a share kit — it never pretends a post went out.
+     * Auto-posting needs Panmotive's Meta app (Facebook + Instagram). Without it the studio works
+     * as a share kit — it never pretends a post went out. Other apps: coming soon.
      */
     public static function autoPostConfigured(string $key): bool
     {
-        $c = config("services.social.{$key}", []);
-
-        return ! empty($c['client_id']) && ! empty($c['client_secret']) && ! empty($c['auth_url'])
-            && ! empty($c['token_url']) && ! empty($c['endpoint']);
+        return in_array($key, MetaClient::PLATFORMS, true) && MetaClient::configured();
     }
 
     /**

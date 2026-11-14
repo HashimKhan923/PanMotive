@@ -86,6 +86,7 @@ class SocialToolkit
         $made = 0;
         SellerProfile::whereNotNull('social_settings')->where('status', 'approved')->each(function (SellerProfile $sp) use (&$made) {
             $q = $sp->social_settings['queue'] ?? [];
+            $q['channels'] = array_values(array_intersect((array) ($q['channels'] ?? []), PlatformRegistry::ACTIVE));
             if (empty($q['enabled']) || empty($q['channels'])) {
                 return;
             }

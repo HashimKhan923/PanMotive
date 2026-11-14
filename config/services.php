@@ -62,6 +62,15 @@ return [
         'provider' => env('AI_PROVIDER', 'auto'),
     ],
 
+    // Facebook Pages + Instagram auto-posting (one Meta app). Without an app id + secret,
+    // sellers get the share kit only. META_CONFIG_ID = a Facebook Login for Business configuration.
+    'meta' => [
+        'app_id' => env('META_APP_ID'),
+        'app_secret' => env('META_APP_SECRET'),
+        'config_id' => env('META_CONFIG_ID'),
+        'graph_version' => env('META_GRAPH_VERSION', 'v27.0'),
+    ],
+
     // SMS marketing. Without all three, the SMS channel is hidden — texts are never faked.
     'twilio' => [
         'sid' => env('TWILIO_SID'),

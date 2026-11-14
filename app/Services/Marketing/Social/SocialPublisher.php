@@ -29,7 +29,12 @@ class SocialPublisher
                 continue;
             }
 
-            $result = $this->send($post, $account, $target->link(), $target->caption, $target->media_path);
+            $result = app(MetaClient::class)->publish(
+                $account,
+                $this->body($post, $target->platform, $target->link(), $target->caption),
+                $target->link(),
+                $this->imagePath($post, $target->media_path),
+            );
             $target->update([
                 'social_account_id' => $account->id,
                 'status' => $result['status'],
@@ -46,30 +51,28 @@ class SocialPublisher
         return $post;
     }
 
-    private function send(SocialPost $post, SocialAccount $account, ?string $link, ?string $caption = null, ?string $media = null): array
+    /** The post's image on this server: this app's own image, the post image, else the listing photo. */
+    private function imagePath(SocialPost $post, ?string $own): ?string
     {
-        $endpoint = config("services.social.{$account->platform}.endpoint");
-
-        try {
-            $res = Http::withToken($account->access_token)->timeout(15)->post($endpoint, [
-                'text' => $this->body($post, $account->platform, $link, $caption),
-                'link' => $link,
-                'media_url' => ($media ?: $post->media_path) ? asset('storage/'.($media ?: $post->media_path)) : null,
-            ]);
-
-            return $res->successful()
-                ? ['status' => 'published', 'external_id' => (string) $res->json('id'), 'permalink' => $res->json('permalink')]
-                : ['status' => 'failed', 'error' => 'API '.$res->status().': '.Str::limit($res->body(), 120)];
-        } catch (\Throwable $e) {
-            return ['status' => 'failed', 'error' => Str::limit($e->getMessage(), 150)];
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+        foreach (array_filter([$own, $post->media_path]) as $rel) {
+            if ($disk->exists($rel)) {
+                return $disk->path($rel);
+            }
         }
+        $media = $post->product?->getFirstMedia('images');
+
+        return $media && is_file($media->getPath()) ? $media->getPath() : null;
     }
 
     private function body(SocialPost $post, string $platform, ?string $link, ?string $caption = null): string
     {
         $limit = PlatformRegistry::config($platform)['char_limit'] ?? 2000;
         $text = trim($caption ?: $post->body); // each channel can have its own wording
-        if ($link && ! str_contains($text, $link)) {
+        if ($platform === 'instagram') {
+            // Instagram never makes caption links clickable: point people to the link in bio.
+            $text = trim(str_replace((string) $link, '', $text))."\n\nShop this part: link in bio.";
+        } elseif ($link && ! str_contains($text, $link)) {
             $text .= "\n".$link;
         }
 

@@ -46,7 +46,7 @@ class SocialStudioTest extends TestCase
         $this->assertDatabaseCount('social_accounts', 0);
 
         Livewire::actingAs($seller)->test(SocialStudio::class)
-            ->set('channels', ['facebook', 'x'])
+            ->set('channels', ['facebook', 'instagram'])
             ->set('body', 'Fresh brake kits in stock this week.')
             ->set('when', 'now')
             ->call('publish')
@@ -65,32 +65,6 @@ class SocialStudioTest extends TestCase
         // The seller confirms they shared it.
         Livewire::actingAs($seller)->test(SocialStudio::class)->call('markShared', $post->targets[0]->id);
         $this->assertSame('shared', $post->targets[0]->fresh()->status);
-    }
-
-    public function test_configured_platform_with_real_connection_auto_posts(): void
-    {
-        config()->set('services.social.facebook', [
-            'client_id' => 'cid', 'client_secret' => 'sec', 'auth_url' => 'https://fb.test/oauth',
-            'token_url' => 'https://fb.test/token', 'endpoint' => 'https://fb.test/post',
-        ]);
-        \Illuminate\Support\Facades\Http::fake([
-            'fb.test/token' => \Illuminate\Support\Facades\Http::response(['access_token' => 'real-token', 'expires_in' => 3600]),
-            'fb.test/post' => \Illuminate\Support\Facades\Http::response(['id' => '123', 'permalink' => 'https://facebook.com/p/123']),
-        ]);
-        $seller = $this->seller();
-
-        $this->actingAs($seller)->get(route('seller.social.connect', 'facebook'))->assertRedirect();
-        $state = session('social_oauth.facebook');
-        $this->actingAs($seller)->get(route('seller.social.callback', ['platform' => 'facebook', 'code' => 'abc', 'state' => $state]))
-            ->assertSessionHas('success');
-        $this->assertSame('real-token', SocialAccount::firstOrFail()->access_token);
-
-        Livewire::actingAs($seller)->test(SocialStudio::class)
-            ->set('channels', ['facebook'])->set('body', 'Live post')->call('publish')->assertHasNoErrors();
-
-        $target = SocialPost::firstOrFail()->targets()->first();
-        $this->assertSame('published', $target->status);
-        $this->assertSame('https://facebook.com/p/123', $target->permalink);
     }
 
     public function test_scheduled_post_publishes_via_maintenance(): void
@@ -128,12 +102,12 @@ class SocialStudioTest extends TestCase
         ]);
 
         $component = Livewire::actingAs($seller)->test(SocialStudio::class)
-            ->set('channels', ['x'])
+            ->set('channels', ['instagram'])
             ->set('productId', $product->id)
             ->call('generate');
 
         $this->assertNotEmpty($component->get('body'));
-        $this->assertLessThanOrEqual(280, strlen($component->get('body')));
+        $this->assertLessThanOrEqual(2200, strlen($component->get('body')));
     }
 
     public function test_metrics_refresh_never_invents_engagement(): void
