@@ -87,12 +87,32 @@ class CheckoutController extends Controller
             'state' => 'required|string|max:120',
             'postal_code' => 'required|string|max:20',
             'country' => 'required|string|size:2',
+            'phone' => ['required', 'string', 'max:30', function ($attr, $value, $fail) {
+                $digits = strlen(preg_replace('/\D/', '', (string) $value));
+                if ($digits < 10 || $digits > 15 || preg_match('/[^0-9+()\-.\s]/', (string) $value)) {
+                    $fail('Enter a valid phone number, like (555) 123-4567.');
+                }
+            }],
         ];
         if (! auth()->check()) {
             $rules['email'] = 'required|email|max:255';
         }
-        $data = $request->validate($rules);
+        $data = $request->validate($rules, [
+            'name.required' => 'Enter your full name.',
+            'line1.required' => 'Enter your street address.',
+            'city.required' => 'Enter your city.',
+            'state.required' => 'Enter your state.',
+            'postal_code.required' => 'Enter your ZIP code.',
+            'phone.required' => 'Enter a phone number so the carrier can reach you about delivery.',
+            'email.required' => 'Enter your email for the receipt and tracking.',
+        ]);
+        $data['phone'] = self::cleanPhone($data['phone']);
         $address = collect($data)->except('email')->all();
+
+        // Remember the phone on the account for next time.
+        if (auth()->check() && blank(auth()->user()->phone)) {
+            auth()->user()->forceFill(['phone' => $data['phone']])->save();
+        }
 
         $lines = $cart->lines();
         if ($lines->isEmpty()) {
@@ -379,5 +399,16 @@ class CheckoutController extends Controller
                 'lines' => $group,
                 'subtotal' => $group->sum('line_total'),
             ]);
+    }
+
+    /** "(555) 123-4567" → "+15551234567"; other countries keep their own digits with a "+". */
+    public static function cleanPhone(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', $phone);
+        if (strlen($digits) === 10) {
+            return '+1'.$digits;
+        }
+
+        return '+'.$digits;
     }
 }

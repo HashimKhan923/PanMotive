@@ -84,7 +84,7 @@ class OffsiteAdsTest extends TestCase
             $req = $req->withCookie(OffsiteAdsService::COOKIE, $cookie);
         }
         $req->post(route('checkout.store'), [
-            'name' => 'B', 'line1' => '1 St', 'city' => 'X', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US',
+            'name' => 'B', 'line1' => '1 St', 'city' => 'X', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US', 'phone' => '+15551234567',
         ])->assertOk();
 
         return Order::latest('id')->firstOrFail();

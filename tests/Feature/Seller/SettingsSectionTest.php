@@ -148,7 +148,7 @@ class SettingsSectionTest extends TestCase
         Cart::firstOrCreate(['user_id' => $buyer->id])->items()->create(['product_id' => $product->id, 'quantity' => 1]);
 
         $this->actingAs($buyer)->post(route('checkout.store'), [
-            'name' => 'B', 'line1' => '1 St', 'city' => 'Austin', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US',
+            'name' => 'B', 'line1' => '1 St', 'city' => 'Austin', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US', 'phone' => '+15551234567',
         ])->assertSessionHasErrors('name');
         $this->assertSame(0, Order::count());
     }

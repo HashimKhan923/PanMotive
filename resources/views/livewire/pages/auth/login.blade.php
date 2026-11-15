@@ -35,7 +35,9 @@ new #[Layout('layouts.guest')] class extends Component
     <!-- Session Status -->
     <x-auth-session-status class="mb-4 mt-4" :status="session('status')" />
 
-    <form wire:submit="login" class="mt-6 space-y-4">
+    <div class="mt-6"><x-auth.google-button label="Continue with Google" /></div>
+
+    <form wire:submit="login" class="space-y-4">
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />

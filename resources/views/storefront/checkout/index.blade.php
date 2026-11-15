@@ -29,8 +29,9 @@
                             <a href="{{ route('login', ['redirect' => url()->current()]) }}" class="text-xs font-medium text-accent hover:underline">Log in for faster checkout</a>
                         </div>
                         <div class="mt-4">
-                            <label for="co-email" class="label">Email</label>
-                            <input id="co-email" name="email" type="email" value="{{ old('email') }}" autocomplete="email" class="input" placeholder="you@example.com">
+                            <x-auth.google-button label="Continue with Google" :redirect="url()->current()" />
+                            <label for="co-email" class="label">Email <span class="text-rose-500" aria-hidden="true">*</span></label>
+                            <input id="co-email" name="email" type="email" value="{{ old('email') }}" autocomplete="email" required class="input @error('email') !border-rose-500 @enderror" placeholder="you@example.com">
                             <p class="mt-1 text-xs text-muted">We'll send your receipt and tracking here. No account needed.</p>
                             @error('email') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         </div>
@@ -38,20 +39,28 @@
                 @endguest
 
                 <div class="card p-6">
-                    <h2 class="font-bold">Shipping address</h2>
+                    <div class="flex flex-wrap items-baseline justify-between gap-2">
+                        <h2 class="font-bold">Shipping address</h2>
+                        <p class="text-xs text-muted"><span class="text-rose-500">*</span> Required</p>
+                    </div>
                     <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                        @foreach (['name' => 'Full name', 'line1' => 'Address', 'line2' => 'Apt, suite (optional)', 'city' => 'City', 'state' => 'State', 'postal_code' => 'ZIP code'] as $field => $label)
+                        @foreach (['name' => 'Full name', 'line1' => 'Address', 'line2' => 'Apt, suite (optional)', 'city' => 'City', 'state' => 'State', 'postal_code' => 'ZIP code', 'phone' => 'Phone number'] as $field => $label)
+                            @php($required = $field !== 'line2')
                             <div class="{{ in_array($field, ['name', 'line1', 'line2']) ? 'sm:col-span-2' : '' }}">
-                                <label for="co-{{ $field }}" class="label">{{ $label }}</label>
-                                <input id="co-{{ $field }}" name="{{ $field }}" value="{{ old($field) }}"
-                                       autocomplete="{{ ['name'=>'name','line1'=>'address-line1','line2'=>'address-line2','city'=>'address-level2','state'=>'address-level1','postal_code'=>'postal-code'][$field] }}"
-                                       class="input">
+                                <label for="co-{{ $field }}" class="label">{{ $label }} @if ($required)<span class="text-rose-500" aria-hidden="true">*</span>@endif</label>
+                                <input id="co-{{ $field }}" name="{{ $field }}" value="{{ old($field, $field === 'phone' ? auth()->user()?->phone : null) }}"
+                                       autocomplete="{{ ['name'=>'name','line1'=>'address-line1','line2'=>'address-line2','city'=>'address-level2','state'=>'address-level1','postal_code'=>'postal-code','phone'=>'tel'][$field] }}"
+                                       @if ($field === 'phone') type="tel" inputmode="tel" placeholder="(555) 123-4567" maxlength="30" @endif
+                                       @if ($field === 'postal_code') inputmode="numeric" maxlength="10" @endif
+                                       @required($required)
+                                       class="input @error($field) !border-rose-500 @enderror">
+                                @if ($field === 'phone')<p class="mt-1 text-xs text-muted">Only used by the carrier and seller if there's a problem with delivery.</p>@endif
                                 @error($field) <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                             </div>
                         @endforeach
                         <div>
-                            <label for="co-country" class="label">Country</label>
-                            <input id="co-country" name="country" value="{{ old('country', 'US') }}" maxlength="2" autocomplete="country" class="input">
+                            <label for="co-country" class="label">Country <span class="text-rose-500" aria-hidden="true">*</span></label>
+                            <input id="co-country" name="country" value="{{ old('country', 'US') }}" maxlength="2" autocomplete="country" required class="input @error('country') !border-rose-500 @enderror">
                             @error('country') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                         </div>
                     </div>

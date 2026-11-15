@@ -51,7 +51,9 @@ new #[Layout('layouts.guest')] class extends Component
     <h1 class="text-2xl font-bold">Create your account</h1>
     <p class="mt-1 text-sm text-muted">Free to join. Escrow protection and cashback on every order.</p>
 
-    <form wire:submit="register" class="mt-6 space-y-4">
+    <div class="mt-6"><x-auth.google-button label="Sign up with Google" /></div>
+
+    <form wire:submit="register" class="space-y-4">
         <input type="hidden" wire:model="ref">
 
         <!-- Name -->

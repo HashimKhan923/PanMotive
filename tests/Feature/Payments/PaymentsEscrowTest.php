@@ -335,7 +335,7 @@ class PaymentsEscrowTest extends TestCase
     {
         return [
             'name' => 'Jane Buyer', 'line1' => '1 Main St', 'city' => 'Detroit',
-            'state' => 'MI', 'postal_code' => '48201', 'country' => 'US',
+            'state' => 'MI', 'postal_code' => '48201', 'country' => 'US', 'phone' => '+15551234567',
         ];
     }
 

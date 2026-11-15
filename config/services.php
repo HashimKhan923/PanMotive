@@ -62,6 +62,12 @@ return [
         'provider' => env('AI_PROVIDER', 'auto'),
     ],
 
+    // "Continue with Google" for shoppers (Google Cloud → OAuth client, type "Web application").
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    ],
+
     // Facebook Pages + Instagram auto-posting (one Meta app). Without an app id + secret,
     // sellers get the share kit only. META_CONFIG_ID = a Facebook Login for Business configuration.
     'meta' => [

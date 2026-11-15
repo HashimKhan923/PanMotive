@@ -273,7 +273,7 @@ class RetentionTest extends TestCase
 
     private function address(): array
     {
-        return ['name' => 'J', 'line1' => '1 A St', 'city' => 'X', 'state' => 'CA', 'postal_code' => '90001', 'country' => 'US'];
+        return ['name' => 'J', 'line1' => '1 A St', 'city' => 'X', 'state' => 'CA', 'postal_code' => '90001', 'country' => 'US', 'phone' => '+15551234567'];
     }
 
     private function product(float $price = 50): Product

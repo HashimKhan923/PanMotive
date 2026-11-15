@@ -271,7 +271,7 @@ class MarketingAnalyticsAutomationsTest extends TestCase
             ->post(route('cart.add'), ['product_id' => $product->id, 'quantity' => 1]);
         $this->actingAs($buyer)->withCookie('pm_automation', $send->token)
             ->post(route('checkout.store'), [
-                'name' => 'B', 'line1' => '1 A St', 'city' => 'X', 'state' => 'CA', 'postal_code' => '90001', 'country' => 'US',
+                'name' => 'B', 'line1' => '1 A St', 'city' => 'X', 'state' => 'CA', 'postal_code' => '90001', 'country' => 'US', 'phone' => '+15551234567',
             ]);
 
         $this->assertNotNull($send->fresh()->converted_order_id);

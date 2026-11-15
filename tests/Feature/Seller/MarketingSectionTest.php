@@ -280,7 +280,7 @@ class MarketingSectionTest extends TestCase
         $cart->items()->create(['product_id' => $otherProduct->id, 'quantity' => 1]);
 
         $this->actingAs($buyer)->withCookie('pm_ad', 'boost:'.$boost->id)->post(route('checkout.store'), [
-            'name' => 'B', 'line1' => '1 St', 'city' => 'Austin', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US',
+            'name' => 'B', 'line1' => '1 St', 'city' => 'Austin', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US', 'phone' => '+15551234567',
         ])->assertSessionHasNoErrors();
 
         // Credited $40 (their item), not $340 + shipping.

@@ -89,7 +89,7 @@ class CatalogCompletionTest extends TestCase
         $session = $coupon ? ['checkout.coupon_code' => $coupon] : [];
 
         return $this->actingAs($buyer)->withSession($session)->post(route('checkout.store'), array_merge([
-            'name' => 'B', 'line1' => '1 St', 'city' => 'Austin', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US',
+            'name' => 'B', 'line1' => '1 St', 'city' => 'Austin', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US', 'phone' => '+15551234567',
         ], $address));
     }
 

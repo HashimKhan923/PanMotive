@@ -86,7 +86,7 @@ class SellerPortalCompletionTest extends TestCase
             'status' => $status === OrderStatus::Placed ? OrderStatus::Placed : OrderStatus::Paid,
             'subtotal' => 100, 'shipping_total' => 0, 'discount_total' => 0, 'credits_used' => 0, 'total' => 100,
             'stripe_payment_intent_id' => 'pi_'.Str::random(10),
-            'shipping_address' => ['name' => $buyer->name, 'line1' => '1 Main St', 'city' => 'Austin', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US'],
+            'shipping_address' => ['name' => $buyer->name, 'line1' => '1 Main St', 'city' => 'Austin', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US', 'phone' => '+15551234567'],
             'billing_address' => ['line1' => '1 Main St'],
         ], $order));
 
@@ -117,7 +117,7 @@ class SellerPortalCompletionTest extends TestCase
         Cart::create(['user_id' => $buyer->id])->items()->create(['product_id' => $product->id, 'quantity' => 3]);
 
         $this->actingAs($buyer)->post(route('checkout.store'), [
-            'name' => 'B', 'line1' => '1 St', 'city' => 'X', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US',
+            'name' => 'B', 'line1' => '1 St', 'city' => 'X', 'state' => 'TX', 'postal_code' => '78701', 'country' => 'US', 'phone' => '+15551234567',
         ])->assertOk();
 
         $this->assertSame(7, $product->fresh()->quantity);

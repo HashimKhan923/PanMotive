@@ -30,7 +30,7 @@ class SalesTaxTest extends TestCase
 
     private function address(): array
     {
-        return ['name' => 'Jane', 'line1' => '1 Main St', 'city' => 'Detroit', 'state' => 'Michigan', 'postal_code' => '48201', 'country' => 'US'];
+        return ['name' => 'Jane', 'line1' => '1 Main St', 'city' => 'Detroit', 'state' => 'Michigan', 'postal_code' => '48201', 'country' => 'US', 'phone' => '+15551234567'];
     }
 
     private function product(float $price = 100): Product
@@ -301,7 +301,7 @@ class SalesTaxTest extends TestCase
         $buyer = User::factory()->create();
         $sub = Subscription::create([
             'buyer_id' => $buyer->id, 'seller_id' => $product->seller_id, 'product_id' => $product->id, 'quantity' => 1, 'interval_days' => 30,
-            'status' => 'active', 'next_run_at' => now(), 'shipping_address' => ['line1' => '1 Main', 'state' => 'MI', 'postal_code' => '48201', 'country' => 'US'],
+            'status' => 'active', 'next_run_at' => now(), 'shipping_address' => ['line1' => '1 Main', 'state' => 'MI', 'postal_code' => '48201', 'country' => 'US', 'phone' => '+15551234567'],
         ]);
 
         $client = $this->mock(StripeTaxClient::class);

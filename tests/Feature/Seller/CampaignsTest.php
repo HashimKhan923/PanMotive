@@ -125,7 +125,7 @@ class CampaignsTest extends TestCase
         $this->actingAs($buyer)
             ->withCookie('pm_campaign', $recipient->token)
             ->post(route('checkout.store'), [
-                'name' => 'B', 'line1' => '1 A St', 'city' => 'X', 'state' => 'CA', 'postal_code' => '90001', 'country' => 'US',
+                'name' => 'B', 'line1' => '1 A St', 'city' => 'X', 'state' => 'CA', 'postal_code' => '90001', 'country' => 'US', 'phone' => '+15551234567',
             ]);
 
         $this->assertNotNull($recipient->fresh()->converted_order_id);
