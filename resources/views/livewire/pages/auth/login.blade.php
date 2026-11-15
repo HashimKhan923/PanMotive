@@ -35,9 +35,7 @@ new #[Layout('layouts.guest')] class extends Component
     <!-- Session Status -->
     <x-auth-session-status class="mb-4 mt-4" :status="session('status')" />
 
-    <div class="mt-6"><x-auth.google-button label="Continue with Google" /></div>
-
-    <form wire:submit="login" class="space-y-4">
+    <form wire:submit="login" class="mt-6 space-y-4">
         <!-- Email Address -->
         <div>
             <x-input-label for="email" :value="__('Email')" />
@@ -68,6 +66,8 @@ new #[Layout('layouts.guest')] class extends Component
         <x-primary-button class="w-full !py-3">
             {{ __('Log in') }}
         </x-primary-button>
+
+        <x-auth.google-button label="Continue with Google" divider="before" />
 
         @if (Route::has('register'))
             <p class="text-center text-sm text-muted">

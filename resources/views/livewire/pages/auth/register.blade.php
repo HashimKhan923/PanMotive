@@ -51,9 +51,7 @@ new #[Layout('layouts.guest')] class extends Component
     <h1 class="text-2xl font-bold">Create your account</h1>
     <p class="mt-1 text-sm text-muted">Free to join. Escrow protection and cashback on every order.</p>
 
-    <div class="mt-6"><x-auth.google-button label="Sign up with Google" /></div>
-
-    <form wire:submit="register" class="space-y-4">
+    <form wire:submit="register" class="mt-6 space-y-4">
         <input type="hidden" wire:model="ref">
 
         <!-- Name -->
@@ -87,6 +85,8 @@ new #[Layout('layouts.guest')] class extends Component
         <x-primary-button class="w-full !py-3">
             {{ __('Create account') }}
         </x-primary-button>
+
+        <x-auth.google-button label="Sign up with Google" divider="before" />
         <p class="text-center text-xs text-muted">By creating an account you agree to our <a href="{{ route('terms') }}" class="underline underline-offset-2 hover:text-accent">Terms of Service</a> and <a href="{{ route('privacy') }}" class="underline underline-offset-2 hover:text-accent">Privacy Policy</a>.</p>
 
         <p class="text-center text-sm text-muted">

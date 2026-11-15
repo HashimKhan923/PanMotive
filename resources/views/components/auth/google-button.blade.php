@@ -1,5 +1,10 @@
-@props(['label' => 'Continue with Google', 'redirect' => null])
+@props(['label' => 'Continue with Google', 'redirect' => null, 'divider' => 'after'])
 @if (\App\Http\Controllers\Auth\GoogleAuthController::configured())
+    @if ($divider === 'before')
+    <div class="my-1 flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
+        <span class="h-px flex-1 bg-line"></span> or <span class="h-px flex-1 bg-line"></span>
+    </div>
+    @endif
     <a href="{{ route('auth.google', array_filter(['redirect' => $redirect ?? request('redirect')])) }}"
        class="pm-tap flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-semibold text-[#1f1f1f] shadow-sm transition hover:bg-gray-50 dark:border-white/15">
         <svg class="h-5 w-5" viewBox="0 0 48 48" aria-hidden="true">
@@ -10,7 +15,9 @@
         </svg>
         {{ $label }}
     </a>
+    @if ($divider === 'after')
     <div class="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
         <span class="h-px flex-1 bg-line"></span> or <span class="h-px flex-1 bg-line"></span>
     </div>
+    @endif
 @endif
