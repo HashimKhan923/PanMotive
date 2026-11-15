@@ -87,6 +87,7 @@ new #[Layout('layouts.guest')] class extends Component
         <x-primary-button class="w-full !py-3">
             {{ __('Create account') }}
         </x-primary-button>
+        <p class="text-center text-xs text-muted">By creating an account you agree to our <a href="{{ route('terms') }}" class="underline underline-offset-2 hover:text-accent">Terms of Service</a> and <a href="{{ route('privacy') }}" class="underline underline-offset-2 hover:text-accent">Privacy Policy</a>.</p>
 
         <p class="text-center text-sm text-muted">
             {{ __('Already have an account?') }}

@@ -86,6 +86,8 @@ Route::get('/checkout/confirmation/{orderNumber}', [CheckoutController::class, '
 Route::get('/track', [TrackController::class, 'form'])->name('track.form');
 Route::view('/fit-guarantee', 'storefront.fit-guarantee')->name('fit-guarantee');
 Route::view('/data-deletion', 'storefront.data-deletion')->name('data-deletion');
+Route::view('/privacy', 'storefront.legal.privacy')->name('privacy');
+Route::view('/terms', 'storefront.legal.terms')->name('terms');
 Route::post('/track', [TrackController::class, 'lookup'])->middleware('throttle:10,1')->name('track.lookup');
 
 // Authenticated buyer area
