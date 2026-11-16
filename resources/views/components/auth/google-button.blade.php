@@ -1,5 +1,5 @@
 @props(['label' => 'Continue with Google', 'redirect' => null, 'divider' => 'after'])
-@if (\App\Http\Controllers\Auth\GoogleAuthController::configured())
+@if (\App\Http\Controllers\Auth\GoogleAuthController::availableHere())
     @if ($divider === 'before')
     <div class="my-1 flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
         <span class="h-px flex-1 bg-line"></span> or <span class="h-px flex-1 bg-line"></span>

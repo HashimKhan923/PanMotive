@@ -41,6 +41,13 @@ class GoogleLoginTest extends TestCase
         $this->get(route('login'))->assertOk()->assertSee('Continue with Google');
         $this->get(route('register'))->assertOk()->assertSee('Sign up with Google');
 
+        // never on the seller portal or admin console
+        $domain = config('app.domain');
+        $this->get('http://sell.'.$domain.'/login')->assertOk()->assertDontSee('Continue with Google');
+        $this->get('http://admin.'.$domain.'/login')->assertOk()->assertDontSee('Continue with Google');
+        $this->get('http://sell.'.$domain.'/auth/google')->assertNotFound();
+        $this->get('http://admin.'.$domain.'/auth/google/callback?code=x&state=y')->assertNotFound();
+
         config()->set('services.google.client_id', null);
         $this->get(route('login'))->assertOk()->assertDontSee('Continue with Google');
         $this->get(route('auth.google'))->assertNotFound();

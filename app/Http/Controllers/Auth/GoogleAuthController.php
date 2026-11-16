@@ -24,9 +24,18 @@ class GoogleAuthController extends Controller
         return filled(config('services.google.client_id')) && filled(config('services.google.client_secret'));
     }
 
+    /** Only for shoppers on the shop's own address — never on the seller portal or admin console. */
+    public static function availableHere(): bool
+    {
+        $domain = (string) config('app.domain');
+        $host = request()->getHost();
+
+        return self::configured() && ! ($domain !== '' && in_array($host, ['sell.'.$domain, 'admin.'.$domain], true));
+    }
+
     public function redirect(Request $request)
     {
-        abort_unless(self::configured(), 404);
+        abort_unless(self::availableHere(), 404);
 
         // Where to go afterwards (e.g. back to checkout) — only addresses on our own site.
         $back = (string) $request->query('redirect', '');
@@ -49,7 +58,7 @@ class GoogleAuthController extends Controller
 
     public function callback(Request $request)
     {
-        abort_unless(self::configured(), 404);
+        abort_unless(self::availableHere(), 404);
         $fail = fn (string $msg) => redirect()->route('login')->withErrors(['form.email' => $msg]);
 
         if (! $request->filled('state') || $request->session()->pull('google_oauth_state') !== $request->state) {
