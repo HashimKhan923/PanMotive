@@ -85,7 +85,7 @@
                         @endif
                         <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                             <p class="line-clamp-1 text-xs font-semibold text-white">{{ $p->title }}</p>
-                            <p class="text-xs font-bold text-white">${{ number_format($p->effectivePrice(), 2) }}</p>
+                            <p class="text-xs font-bold text-white">${{ number_format($p->effectivePrice(), 2) }} <span class="font-normal text-white/80">{{ $p->priceBasis() }}</span></p>
                         </div>
                     </a>
                     </div>

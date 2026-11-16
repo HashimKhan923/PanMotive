@@ -8,6 +8,8 @@
     <meta property="og:title" content="{{ $sp->business_name }}">
     <meta property="og:description" content="{{ $bio['headline'] }}">
     @if ($featured->first()?->getFirstMediaUrl('images'))<meta property="og:image" content="{{ $featured->first()->getFirstMediaUrl('images') }}">@endif
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
     @vite(['resources/css/app.css'])
 </head>
 <body class="min-h-screen bg-[#F5F6F8] text-[#15191E] antialiased">
@@ -16,7 +18,7 @@
         @if ($logo)
             <img src="{{ $logo }}" alt="{{ $sp->business_name }}" class="mx-auto h-20 w-20 rounded-full border-4 border-white object-cover shadow">
         @else
-            <div class="mx-auto grid h-20 w-20 place-items-center rounded-full text-2xl font-extrabold text-white shadow" style="background: {{ $color }}">{{ mb_strtoupper(mb_substr($sp->business_name, 0, 1)) }}</div>
+            <div class="mx-auto grid h-20 w-20 place-items-center rounded-full text-2xl font-bold text-white shadow" style="background: {{ $color }}">{{ mb_strtoupper(mb_substr($sp->business_name, 0, 1)) }}</div>
         @endif
         <h1 class="mt-3 text-xl font-bold">{{ $sp->business_name }}</h1>
         @if ((int) $sp->rating_count > 0)
@@ -43,7 +45,7 @@
                     <img src="{{ $p->getFirstMediaUrl('images', 'thumb') ?: $p->getFirstMediaUrl('images') }}" alt="" class="aspect-square w-full object-cover" loading="lazy">
                     <div class="p-2.5">
                         <p class="line-clamp-2 text-xs font-semibold leading-snug">{{ $p->title }}</p>
-                        <p class="mt-1 text-sm font-bold">${{ number_format($p->effectivePrice(), 2) }}
+                        <p class="mt-1 text-sm font-bold">${{ number_format($p->effectivePrice(), 2) }} <span class="text-xs font-normal text-[#5E6672]">{{ $p->priceBasis() }}</span>
                             @if ($p->effectivePrice() < (float) $p->price)<span class="text-xs font-normal text-[#8A919C] line-through">${{ number_format((float) $p->price, 2) }}</span>@endif
                         </p>
                     </div>
@@ -60,6 +62,7 @@
                     <img src="{{ $p->getFirstMediaUrl('images', 'thumb') ?: $p->getFirstMediaUrl('images') }}" alt="" class="h-14 w-14 rounded-xl object-cover" loading="lazy">
                     <span class="min-w-0 flex-1"><span class="line-clamp-1 text-sm font-semibold">{{ $p->title }}</span>
                         <span class="text-sm font-bold" style="color: {{ $color }}">${{ number_format($p->effectivePrice(), 2) }}</span>
+                        <span class="text-xs text-[#5E6672]">{{ $p->priceBasis() }}</span>
                         <span class="text-xs text-[#8A919C] line-through">${{ number_format((float) $p->price, 2) }}</span></span>
                     <span class="text-[#8A919C]">→</span>
                 </a>

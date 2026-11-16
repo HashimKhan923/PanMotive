@@ -27,10 +27,7 @@ class GoogleAuthController extends Controller
     /** Only for shoppers on the shop's own address — never on the seller portal or admin console. */
     public static function availableHere(): bool
     {
-        $domain = (string) config('app.domain');
-        $host = request()->getHost();
-
-        return self::configured() && ! ($domain !== '' && in_array($host, ['sell.'.$domain, 'admin.'.$domain], true));
+        return self::configured() && \App\Support\Portal::isShop();
     }
 
     public function redirect(Request $request)

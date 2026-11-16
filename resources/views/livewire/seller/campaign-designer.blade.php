@@ -147,7 +147,7 @@
                     <div class="rounded-2xl bg-[#F5F6F8] p-4 sm:p-6">
                         <div class="mx-auto overflow-hidden rounded-xl border border-[#E6E9ED] bg-white text-[#15191E] shadow-sm transition-all" :style="device === 'phone' ? 'max-width:375px' : 'max-width:600px'">
                             <div class="px-6 py-4 text-center" :style="'background:' + (brand.header === 'dark' ? '#15191E' : '#fff') + ';border-bottom:3px solid ' + brand.color">
-                                <span class="text-lg font-extrabold" :style="'color:' + (brand.header === 'dark' ? '#fff' : '#15191E')" x-text="store"></span>
+                                <span class="text-lg font-bold" :style="'color:' + (brand.header === 'dark' ? '#fff' : '#15191E')" x-text="store"></span>
                             </div>
                             <div class="space-y-1 p-4 sm:p-6" @dragover.prevent="if (!blocks.length) dropAt = 0" @drop.prevent="if (!blocks.length) drop(0)">
                                 <template x-if="!blocks.length">

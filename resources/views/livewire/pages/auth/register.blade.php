@@ -19,6 +19,8 @@ new #[Layout('layouts.guest')] class extends Component
 
     public function mount(): void
     {
+        // Staff accounts are made by an admin, never by signing up on the console.
+        abort_if(\App\Support\Portal::isAdmin(), 404);
         $this->ref = (string) request()->query('ref', '');
     }
 
@@ -27,6 +29,8 @@ new #[Layout('layouts.guest')] class extends Component
      */
     public function register(): void
     {
+        abort_if(\App\Support\Portal::isAdmin(), 404);
+
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
@@ -43,13 +47,21 @@ new #[Layout('layouts.guest')] class extends Component
 
         Auth::login($user);
 
-        $this->redirect(route('dashboard', absolute: false), navigate: true);
+        // On the seller portal a new account goes straight on to setting up the store.
+        \App\Support\Portal::isSeller()
+            ? $this->redirect(route('seller.onboarding.start'))
+            : $this->redirect(route('dashboard', absolute: false), navigate: true);
     }
 }; ?>
 
 <div>
-    <h1 class="text-2xl font-bold">Create your account</h1>
-    <p class="mt-1 text-sm text-muted">Free to join. Escrow protection and cashback on every order.</p>
+    @if (\App\Support\Portal::isSeller())
+        <h1 class="text-2xl font-bold">Create your seller account</h1>
+        <p class="mt-1 text-sm text-muted">Free to join. Next you'll set up your store and get approved.</p>
+    @else
+        <h1 class="text-2xl font-bold">Create your account</h1>
+        <p class="mt-1 text-sm text-muted">Free to join. Escrow protection and cashback on every order.</p>
+    @endif
 
     <form wire:submit="register" class="mt-6 space-y-4">
         <input type="hidden" wire:model="ref">

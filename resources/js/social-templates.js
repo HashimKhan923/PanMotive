@@ -130,7 +130,7 @@ export const TEMPLATES = {
     review_card: {
         name: 'Customer review', goal: 'review',
         build: (w, h, d) => {
-            const u = Math.min(w, h) / 1080; const rv = d.review || { text: 'Perfect fit and fast shipping. Would buy again!', name: 'Happy customer', rating: 5 };
+            const u = Math.min(w, h) / 1080; const rv = d.review || { text: 'Paste a real review from one of your customers here.', name: 'Customer name', rating: 5 };
             return [
                 r({ x: 0, y: 0, w, h, gradient: ['#15191E', d.color], gradientX: [0, 1], gradientY: [0, 1] }),
                 t('“', { x: 70 * u, y: 40 * u, width: 300 * u, fontSize: 300 * u, fontFamily: 'Georgia, serif', fill: 'rgba(255,255,255,.25)' }),

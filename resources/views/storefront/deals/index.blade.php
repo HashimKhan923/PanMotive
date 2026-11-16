@@ -20,7 +20,7 @@
                 <span class="text-xs font-semibold uppercase tracking-widest text-accent">Deal of the day</span>
                 <a href="{{ route('products.show', $dealOfDay->slug) }}" class="mt-2 text-xl font-bold leading-tight hover:underline sm:text-2xl">{{ $dealOfDay->title }}</a>
                 <div class="mt-3 flex items-end gap-3">
-                    <span class="text-3xl font-bold">${{ number_format($dealOfDay->sale_price, 2) }}</span>
+                    <span class="text-3xl font-bold">${{ number_format($dealOfDay->sale_price, 2) }} <span class="text-sm font-normal text-white/80">{{ $dealOfDay->priceBasis() }}</span></span>
                     <span class="text-white/80 line-through">${{ number_format($dealOfDay->price, 2) }}</span>
                     <span class="pill !bg-accent !text-accent-fg">-{{ $pct }}%</span>
                 </div>

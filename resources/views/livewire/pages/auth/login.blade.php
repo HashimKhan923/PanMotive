@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\Forms\LoginForm;
+use App\Support\Portal;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
@@ -24,13 +25,27 @@ new #[Layout('layouts.guest')] class extends Component
 
         // Staff go to the console, which is on its own subdomain in production, so no SPA navigation.
         $isStaff = $user->hasAnyRole(['super_admin', 'support_agent', 'finance', 'catalog_manager']);
-        $this->redirectIntended(default: $isStaff ? route('admin.dashboard') : route('dashboard', absolute: false), navigate: ! $isStaff);
+        $default = match (true) {
+            $isStaff => route('admin.dashboard'),
+            Portal::isSeller() => route('seller.dashboard'),
+            default => route('dashboard', absolute: false),
+        };
+        $this->redirectIntended(default: $default, navigate: ! $isStaff);
     }
 }; ?>
 
 <div>
-    <h1 class="text-2xl font-bold">Welcome back</h1>
-    <p class="mt-1 text-sm text-muted">Log in to track orders, manage saved parts, and spend your cashback.</p>
+    @php($portal = Portal::current())
+    @if ($portal === Portal::ADMIN)
+        <h1 class="text-2xl font-bold">Admin console</h1>
+        <p class="mt-1 text-sm text-muted">Staff only. Staff accounts are created by an admin.</p>
+    @elseif ($portal === Portal::SELLER)
+        <h1 class="text-2xl font-bold">Seller login</h1>
+        <p class="mt-1 text-sm text-muted">Log in to manage your store, orders and payouts.</p>
+    @else
+        <h1 class="text-2xl font-bold">Welcome back</h1>
+        <p class="mt-1 text-sm text-muted">Log in to track orders, manage saved parts, and spend your cashback.</p>
+    @endif
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-4 mt-4" :status="session('status')" />
@@ -69,9 +84,9 @@ new #[Layout('layouts.guest')] class extends Component
 
         <x-auth.google-button label="Continue with Google" divider="before" />
 
-        @if (Route::has('register'))
+        @if (Route::has('register') && $portal !== Portal::ADMIN)
             <p class="text-center text-sm text-muted">
-                New to Panmotive?
+                {{ $portal === Portal::SELLER ? 'New seller?' : 'New to Panmotive?' }}
                 <a href="{{ route('register') }}" wire:navigate class="font-medium text-fg underline underline-offset-2">Create an account</a>
             </p>
         @endif
