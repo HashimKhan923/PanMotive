@@ -14,8 +14,11 @@ return [
                 /*
                  * The list of directories and files that will be included in the backup.
                  */
+                // Only what can't be rebuilt: the settings file and uploaded files.
+                // The code itself lives in GitHub; the database is dumped separately below.
                 'include' => [
-                    base_path(),
+                    base_path('.env'),
+                    storage_path('app'),
                 ],
 
                 /*
@@ -24,8 +27,8 @@ return [
                  * Directories used by the backup process will automatically be excluded.
                  */
                 'exclude' => [
-                    base_path('vendor'),
-                    base_path('node_modules'),
+                    storage_path('app/backup-temp'),
+                    storage_path('app/private/livewire-tmp'),
                 ],
 
                 /*
@@ -43,7 +46,7 @@ return [
                  * Set to `null` to include complete absolute path
                  * Example: base_path()
                  */
-                'relative_path' => null,
+                'relative_path' => base_path(),
             ],
 
             /*
@@ -92,7 +95,7 @@ return [
          *
          * If you do not want any compressor at all, set it to null.
          */
-        'database_dump_compressor' => null,
+        'database_dump_compressor' => Spatie\DbDumper\Compressors\GzipCompressor::class,
 
         /*
          * If specified, the database dumped file name will contain a timestamp (e.g.: 'Y-m-d-H-i-s').

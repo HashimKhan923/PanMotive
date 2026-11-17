@@ -70,6 +70,9 @@ return [
             'bucket' => env('BACKUP_AWS_BUCKET'),
             'endpoint' => env('BACKUP_AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('BACKUP_AWS_USE_PATH_STYLE_ENDPOINT', false),
+            // Cloudflare R2 and other S3-compatible stores: only send checksums when required.
+            'request_checksum_calculation' => 'when_required',
+            'response_checksum_validation' => 'when_required',
             'throw' => false,
             'report' => false,
         ],

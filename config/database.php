@@ -62,6 +62,11 @@ return [
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (PHP_VERSION_ID >= 80500 ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
             ]) : [],
+            // Backup dumps: no table locks, and no tablespace info (needs a privilege the site user doesn't have).
+            'dump' => [
+                'useSingleTransaction' => true,
+                'addExtraOption' => '--no-tablespaces',
+            ],
         ],
 
         'mariadb' => [
