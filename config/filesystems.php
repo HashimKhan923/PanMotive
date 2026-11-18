@@ -38,7 +38,33 @@ return [
             'report' => false,
         ],
 
-        'public' => [
+        // Public files (product photos, logos, banners, social images). With MEDIA_DRIVER=r2 they live
+        // in a public Cloudflare R2 bucket served from MEDIA_URL (e.g. https://media.panmotive.com);
+        // otherwise on this server under storage/app/public, served from /storage.
+        'public' => env('MEDIA_DRIVER', 'local') === 'r2' ? [
+            'driver' => 's3',
+            'key' => env('MEDIA_AWS_ACCESS_KEY_ID'),
+            'secret' => env('MEDIA_AWS_SECRET_ACCESS_KEY'),
+            'region' => env('MEDIA_AWS_DEFAULT_REGION', 'auto'),
+            'bucket' => env('MEDIA_AWS_BUCKET'),
+            'endpoint' => env('MEDIA_AWS_ENDPOINT'),
+            'url' => rtrim((string) env('MEDIA_URL'), '/'),
+            'use_path_style_endpoint' => true,
+            'request_checksum_calculation' => 'when_required',
+            'response_checksum_validation' => 'when_required',
+            'throw' => false,
+            'report' => false,
+        ] : [
+            'driver' => 'local',
+            'root' => storage_path('app/public'),
+            'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        // Always the copy on this server (used to move files to R2, and as a fallback).
+        'public-local' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',

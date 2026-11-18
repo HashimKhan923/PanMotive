@@ -29,12 +29,19 @@ class SocialPublisher
                 continue;
             }
 
-            $result = app(MetaClient::class)->publish(
-                $account,
-                $this->body($post, $target->platform, $target->link(), $target->caption),
-                $target->link(),
-                $this->imagePath($post, $target->media_path),
-            );
+            $image = $this->imagePath($post, $target->media_path);
+            try {
+                $result = app(MetaClient::class)->publish(
+                    $account,
+                    $this->body($post, $target->platform, $target->link(), $target->caption),
+                    $target->link(),
+                    $image['path'] ?? null,
+                );
+            } finally {
+                if ($image['temp'] ?? false) {
+                    @unlink($image['path']);
+                }
+            }
             $target->update([
                 'social_account_id' => $account->id,
                 'status' => $result['status'],
@@ -51,18 +58,43 @@ class SocialPublisher
         return $post;
     }
 
-    /** The post's image on this server: this app's own image, the post image, else the listing photo. */
-    private function imagePath(SocialPost $post, ?string $own): ?string
+    /**
+     * The post's image as a file on this server: this app's own image, the post image, else the
+     * listing photo. When the image lives in cloud storage it is downloaded to a temporary file.
+     *
+     * @return array{path:string, temp:bool}|null
+     */
+    private function imagePath(SocialPost $post, ?string $own): ?array
     {
         $disk = \Illuminate\Support\Facades\Storage::disk('public');
         foreach (array_filter([$own, $post->media_path]) as $rel) {
             if ($disk->exists($rel)) {
-                return $disk->path($rel);
+                return self::localFile('public', $rel);
             }
         }
         $media = $post->product?->getFirstMedia('images');
+        $rel = $media?->getPathRelativeToRoot();
 
-        return $media && is_file($media->getPath()) ? $media->getPath() : null;
+        return $rel && \Illuminate\Support\Facades\Storage::disk($media->disk)->exists($rel) ? self::localFile($media->disk, $rel) : null;
+    }
+
+    /** @return array{path:string, temp:bool}|null */
+    public static function localFile(string $diskName, string $rel): ?array
+    {
+        $disk = \Illuminate\Support\Facades\Storage::disk($diskName);
+        if (config("filesystems.disks.$diskName.driver") === 'local') {
+            return ['path' => $disk->path($rel), 'temp' => false];
+        }
+        $bytes = $disk->get($rel);
+        if ($bytes === null) {
+            return null;
+        }
+        $base = tempnam(sys_get_temp_dir(), 'pm-img-');
+        $tmp = $base.'.'.(pathinfo($rel, PATHINFO_EXTENSION) ?: 'img');
+        @unlink($base);
+        file_put_contents($tmp, $bytes);
+
+        return ['path' => $tmp, 'temp' => true];
     }
 
     private function body(SocialPost $post, string $platform, ?string $link, ?string $caption = null): string

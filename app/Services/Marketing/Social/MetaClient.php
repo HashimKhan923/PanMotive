@@ -211,8 +211,9 @@ class MetaClient
             }
         }
         $path = 'social/'.$sellerId.'/ig/'.Str::lower(Str::random(32)).'.jpg';
-        $disk->makeDirectory(dirname($path));
-        imagejpeg($out, Storage::disk('public')->path($path), 90);
+        ob_start();
+        imagejpeg($out, null, 90);
+        $disk->put($path, (string) ob_get_clean()); // on this server or in cloud storage
         imagedestroy($src);
         imagedestroy($out);
 

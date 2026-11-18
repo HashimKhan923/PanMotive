@@ -356,7 +356,7 @@
 
         <div class="mt-4 space-y-3">
             @forelse ($posts as $post)
-                @php($image = $post->media_path ? asset('storage/'.$post->media_path) : null)
+                @php($image = $post->media_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($post->media_path) : null)
                 <div class="card p-5" wire:key="sp-{{ $post->id }}" data-reveal>
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="flex min-w-0 gap-3">
@@ -383,7 +383,7 @@
                         @foreach ($post->targets as $t)
                             @php($caption = Str::limit(trim($t->caption ?: $post->body), $platforms[$t->platform]['char_limit'] ?? 2000, ''))
                             @php($link = $t->link())
-                            @php($timage = $t->media_path ? asset('storage/'.$t->media_path) : $image)
+                            @php($timage = $t->media_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($t->media_path) : $image)
                             @php($share = $link ? \App\Services\Marketing\Social\PlatformRegistry::shareUrl($t->platform, $link, $caption, $timage) : null)
                             <li class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-line p-3" wire:key="t-{{ $t->id }}"
                                 x-data="{ copied: false, copy() { navigator.clipboard.writeText(@js($caption.($link ? "\n".$link : ''))); this.copied = true; setTimeout(() => this.copied = false, 1500) } }">

@@ -23,7 +23,7 @@
     {{-- header --}}
     <div class="card overflow-hidden" data-reveal>
         @if ($sellerProfile->banner_path)
-            <img src="{{ \Illuminate\Support\Facades\Storage::url($sellerProfile->banner_path) }}" alt="" class="h-40 w-full object-cover sm:h-56">
+            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($sellerProfile->banner_path) }}" alt="" class="h-40 w-full object-cover sm:h-56">
         @else
             <div class="h-28 w-full bg-gradient-to-r from-brand to-brand/70 sm:h-36"></div>
         @endif
