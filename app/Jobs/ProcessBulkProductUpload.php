@@ -38,14 +38,34 @@ class ProcessBulkProductUpload implements ShouldQueue
         return "bulk-import:{$sellerId}:{$importId}";
     }
 
+    /** Set by the page's Cancel button; the import stops at the next product. */
+    public static function cancelKey(int $sellerId, string $importId): string
+    {
+        return self::progressKey($sellerId, $importId).':cancel';
+    }
+
     public function handle(ProductCsvImporter $importer): void
     {
+        if ($this->importId && Cache::pull(self::cancelKey($this->sellerId, $this->importId))) {
+            Storage::disk('local')->delete($this->path); // cancelled while waiting in line
+            $this->put(['status' => 'cancelled', 'done' => 0]);
+
+            return;
+        }
+
         $lastWrite = 0.0;
-        $progress = function (string $stage, int $done, int $total) use (&$lastWrite) {
+        $created = 0;
+        $progress = function (string $stage, int $done, int $total) use (&$lastWrite, &$created) {
+            if ($stage === 'products') {
+                $created = $done;
+            }
             // At most a few cache writes a second, plus every stage change and the end.
             $now = microtime(true);
             if ($now - $lastWrite >= 0.5 || $done === 0 || $done >= $total) {
-                $this->put(['status' => 'running', 'stage' => $stage, 'done' => $done, 'total' => $total]);
+                if ($this->importId && Cache::pull(self::cancelKey($this->sellerId, $this->importId))) {
+                    throw new ImportCancelled;
+                }
+                $this->put(['status' => 'running', 'stage' => $stage, 'done' => $done, 'total' => $total, 'photos' => $this->withImages]);
                 $lastWrite = $now;
             }
         };
@@ -60,6 +80,10 @@ class ProcessBulkProductUpload implements ShouldQueue
                 $progress,
             );
             $this->put(['status' => 'done', 'result' => $result]);
+        } catch (ImportCancelled) {
+            $this->put(['status' => 'cancelled', 'done' => $created]);
+
+            return;
         } catch (\Throwable $e) {
             report($e);
             $this->put(['status' => 'failed', 'message' => $e instanceof \InvalidArgumentException

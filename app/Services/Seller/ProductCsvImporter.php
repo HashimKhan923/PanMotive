@@ -46,6 +46,7 @@ class ProductCsvImporter
     private int $uncategorised = 0;
     private int $variantCount = 0;
     private int $fitted = 0;
+    private int $existing = 0;
 
     public function __construct(
         private CategoryResolver $categories,
@@ -67,7 +68,7 @@ class ProductCsvImporter
         $this->useAi = $useAi;
         $this->progress = $progress;
         $this->categoryMap = [];
-        $this->uncategorised = $this->variantCount = $this->fitted = 0;
+        $this->uncategorised = $this->variantCount = $this->fitted = $this->existing = 0;
 
         $this->report('reading', 0, 0);
         $table = CsvTable::fromFile($absolutePath);
@@ -163,6 +164,10 @@ class ProductCsvImporter
                     continue;
                 }
 
+                if ($this->skipExisting($this->get($base, ...$SKU) ?: null, $title, $this->shopifyImageUrls($rows))) {
+                    continue;
+                }
+
                 $compareAt = $this->money($this->get($base, ...$CMP));
                 $variantPrice = $this->money($this->get($base, ...$PRICE)) ?? 0.0;
                 [$price, $salePrice] = ($compareAt && $compareAt > $variantPrice) ? [$compareAt, $variantPrice] : [$variantPrice, null];
@@ -194,7 +199,7 @@ class ProductCsvImporter
         }
         $this->report('products', $total, $total);
 
-        return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised, 'variants' => $this->variantCount, 'fitted' => $this->fitted];
+        return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised, 'variants' => $this->variantCount, 'fitted' => $this->fitted, 'existing' => $this->existing];
     }
 
     /** @return array<string,string> variant label => the URL of its own photo */
@@ -289,6 +294,9 @@ class ProductCsvImporter
                 }
 
                 $children = array_column($g['children'], 'row');
+                if ($this->skipExisting($cols->get($row, 'sku'), $title, array_merge($cols->imageUrls($row), ...array_map(fn ($c) => $cols->imageUrls($c), $children)))) {
+                    continue;
+                }
                 [$price, $sale] = $this->prices($cols, $row, $children);
                 $qty = $cols->has('quantity') && $cols->get($row, 'quantity') !== null
                     ? $this->qty($cols->get($row, 'quantity'))
@@ -323,7 +331,7 @@ class ProductCsvImporter
         }
         $this->report('products', $total, $total);
 
-        return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised, 'variants' => $this->variantCount, 'fitted' => $this->fitted];
+        return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised, 'variants' => $this->variantCount, 'fitted' => $this->fitted, 'existing' => $this->existing];
     }
 
     /**
@@ -619,6 +627,30 @@ class ProductCsvImporter
             return;
         }
         FetchProductImages::dispatch($product->id, $urls, $variantPhotos);
+    }
+
+    /**
+     * Uploading the same file again must not create duplicates: a product this seller already has
+     * (same SKU, or same title when the file has no SKU) is left as it is, except that its photos are
+     * downloaded if it has none yet — so re-uploading with photos switched on just adds the photos.
+     *
+     * @param  array<int,string>  $photoUrls
+     */
+    private function skipExisting(?string $sku, string $title, array $photoUrls): bool
+    {
+        $query = Product::where('seller_id', $this->sellerId);
+        $product = $sku
+            ? (clone $query)->where('sku', $sku)->first()
+            : (clone $query)->where('title', Str::limit($title, 190, ''))->first();
+        if (! $product) {
+            return false;
+        }
+        $this->existing++;
+        if (! $product->hasMedia('images')) {
+            $this->fetchImages($product, array_values(array_unique($photoUrls)));
+        }
+
+        return true;
     }
 
     private function condition(?string $value): string

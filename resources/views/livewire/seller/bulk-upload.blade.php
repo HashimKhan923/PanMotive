@@ -19,6 +19,7 @@
                         @if (($result['variants'] ?? 0) > 0) · {{ $result['variants'] }} variants @endif
                         @if (($result['fitted'] ?? 0) > 0) · {{ $result['fitted'] }} with vehicle fitment @endif
                         @if (($result['uncategorised'] ?? 0) > 0) · {{ $result['uncategorised'] }} put in the fallback category @endif
+                        @if (($result['existing'] ?? 0) > 0) · {{ $result['existing'] }} already in your store (not duplicated; missing photos added) @endif
                         @if ($result['skipped']) · {{ $result['skipped'] }} skipped (no title) @endif
                         @if (count($result['errors'])) · <span class="text-rose-500">{{ count($result['errors']) }} errors</span> @endif
                     </p>
@@ -56,8 +57,22 @@
             </div>
         </div>
 
+    {{-- ============ CANCELLED ============ --}}
+    @elseif ($importId && ($progress['status'] ?? '') === 'cancelled')
+        <div class="card mt-6 p-6">
+            <p class="font-bold">Import stopped</p>
+            <p class="mt-1 text-sm text-muted">
+                {{ (int) ($progress['done'] ?? 0) }} {{ Str::plural('product', (int) ($progress['done'] ?? 0)) }} had been created — they're in your drafts.
+                Uploading the same file again carries on without making duplicates.
+            </p>
+            <div class="mt-5 flex gap-2">
+                <a href="{{ route('seller.products.index', ['status' => 'draft']) }}" class="btn-accent btn-sm">View drafts</a>
+                <button wire:click="startOver" class="btn-ghost btn-sm">Import another file</button>
+            </div>
+        </div>
+
     {{-- ============ IMPORTING (live progress) ============ --}}
-    @elseif ($importId && in_array($progress['status'] ?? '', ['queued', 'running'], true))
+    @elseif ($importId && in_array($progress['status'] ?? '', ['queued', 'running', 'cancelling'], true))
         @php
             $stage = $progress['stage'] ?? 'queued';
             $done = (int) ($progress['done'] ?? 0);
@@ -84,8 +99,22 @@
             <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $pct }}" aria-label="Import progress">
                 <div class="h-full rounded-full bg-accent transition-[width] duration-700 ease-out" style="width: {{ $pct }}%"></div>
             </div>
-            <p class="mt-2 text-sm text-muted">{{ $label }}</p>
-            <p class="mt-4 text-xs text-muted">You can leave this page — the import keeps going and you'll get a notification when it's done.</p>
+            <p class="mt-2 text-sm text-muted">{{ ($progress['status'] ?? '') === 'cancelling' ? 'Stopping after the current product…' : $label }}</p>
+            @isset($progress['photos'])
+                <p class="mt-1 text-xs {{ $progress['photos'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted' }}">
+                    Photos: {{ $progress['photos'] ? 'On — they download in the background as products are created' : 'Off — products are created without photos' }}
+                </p>
+            @endisset
+            <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+                <p class="text-xs text-muted">You can leave this page — the import keeps going and you'll get a notification when it's done.</p>
+                @if (($progress['status'] ?? '') !== 'cancelling')
+                    <button type="button" wire:click="cancelImport"
+                            wire:confirm="Stop this import? Products created so far stay in your drafts."
+                            class="btn-outline btn-sm">
+                        <x-ui.icon name="x" class="w-4 h-4" /> Cancel import
+                    </button>
+                @endif
+            </div>
         </div>
 
     @else
@@ -146,10 +175,19 @@
                     @error('defaultCategoryId') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                 </div>
 
-                <label class="flex items-center gap-2 text-sm">
-                    <input type="checkbox" wire:model="withImages" class="rounded border-line text-accent focus:ring-accent">
-                    Download photos from the image links in the file
-                </label>
+                {{-- A real switch: the old checkbox was hard to read on the dark theme. --}}
+                <div x-data="{ on: $wire.entangle('withImages') }" class="flex items-center justify-between gap-4 rounded-xl border border-line bg-surface-2 p-4">
+                    <div>
+                        <p class="text-sm font-semibold" id="photos-label">Download photos</p>
+                        <p class="mt-0.5 text-xs text-muted" x-text="on ? 'On — photos from the image links in your file are added (saved as WebP).' : 'Off — products are created without photos.'">On — photos from the image links in your file are added (saved as WebP).</p>
+                    </div>
+                    <button type="button" role="switch" :aria-checked="on.toString()" aria-labelledby="photos-label" @click="on = ! on"
+                            class="relative inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-200"
+                            :class="on ? 'bg-accent' : 'bg-line'">
+                        <span class="inline-block h-5 w-5 rounded-full bg-white shadow transition-transform duration-200" :class="on ? 'translate-x-6' : 'translate-x-1'"></span>
+                        <span class="sr-only" x-text="on ? 'On' : 'Off'"></span>
+                    </button>
+                </div>
 
                 <button class="btn-accent" wire:loading.attr="disabled" wire:target="runImport,csvFile" x-bind:disabled="uploading">
                     <span wire:loading.remove wire:target="runImport"><x-ui.icon name="list" class="w-4 h-4" /> Import products</span>

@@ -264,4 +264,53 @@ class ImportAnyPlatformTest extends TestCase
             }
         }
     }
+
+    public function test_uploading_the_same_file_again_makes_no_duplicates_and_adds_missing_photos(): void
+    {
+        $first = $this->import('woocommerce_products.csv');
+        $this->assertSame(2, $first['created']);
+
+        \Illuminate\Support\Facades\Bus::fake([\App\Jobs\FetchProductImages::class]);
+        $again = app(ProductCsvImporter::class)->import($this->seller->id, base_path('tests/Fixtures/woocommerce_products.csv'), null, withImages: true, useAi: false);
+
+        $this->assertSame(0, $again['created']);
+        $this->assertSame(2, $again['existing']);
+        $this->assertSame(2, Product::where('seller_id', $this->seller->id)->count());
+        // The tail lights had photo links but no photos yet → fetched now (parent + variant photos).
+        \Illuminate\Support\Facades\Bus::assertDispatched(\App\Jobs\FetchProductImages::class, fn ($job) => $job->productId === $this->product('Smoked LED Tail Lights for 2015-2017 Ford F-150')->id
+            && in_array('https://img.example.com/tl-1.jpg', $job->urls, true) && in_array('https://img.example.com/tl-smoked.jpg', $job->urls, true));
+    }
+
+    public function test_cancel_stops_the_import_and_keeps_what_was_made(): void
+    {
+        $id = 'run-1';
+        \Illuminate\Support\Facades\Storage::disk('local')->put("bulk-uploads/{$this->seller->id}/{$id}.csv", file_get_contents(base_path('tests/Fixtures/ymm_fitment.csv')));
+        Cache::put(ProcessBulkProductUpload::cancelKey($this->seller->id, $id), true);
+
+        (new ProcessBulkProductUpload($this->seller->id, "bulk-uploads/{$this->seller->id}/{$id}.csv", null, false, $id))->handle(app(ProductCsvImporter::class));
+
+        $this->assertSame('cancelled', Cache::get(ProcessBulkProductUpload::progressKey($this->seller->id, $id))['status']);
+        $this->assertSame(0, Product::where('seller_id', $this->seller->id)->count());
+        $this->assertFalse(\Illuminate\Support\Facades\Storage::disk('local')->exists("bulk-uploads/{$this->seller->id}/{$id}.csv"));
+    }
+
+    public function test_the_cancel_button_and_photo_switch_are_on_the_page(): void
+    {
+        $id = 'run-2';
+        Cache::put(ProcessBulkProductUpload::progressKey($this->seller->id, $id), ['status' => 'running', 'stage' => 'products', 'done' => 3, 'total' => 10, 'photos' => true]);
+
+        $page = Livewire::actingAs($this->withTwoFactor($this->seller))->test(BulkUpload::class)
+            ->set('importId', $id)->call('refreshProgress')
+            ->assertSee('Cancel import')->assertSee('Photos: On')
+            ->call('cancelImport')
+            ->assertSet('progress.status', 'cancelling')
+            ->assertSee('Stopping after the current product');
+        $this->assertTrue(Cache::has(ProcessBulkProductUpload::cancelKey($this->seller->id, $id)));
+
+        Cache::put(ProcessBulkProductUpload::progressKey($this->seller->id, $id), ['status' => 'cancelled', 'done' => 3]);
+        $page->call('refreshProgress')->assertSee('Import stopped')->assertSee('3 products had been created');
+
+        Livewire::actingAs($this->seller)->test(BulkUpload::class)->call('startOver')
+            ->assertSee('Download photos')->assertSeeHtml('role="switch"')->assertSet('withImages', true);
+    }
 }

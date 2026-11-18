@@ -71,13 +71,18 @@ class BulkUpload extends Component
         $this->importId = (string) Str::uuid();
         $stored = $this->csvFile->storeAs('bulk-uploads/'.auth()->id(), $this->importId.'.csv', 'local');
         $this->csvFile = null;
+        // The import runs as the queue worker's user (same group): let it read and then delete the file.
+        $absolute = \Storage::disk('local')->path($stored);
+        @chmod(dirname($absolute), 02770);
+        @chmod($absolute, 0660);
 
         Cache::put(ProcessBulkProductUpload::progressKey(auth()->id(), $this->importId), ['status' => 'queued'], now()->addDay());
         session(['bulk-import-id' => $this->importId]);
 
+        // Own queue + worker, so photo downloads (default queue) start while the import is still running.
         ProcessBulkProductUpload::dispatch(
             auth()->id(), $stored, $this->defaultCategoryId ? (int) $this->defaultCategoryId : null, $this->withImages, $this->importId,
-        );
+        )->onQueue('imports');
 
         $this->refreshProgress();
     }
@@ -103,10 +108,27 @@ class BulkUpload extends Component
             if ($this->result['created'] > 0) {
                 $this->dispatch('toast', message: "{$this->result['created']} product(s) imported as drafts.");
             }
+        } elseif ($state['status'] === 'cancelled') {
+            session()->forget('bulk-import-id');
         } elseif ($state['status'] === 'failed') {
             session()->forget('bulk-import-id');
             $this->addError('csvFile', $state['message'] ?? 'The import failed.');
         }
+    }
+
+    public function cancelImport(): void
+    {
+        if (! $this->importId) {
+            return;
+        }
+        $key = ProcessBulkProductUpload::progressKey(auth()->id(), $this->importId);
+        $state = Cache::get($key);
+        if (($state['status'] ?? null) === 'queued') {
+            // Not started yet: the job will see this and stop straight away.
+            Cache::put($key, ['status' => 'cancelled', 'done' => 0], now()->addDay());
+        }
+        Cache::put(ProcessBulkProductUpload::cancelKey(auth()->id(), $this->importId), true, now()->addDay());
+        $this->progress = ['status' => 'cancelling'] + ($state ?? []);
     }
 
     public function startOver(): void
