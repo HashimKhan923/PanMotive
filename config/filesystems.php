@@ -30,9 +30,12 @@ return [
 
     'disks' => [
 
+        // The web server and the queue worker run as different server users in the same group, so files
+        // one writes (e.g. a seller's bulk-upload file) must be group readable/writable for the other.
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
+            'permissions' => ['file' => ['public' => 0664, 'private' => 0660], 'dir' => ['public' => 0775, 'private' => 0770]],
             'serve' => true,
             'throw' => false,
             'report' => false,
@@ -58,6 +61,7 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'permissions' => ['file' => ['public' => 0664, 'private' => 0660], 'dir' => ['public' => 0775, 'private' => 0770]],
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -68,6 +72,7 @@ return [
             'driver' => 'local',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
+            'permissions' => ['file' => ['public' => 0664, 'private' => 0660], 'dir' => ['public' => 0775, 'private' => 0770]],
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
