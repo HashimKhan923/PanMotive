@@ -9,8 +9,6 @@
     $deals = \App\Models\Product::onDeal()->listed()
         ->with('brand', 'seller.sellerProfile')->orderByRaw('(price - sale_price) / price DESC')->take(4)->get();
     $categories = \App\Models\Category::shopRoots()->take(8);
-    $brands = cache()->remember('home.brands.v2', 3600, fn () => \App\Models\Brand::whereHas('products', fn ($q) => $q->listed())
-        ->withCount(['products' => fn ($q) => $q->listed()])->orderByDesc('products_count')->take(14)->pluck('name', 'slug'));
 
     $garage = app(\App\Services\GarageService::class)->current();
     $forVehicle = $garage
@@ -101,21 +99,6 @@
     </div>
 </section>
 
-{{-- ================= BRANDS MARQUEE ================= --}}
-@if ($brands->count() >= 4)
-    <section class="border-b border-line bg-surface py-6" aria-label="Brands sold on Panmotive">
-        <div class="pm-marquee text-lg font-bold uppercase tracking-widest text-muted">
-            @foreach ([0, 1] as $copy)
-                <div @if ($copy) aria-hidden="true" @endif>
-                    @foreach ($brands as $slug => $b)
-                        <a href="{{ route('products.index', ['brand' => $slug]) }}" class="whitespace-nowrap transition hover:text-accent">{{ $b }}</a>
-                    @endforeach
-                </div>
-            @endforeach
-        </div>
-    </section>
-@endif
-
 {{-- ================= CATEGORIES (kept first, right under the hero) ================= --}}
 <section class="container-x py-16" data-reveal>
     <div class="flex items-end justify-between">
@@ -155,6 +138,7 @@
     <section class="container-x py-14" data-reveal>
         <div class="flex items-end justify-between">
             <div>
+                <span class="pm-cut-bar" aria-hidden="true"></span>
                 <h2 class="text-lg font-bold tracking-tight sm:text-xl">For your {{ $garage['label'] }}</h2>
                 <p class="mt-1 text-sm text-muted">Parts sellers have listed for this vehicle.</p>
             </div>
@@ -171,6 +155,7 @@
 {{-- ================= FROM STORES YOU FOLLOW ================= --}}
 @if ($fromFollowed->isNotEmpty())
     <section class="container-x py-14" data-reveal>
+        <span class="pm-cut-bar" aria-hidden="true"></span>
         <h2 class="text-lg font-bold tracking-tight sm:text-xl">New from stores you follow</h2>
         <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($fromFollowed as $product)
@@ -183,6 +168,7 @@
 {{-- ================= SPONSORED ================= --}}
 @if ($sponsored->isNotEmpty())
     <section class="container-x py-14" data-reveal>
+        <span class="pm-cut-bar" aria-hidden="true"></span>
         <div class="flex items-center gap-2">
             <h2 class="text-lg font-bold tracking-tight sm:text-xl">Featured parts</h2>
             <span class="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold uppercase text-muted">Sponsored</span>
@@ -201,7 +187,10 @@
 <section class="bg-surface py-16">
     <div class="container-x" data-reveal>
         <div class="flex items-end justify-between">
-            <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Today's deals</h2>
+            <div>
+                <span class="pm-cut-bar" aria-hidden="true"></span>
+                <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">Today's deals</h2>
+            </div>
             <a href="{{ route('deals.index') }}" class="pm-tap relative text-sm font-semibold text-fg underline underline-offset-2">See all deals</a>
         </div>
         <div class="mt-8 grid grid-cols-2 gap-5 lg:grid-cols-4" data-reveal-group>
@@ -218,7 +207,10 @@
 {{-- ================= FEATURED ================= --}}
 <section class="container-x py-16" data-reveal>
     <div class="flex items-end justify-between">
-        <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">New listings</h2>
+        <div>
+            <span class="pm-cut-bar" aria-hidden="true"></span>
+            <h2 data-reveal="mask" class="text-xl font-bold tracking-tight sm:text-2xl">New listings</h2>
+        </div>
         <a href="{{ route('products.index') }}" class="pm-tap relative text-sm font-semibold text-fg underline underline-offset-2">Browse all parts</a>
     </div>
     @if ($featured->isNotEmpty())
@@ -241,6 +233,7 @@
 {{-- ================= RECENTLY VIEWED ================= --}}
 @if ($recent->isNotEmpty())
     <section class="container-x py-14" data-reveal>
+        <span class="pm-cut-bar" aria-hidden="true"></span>
         <h2 class="text-lg font-bold tracking-tight sm:text-xl">Recently viewed</h2>
         <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             @foreach ($recent as $product)

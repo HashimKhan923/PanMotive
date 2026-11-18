@@ -10,19 +10,14 @@
             <a href="{{ route('products.index') }}" class="btn-accent mt-6">Browse parts</a>
         </div>
     @else
-        <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {{-- Same card as the home page, with the saved-list actions underneath. --}}
+        <div class="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4" data-reveal-group>
             @foreach ($products as $product)
-                <div class="card overflow-hidden" wire:key="wl-{{ $product->id }}">
-                    <a href="{{ route('products.show', $product->slug) }}" class="block aspect-video overflow-hidden bg-surface-2">
-                        <img src="{{ $product->getFirstMediaUrl('images', 'thumb') ?: $product->getFirstMediaUrl('images') }}" alt="{{ $product->title }}" class="h-full w-full object-cover">
-                    </a>
-                    <div class="p-4">
-                        <a href="{{ route('products.show', $product->slug) }}" class="line-clamp-2 text-sm font-semibold hover:text-accent">{{ $product->title }}</a>
-                        <div class="mt-2"><x-ui.price :price="$product->price" :sale="$product->liveSalePrice()" :basis="$product->priceBasis()" size="text-lg" /></div>
-                        <div class="mt-3 flex gap-2">
-                            <button wire:click="moveToCart({{ $product->id }})" class="btn-accent btn-sm flex-1">Move to cart</button>
-                            <button wire:click="remove({{ $product->id }})" class="btn-outline btn-sm" aria-label="Remove"><x-ui.icon name="trash" class="w-4 h-4" /></button>
-                        </div>
+                <div class="flex flex-col" wire:key="wl-{{ $product->id }}">
+                    <x-product-card :product="$product" class="flex-1" />
+                    <div class="mt-2 flex gap-2">
+                        <button wire:click="moveToCart({{ $product->id }})" class="btn-accent btn-sm flex-1">Move to cart</button>
+                        <button wire:click="remove({{ $product->id }})" class="btn-outline btn-sm" aria-label="Remove {{ $product->title }}"><x-ui.icon name="trash" class="w-4 h-4" /></button>
                     </div>
                 </div>
             @endforeach
