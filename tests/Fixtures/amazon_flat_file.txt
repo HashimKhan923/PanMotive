@@ -1,0 +1,7 @@
+TemplateType=fptcustom	Version=2024.0412	TemplateSignature=QVVUT19BQ0NFU1NPUlk=	The top 3 rows are for Amazon.com use only. Do not modify or delete the top 3 rows.
+Product Type	Seller SKU	Brand Name	Product Name	Manufacturer Part Number	Standard Price	Quantity	Main Image URL	Other Image URL1	Key Product Features	Key Product Features	Product Description	Parentage	Parent SKU	Relationship Type	Variation Theme	Size
+feed_product_type	item_sku	brand_name	item_name	part_number	standard_price	quantity	main_image_url	other_image_url1	bullet_point1	bullet_point2	product_description	parent_child	parent_sku	relationship_type	variation_theme	size_name
+autoaccessory	BOSCH-QC-P	Bosch	Bosch QuietCast Premium Disc Brake Pad Set				https://img.example.com/qc.jpg		Copper-free	Includes hardware	Premium ceramic pads.	parent			SizeName	
+autoaccessory	BOSCH-QC-F	Bosch	Bosch QuietCast Premium Disc Brake Pad Set - Front	BC905	42.99	10	https://img.example.com/qc-front.jpg		Copper-free	Includes hardware		child	BOSCH-QC-P	Variation	SizeName	Front
+autoaccessory	BOSCH-QC-R	Bosch	Bosch QuietCast Premium Disc Brake Pad Set - Rear	BC906	38.99	12			Copper-free	Includes hardware		child	BOSCH-QC-P	Variation	SizeName	Rear
+autopart	DENSO-IK20	Denso	Denso Iridium Power Spark Plug 4 Pack	IK20	29.96	40	https://img.example.com/ik20.jpg	https://img.example.com/ik20-b.jpg	Iridium tip	Longer life						

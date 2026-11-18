@@ -4,17 +4,24 @@ namespace App\Jobs;
 
 use App\Models\Product;
 use App\Support\WebpImage;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Downloads an imported product's photos. Runs after the seller's page has answered (or inside
- * the background import), so a slow import can never cost a product its photos.
+ * Downloads an imported product's photos on the queue, one job per product, so a big import
+ * finishes quickly and a slow photo host can never hold it up or cost a product its photos.
  */
-class FetchProductImages
+class FetchProductImages implements ShouldQueue
 {
-    use Dispatchable;
+    use Dispatchable, InteractsWithQueue, Queueable;
+
+    public int $tries = 1;   // dead links are skipped inside; retrying would add duplicate photos
+
+    public int $timeout = 900;
 
     private const MAX_PER_PRODUCT = 10;
 

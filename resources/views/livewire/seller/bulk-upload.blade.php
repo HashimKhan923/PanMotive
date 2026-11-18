@@ -14,9 +14,11 @@
                 <div>
                     <p class="font-bold">Import complete</p>
                     <p class="mt-0.5 text-sm text-muted">
-                        Detected <span class="font-medium capitalize text-fg">{{ $result['format'] }}</span> format ·
+                        Detected <span class="font-medium text-fg">{{ $formats[$result['format']] ?? ucfirst($result['format']) }}</span> file ·
                         <span class="font-semibold text-fg">{{ $result['created'] }}</span> imported as drafts
-                        @if (($result['uncategorised'] ?? 0) > 0) · {{ $result['uncategorised'] }} used the fallback category @endif
+                        @if (($result['variants'] ?? 0) > 0) · {{ $result['variants'] }} variants @endif
+                        @if (($result['fitted'] ?? 0) > 0) · {{ $result['fitted'] }} with vehicle fitment @endif
+                        @if (($result['uncategorised'] ?? 0) > 0) · {{ $result['uncategorised'] }} put in the fallback category @endif
                         @if ($result['skipped']) · {{ $result['skipped'] }} skipped (no title) @endif
                         @if (count($result['errors'])) · <span class="text-rose-500">{{ count($result['errors']) }} errors</span> @endif
                     </p>
@@ -24,13 +26,13 @@
             </div>
 
             @if ($result['created'] > 0 && $withImages)
-                <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted">Photos are downloading in the background. They'll appear on your products over the next few minutes.</p>
+                <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted">Photos are downloading in the background and saved as WebP. They'll appear on your products over the next few minutes.</p>
             @endif
 
             @if ($result['created'] === 0 && !empty($result['headers']))
                 <div class="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
                     <p class="font-semibold">Nothing imported — we couldn't find a product-name column.</p>
-                    <p class="mt-1">Columns we read: <span class="font-mono">{{ implode(', ', $result['headers']) }}</span></p>
+                    <p class="mt-1">Columns we read: <span class="font-mono">{{ implode(', ', array_slice($result['headers'], 0, 40)) }}</span></p>
                     <p class="mt-1">Rename your name column to <span class="font-mono">title</span> (or <span class="font-mono">name</span>) and re-upload.</p>
                 </div>
             @endif
@@ -50,38 +52,95 @@
                 @if ($result['created'] > 0)
                     <a href="{{ route('seller.products.index', ['status' => 'draft']) }}" class="btn-accent btn-sm">Review {{ $result['created'] }} drafts</a>
                 @endif
-                <button wire:click="$set('result', null)" class="btn-ghost btn-sm">Import another file</button>
+                <button wire:click="startOver" class="btn-ghost btn-sm">Import another file</button>
             </div>
         </div>
-    @elseif ($queued)
-        <div class="card mt-6 p-6">
-            <p class="font-bold">Large file — importing in the background</p>
-            <p class="mt-1 text-sm text-muted">You'll get a notification when it finishes. Imported products appear as drafts.</p>
-            <a href="{{ route('seller.products.index', ['status' => 'draft']) }}" class="btn-outline btn-sm mt-4">View drafts</a>
+
+    {{-- ============ IMPORTING (live progress) ============ --}}
+    @elseif ($importId && in_array($progress['status'] ?? '', ['queued', 'running'], true))
+        @php
+            $stage = $progress['stage'] ?? 'queued';
+            $done = (int) ($progress['done'] ?? 0);
+            $total = (int) ($progress['total'] ?? 0);
+            // reading 0-5%, categories 5-15%, products 15-100%
+            $pct = match (true) {
+                ($progress['status'] ?? '') === 'queued' => 2,
+                $stage === 'reading' => 5,
+                $stage === 'categories' => 10,
+                default => $total > 0 ? 15 + (int) floor(85 * $done / $total) : 15,
+            };
+            $label = match (true) {
+                ($progress['status'] ?? '') === 'queued' => 'Waiting to start…',
+                $stage === 'reading' => 'Reading your file…',
+                $stage === 'categories' => 'Matching categories…',
+                default => "Creating products — {$done} of {$total}",
+            };
+        @endphp
+        <div class="card mt-6 p-6" wire:poll.1s="refreshProgress">
+            <div class="flex items-center justify-between gap-3">
+                <p class="font-bold">Importing your products</p>
+                <span class="text-sm font-semibold tabular-nums">{{ $pct }}%</span>
+            </div>
+            <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $pct }}" aria-label="Import progress">
+                <div class="h-full rounded-full bg-accent transition-[width] duration-700 ease-out" style="width: {{ $pct }}%"></div>
+            </div>
+            <p class="mt-2 text-sm text-muted">{{ $label }}</p>
+            <p class="mt-4 text-xs text-muted">You can leave this page — the import keeps going and you'll get a notification when it's done.</p>
         </div>
+
     @else
         {{-- ============ FORM ============ --}}
         <div class="card mt-6 p-6">
             <p class="text-sm text-muted">
-                Upload a CSV and we'll auto-detect the format. Supported:
+                Upload a product export from <strong class="text-fg">any platform</strong> — we recognise the columns automatically:
             </p>
-            <ul class="mt-2 space-y-1 text-sm">
-                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> <span><strong>Shopify</strong> product export (Handle, Title, Variant Price, Variant Inventory Qty, Image Src, …) — variants and image URLs included</span></li>
-                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> <span><strong>Panmotive template</strong> — <code class="rounded bg-surface-2 px-1 text-xs">title, category_id, sku, part_number, oem_number, condition, price, quantity, description</code></span></li>
-                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> <span>Any CSV with a <code class="rounded bg-surface-2 px-1 text-xs">title</code>/<code class="rounded bg-surface-2 px-1 text-xs">name</code> and <code class="rounded bg-surface-2 px-1 text-xs">price</code> column</span></li>
+            <div class="mt-3 flex flex-wrap gap-1.5">
+                @foreach (['Shopify', 'WooCommerce (WordPress)', 'Amazon', 'eBay', 'Etsy', 'Wix', 'BigCommerce', 'Magento', 'Walmart', 'Panmotive template', 'Any spreadsheet'] as $platform)
+                    <span class="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium">{{ $platform }}</span>
+                @endforeach
+            </div>
+            <ul class="mt-4 space-y-1.5 text-sm">
+                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> <span><strong>Categories are detected automatically</strong> from the file's category, type or the product title.</span></li>
+                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> <span><strong>Variants</strong> (color, size, side…) are grouped under one product.</span></li>
+                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> <span><strong>Vehicle fitment</strong> from Year / Make / Model columns or titles like "2018-2022 Honda Accord".</span></li>
+                <li class="flex gap-2"><x-ui.icon name="check" class="mt-0.5 w-4 h-4 shrink-0 text-fg" /> <span><strong>Photos</strong> from image links are downloaded and saved as WebP.</span></li>
             </ul>
-            <p class="mt-3 text-sm text-muted">
-                <strong class="text-fg">Categories are auto-detected</strong> from each row's category / type / title.
-                Every row is created as a <strong class="text-fg">draft</strong> — review and publish from the Products page.
-            </p>
+            <p class="mt-3 text-sm text-muted">Every product is created as a <strong class="text-fg">draft</strong> — review and publish from the Products page.</p>
 
-            <form wire:submit="runImport" class="mt-5 space-y-4">
+            <form wire:submit="runImport" class="mt-5 space-y-4"
+                  x-data="{ uploading: false, pct: 0 }"
+                  x-on:livewire-upload-start="uploading = true; pct = 0"
+                  x-on:livewire-upload-progress="pct = $event.detail.progress"
+                  x-on:livewire-upload-finish="uploading = false; pct = 100"
+                  x-on:livewire-upload-error="uploading = false; pct = 0"
+                  x-on:livewire-upload-cancel="uploading = false; pct = 0">
                 <div>
-                    <label class="label" for="bulk-cat">Fallback category <span class="text-muted">(optional — only used for rows we can't match)</span></label>
+                    <label class="label" for="bulk-file">Product file (.csv or .tsv, up to 12 MB)</label>
+                    <input id="bulk-file" type="file" wire:model="csvFile" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" class="text-sm">
+
+                    <div x-show="uploading || pct === 100" x-cloak class="mt-2">
+                        <div class="flex items-center justify-between text-xs text-muted">
+                            <span x-text="uploading ? 'Uploading file…' : 'File uploaded'"></span>
+                            <span class="tabular-nums" x-text="pct + '%'"></span>
+                        </div>
+                        <div class="mt-1 h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-label="Upload progress" :aria-valuenow="pct" aria-valuemin="0" aria-valuemax="100">
+                            <div class="h-full rounded-full bg-accent transition-[width] duration-200" :style="`width: ${pct}%`"></div>
+                        </div>
+                    </div>
+                    @error('csvFile') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="label" for="bulk-cat">Fallback category <span class="text-muted">(optional — only for products we can't match)</span></label>
                     <select id="bulk-cat" wire:model="defaultCategoryId" class="input">
                         <option value="">Put them in Other Parts</option>
-                        @foreach ($categories as $c)
-                            <option value="{{ $c->id }}">{{ $c->parent_id ? '— ' : '' }}{{ $c->name }}</option>
+                        @foreach ($categories->whereNull('parent_id') as $dept)
+                            <optgroup label="{{ $dept->name }}">
+                                <option value="{{ $dept->id }}">{{ $dept->name }} (general)</option>
+                                @foreach ($categories->where('parent_id', $dept->id) as $sub)
+                                    <option value="{{ $sub->id }}">{{ $sub->name }}</option>
+                                @endforeach
+                            </optgroup>
                         @endforeach
                     </select>
                     @error('defaultCategoryId') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
@@ -89,19 +148,12 @@
 
                 <label class="flex items-center gap-2 text-sm">
                     <input type="checkbox" wire:model="withImages" class="rounded border-line text-accent focus:ring-accent">
-                    Download images from URLs in the file (Shopify <code class="rounded bg-surface-2 px-1 text-xs">Image Src</code>)
+                    Download photos from the image links in the file
                 </label>
 
-                <div>
-                    <label class="label" for="bulk-file">CSV file</label>
-                    <input id="bulk-file" type="file" wire:model="csvFile" accept=".csv,text/csv" class="text-sm">
-                    <div wire:loading wire:target="csvFile" class="mt-1 text-xs text-muted">Uploading…</div>
-                    @error('csvFile') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
-                </div>
-
-                <button class="btn-accent" wire:loading.attr="disabled" wire:target="runImport,csvFile">
-                    <span wire:loading.remove wire:target="runImport"><x-ui.icon name="list" class="w-4 h-4" /> Upload &amp; import</span>
-                    <span wire:loading wire:target="runImport">Importing…</span>
+                <button class="btn-accent" wire:loading.attr="disabled" wire:target="runImport,csvFile" x-bind:disabled="uploading">
+                    <span wire:loading.remove wire:target="runImport"><x-ui.icon name="list" class="w-4 h-4" /> Import products</span>
+                    <span wire:loading wire:target="runImport">Starting…</span>
                 </button>
             </form>
         </div>

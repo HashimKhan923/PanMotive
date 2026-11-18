@@ -1,0 +1,5 @@
+﻿ID,Type,SKU,Name,Published,Short description,Description,In stock?,Stock,Sale price,Regular price,Categories,Tags,Images,Parent,Attribute 1 name,Attribute 1 value(s),Attribute 1 visible,Attribute 1 global
+10,variable,TL-F150,Smoked LED Tail Lights for 2015-2017 Ford F-150,1,Plug-and-play LED tail lights.,<p>Sequential turn signal.</p>,1,,,,Lighting > Tail Lights,"LED, F-150","https://img.example.com/tl-1.jpg, https://img.example.com/tl-2.jpg",,Color,"Smoked, Clear",1,1
+11,variation,TL-F150-SM,Smoked LED Tail Lights for 2015-2017 Ford F-150 - Smoked,1,,,1,4,,289.99,,,https://img.example.com/tl-smoked.jpg,id:10,Color,Smoked,,
+12,variation,TL-F150-CL,Smoked LED Tail Lights for 2015-2017 Ford F-150 - Clear,1,,,1,6,,269.99,,,,id:10,Color,Clear,,
+20,simple,BP-100,Ceramic Front Brake Pads,1,,Low dust ceramic pads.,1,25,39.99,49.99,Brakes > Brake Pads,,,,,,,

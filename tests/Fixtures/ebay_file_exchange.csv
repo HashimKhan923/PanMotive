@@ -1,0 +1,5 @@
+*Action(SiteID=US|Country=US|Currency=USD|Version=1193|CC=UTF-8),CustomLabel,*Category,*Title,*ConditionID,PicURL,*Description,*Format,*Duration,*StartPrice,*Quantity,Relationship,RelationshipDetails,C:Brand,C:Manufacturer Part Number
+Add,EB-HUB-1,33710,Front Wheel Bearing Hub Assembly for 2012-2016 Honda CR-V,3000,https://img.example.com/hub.jpg|https://img.example.com/hub-2.jpg,"Tested, works great.",FixedPrice,GTC,89.99,4,,,Timken,HA590467
+Add,EB-MIR,33649,Power Heated Side Mirror,1000,https://img.example.com/mirror.jpg,Brand new mirror.,FixedPrice,GTC,,,,Side=Left;Right,Dorman,
+,EB-MIR-L,,,,,,,,55.00,3,Variation,Side=Left,,
+,EB-MIR-R,,,,,,,,57.00,2,Variation,Side=Right,,
