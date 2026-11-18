@@ -62,7 +62,9 @@ class ProcessBulkProductUpload implements ShouldQueue
             $this->put(['status' => 'done', 'result' => $result]);
         } catch (\Throwable $e) {
             report($e);
-            $this->put(['status' => 'failed', 'message' => 'We could not read that file. Make sure it is a CSV or TSV export with a header row.']);
+            $this->put(['status' => 'failed', 'message' => $e instanceof \InvalidArgumentException
+                ? $e->getMessage()   // a reason the seller can act on ("old .xls file", "not a spreadsheet")
+                : 'We could not read that file. Make sure it is a CSV, TSV or Excel (.xlsx) export with a header row.']);
 
             return;
         } finally {

@@ -115,8 +115,8 @@
                   x-on:livewire-upload-error="uploading = false; pct = 0"
                   x-on:livewire-upload-cancel="uploading = false; pct = 0">
                 <div>
-                    <label class="label" for="bulk-file">Product file (.csv or .tsv, up to 12 MB)</label>
-                    <input id="bulk-file" type="file" wire:model="csvFile" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" class="text-sm">
+                    <label class="label" for="bulk-file">Product file (.csv, .tsv or Excel .xlsx, up to 12 MB)</label>
+                    <input id="bulk-file" type="file" wire:model="csvFile" accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" class="text-sm">
 
                     <div x-show="uploading || pct === 100" x-cloak class="mt-2">
                         <div class="flex items-center justify-between text-xs text-muted">

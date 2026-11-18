@@ -195,4 +195,73 @@ class ImportAnyPlatformTest extends TestCase
             ->assertSee('57%')        // 15% + 85% × half
             ->assertSeeHtml('wire:poll.1s="refreshProgress"');
     }
+
+    /** Build a real .xlsx (zip of XML) like Excel writes: shared strings, number cells, a skipped empty cell. */
+    private function xlsxFrom(string $csvFixture): string
+    {
+        $rows = array_map('str_getcsv', array_filter(explode("\n", str_replace("\r", '', file_get_contents(base_path("tests/Fixtures/{$csvFixture}"))))));
+        $strings = [];
+        $sheet = '';
+        foreach ($rows as $r => $cells) {
+            $sheet .= '<row r="'.($r + 1).'">';
+            foreach ($cells as $c => $v) {
+                if ($v === '') {
+                    continue; // Excel doesn't store empty cells
+                }
+                $ref = chr(65 + $c % 26);
+                $ref = ($c >= 26 ? chr(64 + intdiv($c, 26)) : '').$ref.($r + 1);
+                if (is_numeric($v) && $r > 0) {
+                    $sheet .= '<c r="'.$ref.'"><v>'.$v.'</v></c>';
+                } else {
+                    $strings[] = htmlspecialchars($v, ENT_XML1);
+                    $sheet .= '<c r="'.$ref.'" t="s"><v>'.(count($strings) - 1).'</v></c>';
+                }
+            }
+            $sheet .= '</row>';
+        }
+        $ns = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+        $path = tempnam(sys_get_temp_dir(), 'xlsx').'.csv'; // named .csv on purpose, like the seller's file
+        $zip = new \ZipArchive;
+        $zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $zip->addFromString('[Content_Types].xml', '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>');
+        $zip->addFromString('xl/workbook.xml', '<?xml version="1.0"?><workbook xmlns="'.$ns.'" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Products" sheetId="1" r:id="rId1"/></sheets></workbook>');
+        $zip->addFromString('xl/_rels/workbook.xml.rels', '<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>');
+        $zip->addFromString('xl/sharedStrings.xml', '<?xml version="1.0"?><sst xmlns="'.$ns.'">'.implode('', array_map(fn ($t) => "<si><t>{$t}</t></si>", $strings)).'</sst>');
+        $zip->addFromString('xl/worksheets/sheet1.xml', '<?xml version="1.0"?><worksheet xmlns="'.$ns.'"><sheetData>'.$sheet.'</sheetData></worksheet>');
+        $zip->close();
+
+        return $path;
+    }
+
+    public function test_an_excel_workbook_imports_even_when_named_csv(): void
+    {
+        $path = $this->xlsxFrom('shopify_products.csv');
+        $r = app(ProductCsvImporter::class)->import($this->seller->id, $path, null, withImages: false, useAi: false);
+        @unlink($path);
+
+        $this->assertSame('shopify', $r['format']);
+        $this->assertSame(2, $r['created'], implode(' | ', $r['errors']));
+        $pads = $this->product('Ceramic Brake Pad Set');
+        $this->assertEquals(59.00, (float) $pads->price);
+        $this->assertSame(2, $pads->variants()->count());
+    }
+
+    public function test_unreadable_files_say_why(): void
+    {
+        $xls = tempnam(sys_get_temp_dir(), 'xls');
+        file_put_contents($xls, "\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1".str_repeat("\0", 200));
+        $bin = tempnam(sys_get_temp_dir(), 'bin');
+        file_put_contents($bin, "\x89PNG\r\n\x1A\n\0\0\0\rIHDR".str_repeat("\x01\x02", 50));
+
+        foreach ([$xls => 'Excel 97-2003', $bin => "isn't a spreadsheet"] as $file => $reason) {
+            try {
+                app(ProductCsvImporter::class)->import($this->seller->id, $file, null, withImages: false, useAi: false);
+                $this->fail('expected a readable reason');
+            } catch (\InvalidArgumentException $e) {
+                $this->assertStringContainsString($reason, $e->getMessage());
+            } finally {
+                @unlink($file);
+            }
+        }
+    }
 }

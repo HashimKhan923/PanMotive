@@ -24,13 +24,26 @@ class CsvTable
     public static function fromFile(string $path): self
     {
         $t = new self;
-        $raw = self::toUtf8((string) file_get_contents($path));
 
-        $csv = Reader::createFromString($raw);
-        $csv->setDelimiter(self::sniffDelimiter($raw));
-        $all = [];
-        foreach ($csv->getRecords() as $record) {
-            $all[] = array_map(fn ($v) => (string) $v, $record);
+        if (XlsxReader::isXlsx($path)) {
+            // An Excel workbook (often still named ".csv") — read its first sheet.
+            $all = XlsxReader::rows($path);
+        } else {
+            $raw = (string) file_get_contents($path);
+            if (str_starts_with($raw, "\xD0\xCF\x11\xE0")) {
+                throw new \InvalidArgumentException('This is an old Excel 97-2003 (.xls) file. Open it in Excel and save it as .xlsx or CSV, then upload again.');
+            }
+            $raw = self::toUtf8($raw);
+            if (preg_match('/[\x00-\x08\x0E-\x1F]/', substr($raw, 0, 4000))) {
+                throw new \InvalidArgumentException('This file isn\'t a spreadsheet we can read. Upload a CSV, TSV or Excel (.xlsx) file.');
+            }
+
+            $csv = Reader::createFromString($raw);
+            $csv->setDelimiter(self::sniffDelimiter($raw));
+            $all = [];
+            foreach ($csv->getRecords() as $record) {
+                $all[] = array_map(fn ($v) => (string) $v, $record);
+            }
         }
         if ($all === []) {
             return $t;

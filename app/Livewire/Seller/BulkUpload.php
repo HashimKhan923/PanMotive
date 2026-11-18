@@ -53,10 +53,10 @@ class BulkUpload extends Component
 
         $this->validate([
             // Browsers report CSV MIME types wildly inconsistently, so trust the extension.
-            'csvFile' => 'required|file|max:12288|extensions:csv,txt,tsv',
+            'csvFile' => 'required|file|max:12288|extensions:csv,txt,tsv,xlsx',
             'defaultCategoryId' => 'nullable|integer|exists:categories,id',
         ], [
-            'csvFile.extensions' => 'Upload a .csv or .tsv product export (Shopify, WooCommerce, Amazon, eBay, Etsy…).',
+            'csvFile.extensions' => 'Upload a .csv, .tsv or Excel .xlsx product file (Shopify, WooCommerce, Amazon, eBay, Etsy…).',
             'csvFile.max' => 'That file is bigger than 12 MB. Split it into smaller files and upload them one by one.',
         ]);
 
