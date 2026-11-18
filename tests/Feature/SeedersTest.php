@@ -93,7 +93,9 @@ class SeedersTest extends TestCase
         $this->run_(ProductSeeder::class);
         $this->assertSame($products, Product::count());
 
-        Category::whereDoesntHave('children')->each(
+        // Samples cover the original 25 sub-categories (the full catalog has ~350, far too many to sample).
+        $this->assertSame(25, Category::has('products')->count());
+        Category::has('products')->each(
             fn ($category) => $this->assertGreaterThanOrEqual(3, $category->products()->count(), $category->name)
         );
         $this->assertSame(0, Product::whereDoesntHave('fitments')->count());

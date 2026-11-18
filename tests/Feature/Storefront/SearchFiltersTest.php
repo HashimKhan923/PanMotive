@@ -233,14 +233,12 @@ class SearchFiltersTest extends TestCase
 
     public function test_imported_titles_file_correctly_and_unmatched_ones_stay_unresolved(): void
     {
-        foreach (['Brake Pads' => 'brake-pads', 'Brakes' => 'brakes'] as $name => $slug) {
-            $this->category($name);
-        }
+        $this->seed(\Database\Seeders\CategorySeeder::class);
         $resolver = app(CategoryResolver::class);
         $slug = fn (string $title) => Category::find($resolver->resolve($title))?->slug;
 
         $this->assertSame('led-accent-lights', $slug('Honda Accord LED Reflectors V3'));
-        $this->assertSame('led-accent-lights', $slug('GR86 BRZ LED License Plate Lights'));
+        $this->assertSame('license-plate-lights', $slug('GR86 BRZ LED License Plate Lights'));
         $this->assertSame('mirrors', $slug('Acura Wide Angle Side Mirrors'));
         $this->assertSame('spoilers-wings', $slug('Lexus Trunk Spoiler'));
         $this->assertSame('headlights', $slug('Toyota Headlights Pair'));

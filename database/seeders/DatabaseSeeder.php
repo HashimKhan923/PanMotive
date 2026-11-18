@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             AdminPermissionSeeder::class,
             VehicleMakeSeeder::class,
             CategorySeeder::class,
+            BrandSeeder::class,
             AdminSeeder::class,
             DemoSeeder::class,
         ]);

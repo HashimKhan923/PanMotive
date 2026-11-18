@@ -27,10 +27,10 @@ class ProductSeeder extends Seeder
         'sedans' => ['Toyota' => ['Camry', 'Corolla'], 'Honda' => ['Civic', 'Accord'], 'Nissan' => ['Altima', 'Sentra'], 'Hyundai' => ['Elantra', 'Sonata'], 'Kia' => ['Forte']],
         'suvs' => ['Toyota' => ['RAV4', 'Highlander'], 'Honda' => ['CR-V', 'Pilot'], 'Ford' => ['Escape', 'Explorer'], 'Chevrolet' => ['Equinox', 'Traverse'], 'Nissan' => ['Rogue'], 'Hyundai' => ['Tucson', 'Santa Fe'], 'Subaru' => ['Outback', 'Forester']],
         'trucks' => ['Ford' => ['F-150'], 'Chevrolet' => ['Silverado 1500'], 'GMC' => ['Sierra 1500'], 'RAM' => ['1500'], 'Toyota' => ['Tacoma', 'Tundra'], 'Nissan' => ['Frontier']],
-        'heavy' => ['Ford' => ['F-250 Super Duty'], 'Chevrolet' => ['Silverado 2500 HD'], 'RAM' => ['2500', '3500']],
+        'heavy' => ['Ford' => ['F-250'], 'Chevrolet' => ['Silverado 2500 HD'], 'RAM' => ['2500', '3500']],
         'muscle' => ['Ford' => ['Mustang'], 'Chevrolet' => ['Camaro'], 'Dodge' => ['Challenger', 'Charger'], 'Subaru' => ['WRX']],
         'jeep' => ['Jeep' => ['Wrangler', 'Gladiator', 'Grand Cherokee']],
-        'euro' => ['BMW' => ['3 Series', '5 Series', 'X3'], 'Audi' => ['A4', 'Q5'], 'Mercedes-Benz' => ['C-Class', 'E-Class'], 'Volkswagen' => ['Jetta', 'Tiguan']],
+        'euro' => ['BMW' => ['330i', '530i', 'X3'], 'Audi' => ['A4', 'Q5'], 'Mercedes-Benz' => ['C-Class', 'E-Class'], 'Volkswagen' => ['Jetta', 'Tiguan']],
     ];
 
     /** Subcategory, brand, title, price, on sale, fits, from year, to year, position. */
@@ -143,6 +143,7 @@ class ProductSeeder extends Seeder
         [$categoryName, $brandName, $title, $price, $onSale, $fits, $from, $to, $position] = $part;
 
         $category = Category::where('name', $categoryName)->first()
+            ?? Category::where('slug', Str::slug($categoryName))->first()
             ?? throw new RuntimeException("Unknown category: {$categoryName}");
         $brand = Brand::firstOrCreate(['slug' => Str::slug($brandName)], ['name' => $brandName]);
         $fullTitle = "{$brandName} {$title}";
