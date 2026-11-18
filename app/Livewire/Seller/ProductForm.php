@@ -95,7 +95,15 @@ class ProductForm extends Component
     #[Validate('nullable|string|max:160')]
     public string $meta_description = '';
 
+    // Photos only (they're all converted to WebP when saved); 12 MB each.
+    #[Validate(['newImages.*' => 'file|max:12288|mimes:jpg,jpeg,png,webp,gif,bmp,avif,heic,heif'], message: ['newImages.*.mimes' => 'Photos must be JPG, PNG, WebP, GIF or HEIC.', 'newImages.*.max' => 'Each photo must be 12 MB or smaller.'])]
     public array $newImages = [];
+
+    /** Tell the seller straight away when a chosen file isn't a photo. */
+    public function updatedNewImages(): void
+    {
+        $this->validateOnly('newImages.*');
+    }
 
     public array $fitmentVehicleIds = [];
 
@@ -447,16 +455,26 @@ class ProductForm extends Component
         $this->syncVolumeTiers($product);
         $this->syncRepricingRule($product);
 
+        // Every product photo is stored as WebP, whatever format the seller uploaded.
+        $skipped = [];
         foreach ($this->newImages as $image) {
-            $product->addMedia($image->getRealPath())
-                ->usingFileName($image->getClientOriginalName())
+            try {
+                $webp = \App\Support\WebpImage::fromFile($image->getRealPath());
+            } catch (\InvalidArgumentException) {
+                $skipped[] = $image->getClientOriginalName();
+
+                continue;
+            }
+            $product->addMedia($webp)
+                ->usingFileName(\App\Support\WebpImage::fileName($image->getClientOriginalName()))
                 ->toMediaCollection('images');
         }
         $this->newImages = [];
 
-        session()->flash('success', $status === 'draft'
+        session()->flash('success', ($status === 'draft'
             ? 'Saved as a draft.'
-            : 'Product saved and submitted for review.');
+            : 'Product saved and submitted for review.')
+            .($skipped ? ' These files are not photos we can use and were left out: '.implode(', ', $skipped).'.' : ''));
 
         $this->redirect(route('seller.products.index'), navigate: false);
     }
