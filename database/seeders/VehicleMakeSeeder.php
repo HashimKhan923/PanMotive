@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Every car, SUV, pickup and van sold in the US from 1981 to 2027: one vehicle per make, model
+ * Cars, SUVs, pickups and vans of the 56 well-known brands US drivers own, 1981 to 2027: one vehicle per make, model
  * and year (database/seeders/data/vehicles.json).
  *
  * Where the data comes from:

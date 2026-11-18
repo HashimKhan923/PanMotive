@@ -162,6 +162,19 @@ def split_gm(make, base):
 split_gm('Chevrolet', 'Silverado')
 split_gm('GMC', 'Sierra')
 
+# Only famous brands US drivers own (owner's rule, 2026-11-18): mainstream, luxury, exotic, and well-known
+# discontinued US brands people still buy parts for. Small/foreign-only makers (AMC, Daewoo, Yugo, VinFast...) are left out.
+FAMOUS = {
+    'Acura', 'Alfa Romeo', 'Aston Martin', 'Audi', 'Bentley', 'BMW', 'Bugatti', 'Buick', 'Cadillac', 'Chevrolet', 'Chrysler',
+    'Dodge', 'Ferrari', 'Fiat', 'Ford', 'Genesis', 'GMC', 'Honda', 'Hummer', 'Hyundai', 'Infiniti', 'Isuzu', 'Jaguar', 'Jeep',
+    'Kia', 'Lamborghini', 'Land Rover', 'Lexus', 'Lincoln', 'Lotus', 'Lucid', 'Maserati', 'Mazda', 'McLaren', 'Mercedes-Benz',
+    'Mercury', 'MINI', 'Mitsubishi', 'Nissan', 'Oldsmobile', 'Plymouth', 'Polestar', 'Pontiac', 'Porsche', 'RAM', 'Rivian',
+    'Rolls-Royce', 'Saab', 'Saturn', 'Scion', 'Subaru', 'Suzuki', 'Tesla', 'Toyota', 'Volkswagen', 'Volvo',
+}
+for make in list(out):
+    if make not in FAMOUS:
+        del out[make]
+
 def ranges(years):
     ys = sorted(years)
     out, start, prev = [], ys[0], ys[0]

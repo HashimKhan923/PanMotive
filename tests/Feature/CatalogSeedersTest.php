@@ -114,7 +114,8 @@ class CatalogSeedersTest extends TestCase
         $this->seed(VehicleMakeSeeder::class);
         $this->assertSame($count, Vehicle::count(), 'running twice adds nothing');
 
-        $this->assertGreaterThan(60, VehicleMake::count());
+        $this->assertSame(56, VehicleMake::count(), "famous US brands only");
+        $this->assertFalse(VehicleMake::where("slug", "yugo")->exists());
         $this->assertGreaterThan(12000, $count);
         $this->assertNull($legacy->fresh(), 'unused old sample model removed');
 
