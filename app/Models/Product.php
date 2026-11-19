@@ -29,6 +29,14 @@ class Product extends Model implements HasMedia
             }
         });
 
+        // A deleted listing's photos are removed from storage (R2) too. A force delete is handled
+        // by the media library itself; a normal (soft) delete would otherwise keep every file.
+        static::deleted(function (Product $product) {
+            if (! $product->isForceDeleting()) {
+                \App\Jobs\DeleteProductPhotos::dispatch($product->id)->afterCommit();
+            }
+        });
+
         // Back-in-stock emails for shoppers who asked to be told.
         static::updated(function (Product $product) {
             if ($product->wasChanged('quantity')

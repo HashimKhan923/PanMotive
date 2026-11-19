@@ -17,6 +17,9 @@ Schedule::command('carts:send-abandoned-reminders')->hourly();
 Schedule::command('emails:lifecycle')->hourlyAt(20)->withoutOverlapping();
 Schedule::command('marketplace:maintain')->hourly();
 
+// Photo folders left in the bucket with no photo record (deleted listings mid-download etc.).
+Schedule::command('media:sweep-orphans')->weeklyOn(0, '04:30')->withoutOverlapping();
+
 // Backups (spatie/laravel-backup → s3-backups disk).
 Schedule::command('backup:clean')->dailyAt('01:00');
 Schedule::command('backup:run')->dailyAt('02:00');
