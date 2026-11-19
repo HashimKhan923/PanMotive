@@ -43,7 +43,7 @@
                 @endif
             </div>
         @endif
-        <div class="-mt-14 flex flex-wrap items-start gap-6 sm:-mt-16">
+        <div class="relative z-10 -mt-14 flex flex-wrap items-start gap-6 sm:-mt-16">
             @if ($logoUrl = $sellerProfile->logoUrl())
                 <img src="{{ $logoUrl }}" alt="{{ $sellerProfile->business_name }} logo" class="h-20 w-20 shrink-0 rounded-2xl border-4 border-surface bg-surface object-contain shadow-sm">
             @else
