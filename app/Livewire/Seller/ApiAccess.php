@@ -3,6 +3,7 @@
 namespace App\Livewire\Seller;
 
 use App\Models\ApiToken;
+use App\Models\ShopifyConnection;
 use App\Models\WebhookEndpoint;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -26,6 +27,40 @@ class ApiAccess extends Component
     // webhook form
     public string $hookUrl = '';
     public array $hookEvents = ['order.created', 'order.shipped'];
+
+    /* ----------------------------- Shopify ----------------------------- */
+
+    /** Re-import everything from Shopify (also cleans up products deleted there while disconnected). */
+    public function shopifySyncNow(): void
+    {
+        $c = ShopifyConnection::where('seller_id', auth()->id())->first();
+        if (! $c?->isConnected()) {
+            return;
+        }
+        $c->update(['sync_status' => 'running', 'sync_total' => 0, 'sync_done' => 0]);
+        \App\Jobs\SyncShopifyStore::dispatch($c->id);
+        $this->dispatch('toast', message: 'Syncing every product from Shopify…');
+    }
+
+    /** Stop syncing: removes the Panmotive app from the Shopify store. Products stay on Panmotive. */
+    public function shopifyDisconnect(): void
+    {
+        $c = ShopifyConnection::where('seller_id', auth()->id())->first();
+        if (! $c) {
+            return;
+        }
+        if ($c->access_token) {
+            try {
+                // Uninstalling the app also removes its webhooks in Shopify.
+                \Illuminate\Support\Facades\Http::withHeaders(['X-Shopify-Access-Token' => $c->access_token])->timeout(15)
+                    ->delete("https://{$c->shop_domain}/admin/api_permissions/current.json");
+            } catch (\Throwable) {
+                // Already gone or unreachable — we stop listening either way.
+            }
+        }
+        $c->update(['status' => 'disconnected', 'access_token' => null, 'refresh_token' => null, 'sync_status' => 'idle', 'last_error' => null]);
+        $this->dispatch('toast', message: 'Shopify disconnected. Your products stay on Panmotive.');
+    }
 
     public function createToken(): void
     {
@@ -122,6 +157,8 @@ class ApiAccess extends Component
             'abilities' => self::ABILITIES,
             'events' => self::EVENTS,
             'baseUrl' => url('/api/v1'),
+            'shopify' => ShopifyConnection::where('seller_id', auth()->id())->withCount('links')->first(),
+            'shopifyReady' => app(\App\Services\Shopify\ShopifyApp::class)->configured(),
         ]);
     }
 }

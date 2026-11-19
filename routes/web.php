@@ -50,6 +50,8 @@ if (app()->environment('local')) {
 // Payment / carrier webhooks — apex domain, CSRF-exempt (see bootstrap/app.php).
 Route::post('webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
 Route::post('webhooks/easypost', [EasyPostWebhookController::class, 'handle'])->name('webhooks.easypost');
+Route::post('webhooks/shopify', [\App\Http\Controllers\Webhooks\ShopifyWebhookController::class, 'handle'])
+    ->middleware('throttle:600,1')->name('webhooks.shopify');
 
 // Storefront (default domain)
 require __DIR__.'/storefront.php';

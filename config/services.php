@@ -84,4 +84,14 @@ return [
         'from' => env('TWILIO_FROM'),
     ],
 
+
+    // "Connect Shopify" — the Panmotive app made in Shopify's Dev Dashboard (Client ID + Secret).
+    // Redirect URL to allow there: https://sell.<domain>/integrations/shopify/callback
+    'shopify' => [
+        'client_id' => env('SHOPIFY_CLIENT_ID'),
+        'client_secret' => env('SHOPIFY_CLIENT_SECRET'),
+        'scopes' => env('SHOPIFY_SCOPES', 'read_products,read_inventory'),
+        'api_version' => env('SHOPIFY_API_VERSION', '2026-10'),
+    ],
+
 ];

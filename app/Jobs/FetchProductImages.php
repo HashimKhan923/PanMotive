@@ -96,7 +96,9 @@ class FetchProductImages implements ShouldQueue
                 unset($body);
                 $webp = WebpImage::fromFile($download);
                 $name = WebpImage::fileName(basename((string) parse_url($url, PHP_URL_PATH)));
-                $mediaIds[$url] = $product->addMedia($webp)->usingFileName($name)->toMediaCollection('images')->id;
+                $mediaIds[$url] = $product->addMedia($webp)->usingFileName($name)
+                    ->withCustomProperties(['source_url' => $url]) // lets a store sync tell which photo is which
+                    ->toMediaCollection('images')->id;
             } catch (\Throwable $e) {
                 // One dead link shouldn't cost the product its other photos.
                 Log::warning('Import could not fetch a product photo', ['product' => $product->id, 'url' => $url, 'error' => $e->getMessage()]);

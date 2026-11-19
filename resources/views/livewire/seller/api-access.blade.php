@@ -2,6 +2,67 @@
     <h1 class="text-2xl font-bold">API &amp; webhooks</h1>
     <p class="mt-1 text-sm text-muted">Connect your own inventory or order system. Base URL <code class="rounded bg-surface-2 px-1">{{ $baseUrl }}</code>.</p>
 
+    {{-- Shopify --}}
+    <section class="card mt-6 p-6" data-reveal @if ($shopify?->sync_status === 'running') wire:poll.3s @endif>
+        <div class="flex items-start justify-between gap-3">
+            <div>
+                <h2 class="font-bold">Shopify</h2>
+                <p class="mt-1 text-sm text-muted">Sell your Shopify products here too. Products you add, change or delete in Shopify — price, stock, photos, options — update here automatically.</p>
+            </div>
+            @if ($shopify?->isConnected())
+                <span class="shrink-0 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">Connected</span>
+            @elseif ($shopify?->status === 'error')
+                <span class="shrink-0 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-semibold text-rose-600">Needs reconnecting</span>
+            @endif
+        </div>
+
+        @if ($shopify?->isConnected())
+            <dl class="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+                <div><dt class="text-xs text-muted">Store</dt><dd class="font-medium">{{ $shopify->shop_name ?: $shopify->shop_domain }}</dd><dd class="text-xs text-muted">{{ $shopify->shop_domain }}</dd></div>
+                <div><dt class="text-xs text-muted">Products linked</dt><dd class="font-medium tabular-nums">{{ number_format($shopify->links_count) }}</dd></div>
+                <div><dt class="text-xs text-muted">Last update from Shopify</dt><dd class="font-medium">{{ $shopify->last_event_at?->diffForHumans() ?? ($shopify->last_full_sync_at?->diffForHumans() ?? '—') }}</dd></div>
+            </dl>
+
+            @if ($shopify->sync_status === 'running')
+                @php $sp = $shopify->sync_total > 0 ? (int) floor(100 * min($shopify->sync_done, $shopify->sync_total) / $shopify->sync_total) : 0; @endphp
+                <div class="mt-4">
+                    <div class="flex items-center justify-between text-xs text-muted">
+                        <span>{{ $shopify->sync_total > 0 ? 'Importing products — '.number_format(min($shopify->sync_done, $shopify->sync_total)).' of '.number_format($shopify->sync_total) : 'Reading your Shopify store…' }}</span>
+                        <span class="tabular-nums">{{ $sp }}%</span>
+                    </div>
+                    <div class="mt-1 h-2 overflow-hidden rounded-full bg-surface-2" role="progressbar" aria-label="Shopify import progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $sp }}">
+                        <div class="h-full rounded-full bg-accent transition-[width] duration-700 ease-out" style="width: {{ $sp }}%"></div>
+                    </div>
+                    <p class="mt-1 text-xs text-muted">Photos download in the background after each product. You can leave this page.</p>
+                </div>
+            @endif
+
+            @if ($shopify->last_error)
+                <p class="mt-3 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">{{ $shopify->last_error }}</p>
+            @endif
+
+            <div class="mt-5 flex flex-wrap gap-2">
+                <button wire:click="shopifySyncNow" class="btn-outline btn-sm" @disabled($shopify->sync_status === 'running')>Sync all products now</button>
+                <a href="{{ route('seller.products.index') }}" class="btn-ghost btn-sm">View products</a>
+                <button wire:click="shopifyDisconnect" wire:confirm="Stop syncing with Shopify? Your products stay on Panmotive, but changes in Shopify won't show here any more." class="btn-ghost btn-sm text-rose-600">Disconnect</button>
+            </div>
+        @elseif (! $shopifyReady)
+            <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-sm text-muted">Shopify connection is coming soon.</p>
+        @else
+            @if ($shopify?->last_error)
+                <p class="mt-3 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">{{ $shopify->last_error }}</p>
+            @endif
+            <form method="GET" action="{{ route('seller.shopify.connect') }}" class="mt-4 flex flex-wrap items-end gap-3">
+                <div class="min-w-[220px] flex-1">
+                    <label class="label" for="shopify-shop">Your Shopify store address</label>
+                    <input id="shopify-shop" name="shop" required class="input h-10 text-sm" placeholder="your-store.myshopify.com" value="{{ $shopify?->shop_domain }}">
+                </div>
+                <button class="btn-accent">{{ $shopify ? 'Connect again' : 'Connect Shopify' }}</button>
+            </form>
+            <p class="mt-2 text-xs text-muted">You'll approve read-only access in Shopify. We never change anything in your Shopify store.</p>
+        @endif
+    </section>
+
     {{-- Tokens --}}
     <section class="card mt-6 p-6" data-reveal>
         <h2 class="font-bold">Access tokens</h2>

@@ -9,7 +9,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 class ProductVariant extends Model
 {
     protected $fillable = [
-        'product_id', 'label', 'options', 'sku', 'price', 'sale_price',
+        'product_id', 'shopify_variant_id', 'label', 'options', 'sku', 'price', 'sale_price',
         'quantity', 'weight_lbs', 'is_active', 'sort_order', 'media_id',
     ];
 

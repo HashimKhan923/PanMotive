@@ -200,6 +200,12 @@ Route::middleware(['auth'])->group(function () {
         // API & webhooks
         Route::get('/api', ApiAccess::class)->middleware('seller.can:settings.manage')->name('seller.api.index');
 
+        // Connect Shopify (sign-in with Shopify; also the app's "App URL" when opened from Shopify)
+        Route::middleware('seller.can:settings.manage')->group(function () {
+            Route::get('/integrations/shopify/connect', [\App\Http\Controllers\Seller\ShopifyConnectController::class, 'connect'])->name('seller.shopify.connect');
+            Route::get('/integrations/shopify/callback', [\App\Http\Controllers\Seller\ShopifyConnectController::class, 'callback'])->name('seller.shopify.callback');
+        });
+
         // Store settings
         Route::get('/settings', StoreSettings::class)->middleware('seller.can:settings.manage')->name('seller.settings.edit');
 

@@ -35,6 +35,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'webhooks/stripe',
             'webhooks/easypost',
+            'webhooks/shopify',
             // RFC 8058 one-click unsubscribe: mail clients POST here without a session; the URL is signed.
             'm/unsubscribe/*',
             'email/stop/*',
