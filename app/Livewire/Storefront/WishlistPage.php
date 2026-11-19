@@ -8,6 +8,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('layouts.storefront')]
+#[\Livewire\Attributes\Title('Saved items — Panmotive')]
 class WishlistPage extends Component
 {
     public function remove(int $productId, WishlistService $wishlist): void

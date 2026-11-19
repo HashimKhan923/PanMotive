@@ -24,7 +24,7 @@
                 @foreach ($categories as $cat)
                     <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
                        class="lift flex items-center gap-3 rounded-xl border border-line bg-surface p-4 text-sm font-medium hover:shadow-card">
-                        <x-ui.icon name="box" class="w-6 h-6 shrink-0 text-fg" />
+                        <x-ui.icon :name="$cat->iconName()" class="w-6 h-6 shrink-0 text-fg" />
                         <span class="min-w-0 truncate">{{ $cat->name }}</span>
                     </a>
                 @endforeach

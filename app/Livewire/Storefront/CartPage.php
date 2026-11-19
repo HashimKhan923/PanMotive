@@ -9,6 +9,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('layouts.storefront')]
+#[\Livewire\Attributes\Title('Your cart — Panmotive')]
 class CartPage extends Component
 {
     public function updateQuantity(int $productId, int $quantity, CartService $cart, ?int $variantId = null): void

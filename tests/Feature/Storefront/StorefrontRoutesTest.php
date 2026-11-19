@@ -58,7 +58,30 @@ class StorefrontRoutesTest extends TestCase
 
         $this->get(route('products.show', $product->slug))
             ->assertOk()
-            ->assertSee('Ceramic Brake Pad Set');
+            ->assertSee('Ceramic Brake Pad Set')
+            ->assertSee('<title>Ceramic Brake Pad Set — '.config('app.name').'</title>', false);
+    }
+
+    public function test_pages_get_their_own_browser_titles_and_search_words_are_escaped(): void
+    {
+        $this->get(route('cart.index'))->assertSee('<title>Your cart — Panmotive</title>', false);
+        $this->get(route('products.index'))->assertSee('<title>Shop all auto parts — '.config('app.name').'</title>', false);
+
+        Category::firstOrCreate(['slug' => 'lighting'], ['name' => 'Lighting']);
+        $this->get(route('products.index', ['category' => 'lighting']))->assertSee('<title>Lighting parts — ', false);
+
+        $this->get(route('products.index', ['q' => '<script>x</script>']))
+            ->assertOk()
+            ->assertDontSee('<script>x</script>', false)
+            ->assertSee('&lt;script&gt;x&lt;/script&gt;', false);
+    }
+
+    public function test_missing_pages_show_the_branded_not_found_page(): void
+    {
+        $this->get('/this-page-does-not-exist')
+            ->assertNotFound()
+            ->assertSee('Go to the homepage')
+            ->assertSee('class="dark"', false);
     }
 
     public function test_product_description_renders_with_structure_for_html_and_legacy_plain_text(): void

@@ -59,4 +59,15 @@ class Category extends Model
         return $this->belongsToMany(Attribute::class, 'category_attribute')
             ->withPivot(['is_required', 'is_filterable']);
     }
+
+    /** Icon from the shared icon set (x-ui.icon) for this top-level category. */
+    public function iconName(): string
+    {
+        return [
+            'brakes' => 'brakes', 'engine' => 'parts', 'suspension' => 'wheel', 'electrical' => 'batteries',
+            'cooling' => 'oil', 'lighting' => 'lighting', 'body-exterior' => 'vehicle', 'steering' => 'interior',
+            'interior' => 'seat', 'wipers-washers' => 'wiper', 'accessories' => 'sparkles', 'other-parts' => 'parts',
+            'tires-wheels' => 'tire', 'batteries' => 'batteries', 'filters' => 'filters',
+        ][$this->slug] ?? 'package';
+    }
 }

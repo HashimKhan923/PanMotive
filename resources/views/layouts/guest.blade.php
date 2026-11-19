@@ -19,17 +19,20 @@
 <body class="min-h-screen bg-bg text-fg">
     <div class="grid min-h-screen lg:grid-cols-2">
         {{-- brand panel --}}
-        <div class="relative hidden overflow-hidden bg-brand p-12 text-brand-fg lg:flex lg:flex-col lg:justify-between">
-            <div class="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-accent/10 blur-3xl"></div>
+        <div class="relative isolate hidden overflow-hidden bg-[#15191E] p-12 text-white lg:flex lg:flex-col lg:justify-between">
+            {{-- photo + charcoal wash so the words always read, then the brand's red forward cut on the edge --}}
+            <img src="/images/auth-aero.jpg" alt="" aria-hidden="true" class="pm-banner-kenburns absolute inset-0 -z-20 h-full w-full object-cover opacity-60">
+            <div class="absolute inset-0 -z-10 bg-gradient-to-t from-[#15191E] via-[#15191E]/75 to-[#15191E]/30" aria-hidden="true"></div>
+            <span class="absolute inset-y-0 -right-10 -z-10 w-16 -skew-x-[16deg] bg-gradient-to-b from-[#E51B2B] to-[#BB1220]" aria-hidden="true"></span>
             <a href="/" wire:navigate class="relative flex items-center" aria-label="Panmotive home">
                 <x-ui.logo class="h-[30px] w-auto" />
             </a>
             <div class="relative">
                 <h1 class="text-3xl font-bold leading-tight">The right part, every time.</h1>
-                <p class="mt-3 max-w-sm text-white/70">Find parts and accessories for your vehicle.</p>
-                <div class="mt-8 flex gap-6 text-sm text-white/70">
-                    <span class="inline-flex items-center gap-2"><x-ui.icon name="shield" class="w-4 h-4 text-fg" /> Payment held until delivery</span>
-                    <span class="inline-flex items-center gap-2"><x-ui.icon name="truck" class="w-4 h-4 text-fg" /> Independent sellers across the US</span>
+                <p class="mt-3 max-w-sm text-white/80">Find parts and accessories for your vehicle.</p>
+                <div class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/85">
+                    <span class="inline-flex items-center gap-2"><x-ui.icon name="shield" class="w-4 h-4 text-white" /> Payment held until delivery</span>
+                    <span class="inline-flex items-center gap-2"><x-ui.icon name="truck" class="w-4 h-4 text-white" /> Independent sellers across the US</span>
                 </div>
             </div>
             <p class="relative text-xs text-white/80">&copy; {{ date('Y') }} Panmotive</p>

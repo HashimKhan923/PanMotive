@@ -46,7 +46,7 @@
                                     <span class="h-px w-8 {{ $style === 'light' ? 'bg-accent' : 'bg-current' }}" aria-hidden="true"></span>{{ $b->eyebrow }}
                                 </p>
                             @endif
-                            <h2 data-banner-title class="mt-4 max-w-xl {{ $onDark ? 'text-white' : 'text-fg' }} text-3xl font-bold leading-[1.18] tracking-tight sm:text-4xl lg:text-[3.1rem]">{{ $b->title }}</h2>
+                            <h2 data-banner-title class="mt-4 max-w-xl {{ $onDark ? 'text-white' : 'text-fg' }} text-3xl/[1.18] font-bold tracking-tight sm:text-4xl/[1.18] lg:text-[3.1rem]/[1.16]">{{ $b->title }}</h2>
                             @if ($b->subtitle)
                                 <p data-banner-in class="mt-4 max-w-lg text-base sm:text-lg {{ $onDark ? 'text-white/85' : 'text-muted' }}">{{ $b->subtitle }}</p>
                             @endif

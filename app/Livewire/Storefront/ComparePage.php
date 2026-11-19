@@ -9,6 +9,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 #[Layout('layouts.storefront')]
+#[\Livewire\Attributes\Title('Compare parts — Panmotive')]
 class ComparePage extends Component
 {
     public function remove(int $productId, Compare $compare): void

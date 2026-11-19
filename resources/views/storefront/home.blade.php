@@ -41,7 +41,7 @@
             <span class="pill w-fit !bg-surface !text-muted ring-1 ring-line">
                 <x-ui.icon name="sparkles" class="w-4 h-4 text-fg" /> {{ config('marketplace.platform.hero_badge') }}
             </span>
-            <h1 class="mt-5 text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl" data-split>
+            <h1 class="mt-5 text-4xl/[1.1] font-bold sm:text-5xl/[1.08] lg:text-6xl/[1.08]" data-split>
                 {{ config('marketplace.platform.hero_line_1') }}<br>{{ config('marketplace.platform.hero_line_2') }} <span class="pm-gradient-text">{{ config('marketplace.platform.hero_accent') }}</span>
             </h1>
             <p class="mt-5 max-w-md text-lg text-muted">
@@ -81,7 +81,7 @@
                                 <x-ui.icon name="image" class="w-8 h-8 text-muted" />
                             </div>
                         @endif
-                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 pt-12 [text-shadow:0_1px_2px_rgb(0_0_0/.6)]">
                             <p class="line-clamp-1 text-xs font-semibold text-white">{{ $p->title }}</p>
                             <p class="text-xs font-bold text-white">${{ number_format($p->effectivePrice(), 2) }} <span class="font-normal text-white/80">{{ $p->priceBasis() }}</span></p>
                         </div>
@@ -112,16 +112,16 @@
         </a>
     </div>
 
-    <div class="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4" data-reveal-group>
+    <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4" data-reveal-group>
         @forelse ($categories as $cat)
             <a href="{{ route('products.index', ['category' => $cat->slug]) }}"
-               data-tilt class="pm-tilt group card relative flex items-center gap-4 p-5 hover:shadow-card-hover hover:ring-1 hover:ring-accent/40">
+               data-tilt class="pm-tilt group card relative flex min-w-0 items-center gap-3 p-3.5 sm:gap-4 sm:p-5 hover:shadow-card-hover hover:ring-1 hover:ring-accent/40">
                 <div class="pm-glare"></div>
-                <span class="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg transition duration-500 group-hover:rotate-[20deg] group-hover:scale-110 group-hover:bg-accent group-hover:text-accent-fg">
-                    <x-ui.icon :name="['brakes' => 'brakes', 'engine' => 'parts', 'suspension' => 'wheel', 'electrical' => 'batteries', 'cooling' => 'oil', 'lighting' => 'lighting', 'body-exterior' => 'vehicle'][$cat->slug] ?? 'package'" class="w-6 h-6" />
+                <span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-fg sm:h-12 sm:w-12 transition duration-500 group-hover:rotate-[20deg] group-hover:scale-110 group-hover:bg-accent group-hover:text-accent-fg">
+                    <x-ui.icon :name="$cat->iconName()" class="w-6 h-6" />
                 </span>
-                <div>
-                    <p class="font-semibold text-fg group-hover:text-accent">{{ $cat->name }}</p>
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold leading-snug text-fg [overflow-wrap:anywhere] group-hover:text-accent sm:text-base">{{ $cat->name }}</p>
                     <p class="text-xs text-muted">{{ number_format($cat->listings_count) }} {{ Str::plural('part', $cat->listings_count) }}</p>
                 </div>
             </a>

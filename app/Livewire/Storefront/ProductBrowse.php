@@ -293,6 +293,10 @@ class ProductBrowse extends Component
                 ->filter(fn ($b) => $b->listings_count > 0 || $b->slug === $this->brand)->values(),
             'conditionCounts' => $conditionCounts,
             'totalForCondition' => $conditionCounts->sum(),
-        ]);
+        ])->title(match (true) {
+            trim($this->q) !== '' => '"'.\Illuminate\Support\Str::limit(trim($this->q), 60).'" parts — '.config('app.name'),
+            $selected !== null => $selected->name.' parts — '.config('app.name'),
+            default => 'Shop all auto parts — '.config('app.name'),
+        });
     }
 }

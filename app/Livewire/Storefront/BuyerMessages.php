@@ -11,6 +11,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 
 #[Layout('layouts.storefront')]
+#[\Livewire\Attributes\Title('Messages — Panmotive')]
 class BuyerMessages extends Component
 {
     use WithFileUploads;

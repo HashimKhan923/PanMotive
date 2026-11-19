@@ -25,7 +25,12 @@
         @if ($sellerProfile->banner_path)
             <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($sellerProfile->banner_path) }}" alt="" class="h-40 w-full object-cover sm:h-56">
         @else
-            <div class="h-28 w-full bg-gradient-to-r from-brand to-brand/70 sm:h-36"></div>
+            {{-- no banner yet: the brand's charcoal with the red forward cut, so the header never looks empty --}}
+            <div class="relative h-28 w-full overflow-hidden bg-gradient-to-r from-[#15191E] via-[#1d2228] to-[#262b33] sm:h-36" aria-hidden="true">
+                <span class="absolute inset-y-0 right-[-6%] w-[34%] -skew-x-[16deg] bg-gradient-to-r from-[#BB1220] to-[#E51B2B]"></span>
+                <span class="absolute inset-y-0 right-[29%] w-[5px] -skew-x-[16deg] bg-[#E51B2B]/70"></span>
+                <div class="pm-grain pointer-events-none absolute inset-0"></div>
+            </div>
         @endif
         <div class="p-6 sm:p-8">
         @if (!empty($theme['hero_headline']) || !empty($theme['hero_subtext']))
@@ -175,7 +180,7 @@
     @if ($featured->isNotEmpty())
         <section class="mt-8" data-reveal>
             <h2 class="text-lg font-bold">Featured</h2>
-            <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div class="mt-4 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                 @foreach ($featured as $product)
                     <x-product-card :product="$product" />
                 @endforeach
@@ -198,7 +203,7 @@
     </form>
 
     {{-- grid --}}
-    <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div class="mt-6 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
         @forelse ($products as $product)
             <x-product-card :product="$product" />
         @empty

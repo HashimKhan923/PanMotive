@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', config('app.name') . ' — Auto Parts for Every Vehicle')</title>
-    <meta name="description" content="@yield('meta_description', 'Find parts and accessories for your vehicle. Panmotive is an automotive marketplace with independent sellers across the US.')">
+    {{-- Pages set these with @section (classic views), a <x-slot> (component views) or ->title() (Livewire pages). --}}
+    @php
+        $pageTitle = isset($title) && trim(strip_tags((string) $title)) !== '' ? $title : null;
+        $pageDescription = isset($meta_description) && trim(strip_tags((string) $meta_description)) !== '' ? $meta_description : null;
+    @endphp
+    <title>@hasSection('title')@yield('title')@else{{ $pageTitle ?? config('app.name') . ' — Auto Parts for Every Vehicle' }}@endif</title>
+    <meta name="description" content="@hasSection('meta_description')@yield('meta_description')@else{{ $pageDescription ?? 'Find parts and accessories for your vehicle. Panmotive is an automotive marketplace with independent sellers across the US.' }}@endif">
 
     {{-- No-flash theme --}}
     @include('layouts.partials.theme-init', ['defaultDark' => true])

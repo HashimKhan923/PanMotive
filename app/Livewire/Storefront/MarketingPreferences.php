@@ -9,6 +9,7 @@ use Livewire\Component;
 
 /** Buyer-side control over store marketing: global email opt-out, per-store opt-outs, SMS opt-in. */
 #[Layout('layouts.storefront')]
+#[\Livewire\Attributes\Title('Email preferences — Panmotive')]
 class MarketingPreferences extends Component
 {
     public string $phone = '';
