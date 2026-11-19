@@ -12,6 +12,26 @@
     <form wire:submit="save" class="mt-6 space-y-6">
         <section class="card p-6">
             <h2 class="font-bold">Branding</h2>
+            <div class="mt-4 flex flex-wrap items-center gap-5">
+                @php $logoPreview = $logo && method_exists($logo, 'temporaryUrl') && ! $errors->has('logo') ? $logo->temporaryUrl() : $profile->logoUrl(); @endphp
+                <div class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-line bg-surface-2">
+                    @if ($logoPreview)
+                        <img src="{{ $logoPreview }}" alt="Store logo" class="h-full w-full object-contain">
+                    @else
+                        <span class="text-2xl font-bold text-muted">{{ \Illuminate\Support\Str::of($profile->business_name)->substr(0, 1)->upper() }}</span>
+                    @endif
+                </div>
+                <div class="min-w-0 flex-1">
+                    <label class="label" for="sb-logo">Store logo</label>
+                    <input id="sb-logo" type="file" wire:model="logo" accept="image/png,image/jpeg,image/webp" class="text-sm">
+                    <div wire:loading wire:target="logo" class="mt-1 text-xs text-muted">Uploading…</div>
+                    <p class="mt-1 text-xs text-muted">Square PNG, JPG or WebP, at least 100 × 100 pixels, up to 2 MB. Shown on your store page and next to your listings.</p>
+                    @error('logo') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
+                    @if ($profile->logo_path && ! $logo)
+                        <button type="button" wire:click="removeLogo" wire:confirm="Remove your store logo?" class="mt-2 text-xs font-semibold text-rose-500 hover:underline">Remove logo</button>
+                    @endif
+                </div>
+            </div>
             <div class="mt-4 grid gap-4 sm:grid-cols-[120px_1fr]">
                 <div>
                     <label class="label" for="sb-accent">Accent colour</label>
@@ -23,6 +43,7 @@
                     <input id="sb-banner" type="file" wire:model="banner" accept="image/*" class="text-sm">
                     <div wire:loading wire:target="banner" class="mt-1 text-xs text-muted">Uploading…</div>
                     @if ($profile->banner_path)<p class="mt-1 text-xs text-muted">Current banner set.</p>@endif
+                    @error('banner') <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
                 </div>
             </div>
             <div class="mt-4 grid gap-4 sm:grid-cols-2">

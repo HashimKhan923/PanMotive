@@ -18,28 +18,28 @@ class ThemeNoFlashTest extends TestCase
         }
     }
 
-    public function test_light_and_new_visitors_are_not_sent_dark(): void
+    public function test_new_visitors_get_dark_and_a_light_choice_is_kept(): void
     {
         $this->withUnencryptedCookie('pm-theme', 'light')->get('/')->assertDontSee('class="js dark"', false);
 
         $this->flushHeaders();
         $this->defaultCookies = [];
         $this->unencryptedCookies = [];
-        $this->get('/')->assertDontSee('class="js dark"', false);
+        $this->get('/')->assertSee('class="js dark"', false);
     }
 
-    public function test_an_unexpected_cookie_value_changes_nothing(): void
+    public function test_an_unexpected_cookie_value_is_not_echoed(): void
     {
         $this->withUnencryptedCookie('pm-theme', '"><script>alert(1)</script>')->get('/')
             ->assertOk()
             ->assertDontSee('alert(1)', false)
-            ->assertDontSee('class="js dark"', false);
+            ->assertSee('class="js dark"', false);
     }
 
     public function test_the_theme_script_opts_out_of_rocket_loader(): void
     {
         $this->get('/')
             ->assertSee('<script data-cfasync="false"', false)
-            ->assertSee("matchMedia('(prefers-color-scheme: dark)')", false);
+            ->assertSee("var d = t ? t === 'dark' : true;", false);
     }
 }

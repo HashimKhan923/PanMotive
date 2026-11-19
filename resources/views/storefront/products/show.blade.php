@@ -229,7 +229,10 @@
 
                 @if ($sp && $sp->slug)
                     <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-4">
-                        <div class="min-w-0">
+                        @if ($spLogo = $sp->logoUrl())
+                            <img src="{{ $spLogo }}" alt="" class="h-11 w-11 shrink-0 rounded-xl border border-line bg-surface object-contain" loading="lazy">
+                        @endif
+                        <div class="min-w-0 flex-1">
                             <a href="{{ route('sellers.show', $sp) }}" class="font-semibold hover:text-accent">{{ $sp->business_name }}</a>
                             @if ($sp->hasBadge())
                                 <span class="pill ml-1 !bg-surface-2 !text-fg">{{ $sp->tierLabel() }}</span>

@@ -196,4 +196,10 @@ class SellerProfile extends Model
     {
         return (int) ($this->loyalty['points_per_dollar'] ?? 5);
     }
+
+    /** Public address of the store logo, or null when the seller hasn't added one. */
+    public function logoUrl(): ?string
+    {
+        return $this->logo_path ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo_path) : null;
+    }
 }

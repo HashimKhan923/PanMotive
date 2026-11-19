@@ -39,9 +39,13 @@
             </div>
         @endif
         <div class="-mt-14 flex flex-wrap items-start gap-6 sm:-mt-16">
-            <div class="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border-4 border-surface bg-brand text-3xl font-bold text-brand-fg">
-                {{ Str::of($sellerProfile->business_name)->substr(0, 1)->upper() }}
-            </div>
+            @if ($logoUrl = $sellerProfile->logoUrl())
+                <img src="{{ $logoUrl }}" alt="{{ $sellerProfile->business_name }} logo" class="h-20 w-20 shrink-0 rounded-2xl border-4 border-surface bg-surface object-contain shadow-sm">
+            @else
+                <div class="grid h-20 w-20 shrink-0 place-items-center rounded-2xl border-4 border-surface bg-brand text-3xl font-bold text-brand-fg">
+                    {{ Str::of($sellerProfile->business_name)->substr(0, 1)->upper() }}
+                </div>
+            @endif
             <div class="min-w-0 flex-1 pt-3 sm:pt-[4.25rem]">
                 <div class="flex flex-wrap items-center gap-2">
                     <h1 class="text-2xl font-bold sm:text-3xl">{{ $sellerProfile->business_name }}</h1>

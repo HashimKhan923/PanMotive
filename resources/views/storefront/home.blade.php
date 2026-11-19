@@ -1,6 +1,6 @@
 @extends('layouts.storefront')
 
-@section('title', config('app.name') . ' | Upgrade your drive.')
+@section('title', config('app.name') . ' | The right part, every time.')
 
 @section('content')
 @php

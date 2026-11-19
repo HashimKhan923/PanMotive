@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="js{{ request()->cookie('pm-theme') === 'dark' ? ' dark' : '' }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="js{{ request()->cookie('pm-theme') !== 'light' ? ' dark' : '' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Panmotive') }}</title>
 
-    @include('layouts.partials.theme-init', ['defaultDark' => false])
+    @include('layouts.partials.theme-init', ['defaultDark' => true])
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
@@ -25,7 +25,7 @@
                 <x-ui.logo class="h-[30px] w-auto" />
             </a>
             <div class="relative">
-                <h1 class="text-3xl font-bold leading-tight">Upgrade your drive.</h1>
+                <h1 class="text-3xl font-bold leading-tight">The right part, every time.</h1>
                 <p class="mt-3 max-w-sm text-white/70">Find parts and accessories for your vehicle.</p>
                 <div class="mt-8 flex gap-6 text-sm text-white/70">
                     <span class="inline-flex items-center gap-2"><x-ui.icon name="shield" class="w-4 h-4 text-fg" /> Payment held until delivery</span>

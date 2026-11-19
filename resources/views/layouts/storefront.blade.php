@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="js{{ request()->cookie('pm-theme') === 'dark' ? ' dark' : '' }}" data-cart-count="{{ app(\App\Services\Cart\CartService::class)->itemCount() }}">
+<html lang="en" class="js{{ request()->cookie('pm-theme') !== 'light' ? ' dark' : '' }}" data-cart-count="{{ app(\App\Services\Cart\CartService::class)->itemCount() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
     <meta name="description" content="@yield('meta_description', 'Find parts and accessories for your vehicle. Panmotive is an automotive marketplace with independent sellers across the US.')">
 
     {{-- No-flash theme --}}
-    @include('layouts.partials.theme-init', ['defaultDark' => false])
+    @include('layouts.partials.theme-init', ['defaultDark' => true])
 
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#15191E">

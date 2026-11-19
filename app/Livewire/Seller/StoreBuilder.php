@@ -32,6 +32,8 @@ class StoreBuilder extends Component
 
     public $banner;
 
+    public $logo;
+
     public function mount(): void
     {
         $profile = auth()->user()->sellerProfile;
@@ -59,14 +61,38 @@ class StoreBuilder extends Component
     public function save(): void
     {
         $this->validate();
+        $this->validate([
+            'logo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048|dimensions:min_width=100,min_height=100',
+            'banner' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:6144',
+        ], [
+            'logo.dimensions' => 'The logo should be at least 100 × 100 pixels.',
+            'logo.max' => 'The logo must be 2 MB or smaller.',
+        ]);
 
         $profile = auth()->user()->sellerProfile;
-        $bannerPath = $this->banner ? $this->banner->store('store-banners/'.auth()->id(), 'public') : ($profile->banner_path);
+        $disk = \Illuminate\Support\Facades\Storage::disk('public');
+
+        $bannerPath = $profile->banner_path;
+        if ($this->banner) {
+            $bannerPath = $this->banner->store('store-banners/'.auth()->id(), 'public');
+            if ($profile->banner_path && $profile->banner_path !== $bannerPath) {
+                $disk->delete($profile->banner_path);
+            }
+        }
+
+        $logoPath = $profile->logo_path;
+        if ($this->logo) {
+            $logoPath = $this->logo->store('store-logos/'.auth()->id(), 'public');
+            if ($profile->logo_path && $profile->logo_path !== $logoPath) {
+                $disk->delete($profile->logo_path);
+            }
+        }
 
         $ownedFeatured = Product::where('seller_id', auth()->id())->whereIn('id', $this->featured)->pluck('id')->all();
 
         $profile->update([
             'banner_path' => $bannerPath,
+            'logo_path' => $logoPath,
             'featured_product_ids' => $ownedFeatured,
             'theme' => [
                 'accent' => $this->accent,
@@ -80,7 +106,19 @@ class StoreBuilder extends Component
         ]);
 
         $this->banner = null;
+        $this->logo = null;
         $this->dispatch('toast', message: 'Storefront updated');
+    }
+
+    public function removeLogo(): void
+    {
+        $profile = auth()->user()->sellerProfile;
+        if ($profile->logo_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($profile->logo_path);
+            $profile->update(['logo_path' => null]);
+        }
+        $this->logo = null;
+        $this->dispatch('toast', message: 'Logo removed');
     }
 
     public function render()

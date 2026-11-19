@@ -18,6 +18,8 @@ use App\Services\Marketing\AffiliateService;
 use App\Services\Marketing\StoreLoyaltyService;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
@@ -98,6 +100,42 @@ class StorefrontAffiliateLoyaltyTest extends TestCase
         $this->assertSame('Performance brakes, shipped fast', $theme['hero_headline']);
         $this->assertCount(1, $theme['sections']);
         $this->assertSame('Shipping', $theme['sections'][0]['heading']);
+    }
+
+    public function test_seller_can_upload_replace_and_remove_a_store_logo(): void
+    {
+        Storage::fake('public');
+        $seller = $this->seller();
+
+        Livewire::actingAs($seller)->test(StoreBuilder::class)
+            ->set('logo', UploadedFile::fake()->image('logo.png', 300, 300))
+            ->call('save')
+            ->assertHasNoErrors();
+        $first = $seller->sellerProfile->fresh()->logo_path;
+        $this->assertNotNull($first);
+        Storage::disk('public')->assertExists($first);
+
+        // shown on the public store page
+        $this->get(route('sellers.show', $seller->sellerProfile->fresh()))->assertOk()->assertSee($first, false);
+
+        // replacing deletes the old file
+        Livewire::actingAs($seller)->test(StoreBuilder::class)
+            ->set('logo', UploadedFile::fake()->image('new.jpg', 200, 200))
+            ->call('save')
+            ->assertHasNoErrors();
+        $second = $seller->sellerProfile->fresh()->logo_path;
+        $this->assertNotSame($first, $second);
+        Storage::disk('public')->assertMissing($first);
+
+        // too small is refused
+        Livewire::actingAs($seller)->test(StoreBuilder::class)
+            ->set('logo', UploadedFile::fake()->image('tiny.png', 40, 40))
+            ->call('save')
+            ->assertHasErrors('logo');
+
+        Livewire::actingAs($seller)->test(StoreBuilder::class)->call('removeLogo');
+        $this->assertNull($seller->sellerProfile->fresh()->logo_path);
+        Storage::disk('public')->assertMissing($second);
     }
 
     public function test_seller_store_page_renders_theme_and_loyalty_badge(): void
