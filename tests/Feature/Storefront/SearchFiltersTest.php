@@ -181,7 +181,7 @@ class SearchFiltersTest extends TestCase
         $this->product(['category_id' => $child->id, 'condition' => 'new']);
 
         $page = Livewire::test(ProductBrowse::class);
-        $page->assertSee('Cooling Z')->assertDontSee('Empty Z')->assertDontSee('Unused Z')->assertSee('Brand Z (1)');
+        $page->assertSee('Cooling Z')->assertDontSee('Empty Z')->assertDontSee('Unused Z')->assertDontSee('Brand Z (1)'); // brand filter is no longer shown to shoppers
         $this->assertSame(2, $page->viewData('categories')->firstWhere('slug', 'cooling-z')->listings_count);
         $this->assertEquals(1, $page->viewData('conditionCounts')['used']);
 

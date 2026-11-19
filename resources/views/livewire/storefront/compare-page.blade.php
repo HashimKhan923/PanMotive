@@ -57,9 +57,9 @@
                         @endforeach
                     </tr>
                     <tr>
-                        <th>Brand</th>
+                        <th>Fits</th>
                         @foreach ($products as $product)
-                            <td wire:key="br-{{ $product->id }}">{{ $product->brand?->name ?? '—' }}</td>
+                            <td wire:key="br-{{ $product->id }}">{{ $product->vehicleLabel() ?? '—' }}</td>
                         @endforeach
                     </tr>
                     <tr>

@@ -450,4 +450,31 @@ class Product extends Model implements HasMedia
             ->performOnCollections('images')
             ->nonQueued();
     }
+
+    /** "Honda Civic" / "Honda Civic +2 more" from the listed fitment — shown to shoppers instead of the brand. */
+    public function vehicleLabel(): ?string
+    {
+        if (! array_key_exists('vehicle_label', $this->attributes ?? []) && ! isset($this->vehicleLabelCache)) {
+            $pairs = \Illuminate\Support\Facades\DB::table('product_fitments')
+                ->join('vehicles', 'vehicles.id', '=', 'product_fitments.vehicle_id')
+                ->join('vehicle_makes', 'vehicle_makes.id', '=', 'vehicles.vehicle_make_id')
+                ->leftJoin('vehicle_models', 'vehicle_models.id', '=', 'vehicles.vehicle_model_id')
+                ->where('product_fitments.product_id', $this->id)
+                ->select('vehicle_makes.name as make', 'vehicle_models.name as model')
+                ->distinct()->orderBy('vehicle_makes.name')->orderBy('vehicle_models.name')
+                ->limit(50)->get();
+            if ($pairs->isEmpty()) {
+                $this->vehicleLabelCache = '';
+            } else {
+                $first = trim($pairs[0]->make.' '.($pairs[0]->model ?? ''));
+                $more = $pairs->count() - 1;
+                $this->vehicleLabelCache = $more > 0 ? "{$first} +{$more} more" : $first;
+            }
+        }
+
+        return ($this->vehicleLabelCache ?? '') !== '' ? $this->vehicleLabelCache : null;
+    }
+
+    /** @var string|null per-instance cache for vehicleLabel() */
+    public ?string $vehicleLabelCache = null;
 }

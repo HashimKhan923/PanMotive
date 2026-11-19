@@ -1,4 +1,4 @@
-@props(['placeholder' => 'Search parts, brands, or part numbers…', 'inputClass' => 'input h-10 rounded-full bg-surface-2/60 pl-9 pr-4 text-sm'])
+@props(['placeholder' => 'Search parts, vehicles, or part numbers…', 'inputClass' => 'input h-10 rounded-full bg-surface-2/60 pl-9 pr-4 text-sm'])
 {{-- Search box with suggestions while typing: parts (photo, price, fits your vehicle), categories,
      brands, and the shopper's recent searches. Keyboard: ↑ ↓ to move, Enter to open, Esc to close. --}}
 @php($sid = 'pm-suggest-'.\Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(6)))
@@ -69,9 +69,9 @@
                 </template>
 
                 {{-- categories + brands --}}
-                <template x-if="results.categories.length || results.brands.length">
+                <template x-if="results.categories.length">
                     <div class="mt-1 border-t border-line pt-1">
-                        <template x-for="(c, j) in [...results.categories.map(x => ({...x, kind: 'Category'})), ...results.brands.map(x => ({...x, kind: 'Brand'}))]" :key="'c'+c.url">
+                        <template x-for="(c, j) in results.categories.map(x => ({...x, kind: 'Category'}))" :key="'c'+c.url">
                             <a :href="c.url" @click="remember(q)" role="option"
                                :class="active === results.products.length + j ? 'bg-accent/15' : 'hover:bg-surface-2'" @mouseenter="active = results.products.length + j"
                                class="flex items-center gap-2.5 rounded-lg px-2 py-2">
@@ -84,7 +84,7 @@
                 </template>
 
                 {{-- nothing found --}}
-                <template x-if="!loading && searched && !results.products.length && !results.categories.length && !results.brands.length">
+                <template x-if="!loading && searched && !results.products.length && !results.categories.length">
                     <p class="px-3 py-4 text-center text-muted">No parts match “<span x-text="q"></span>” yet. Try a part number or a simpler word.</p>
                 </template>
 

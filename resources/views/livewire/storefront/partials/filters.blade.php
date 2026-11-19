@@ -3,7 +3,7 @@
         <label class="label" for="pb-q">Search</label>
         <div class="relative">
             <x-ui.icon name="search" class="pointer-events-none absolute left-3 top-1/2 w-4 h-4 -translate-y-1/2 text-muted" />
-            <input id="pb-q" wire:model.live.debounce.400ms="q" placeholder="Part, brand, vehicle, OEM #" class="input h-10 pl-9 text-sm">
+            <input id="pb-q" wire:model.live.debounce.400ms="q" placeholder="Part, vehicle, OEM #" class="input h-10 pl-9 text-sm">
         </div>
     </div>
 
@@ -28,16 +28,6 @@
                 @endforeach
             @endforeach
         </div>
-    </div>
-
-    <div>
-        <label class="label" for="pb-brand">Brand</label>
-        <select id="pb-brand" wire:model.live="brand" class="input h-10 text-sm">
-            <option value="">All brands</option>
-            @foreach ($brands as $b)
-                <option value="{{ $b->slug }}">{{ $b->name }} ({{ $b->listings_count }})</option>
-            @endforeach
-        </select>
     </div>
 
     <div>

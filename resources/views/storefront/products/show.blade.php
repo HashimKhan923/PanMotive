@@ -10,7 +10,6 @@
             'name' => $product->title,
             'sku' => $product->sku,
             'mpn' => $product->part_number,
-            'brand' => ['@type' => 'Brand', 'name' => $product->brand?->name],
             'offers' => [
                 '@type' => 'Offer',
                 'priceCurrency' => 'USD',
@@ -78,8 +77,8 @@
 
             {{-- buy box --}}
             <div data-reveal="slide-up" class="flex flex-col">
-                @if ($product->brand)
-                    <span class="text-xs font-semibold uppercase tracking-[.14em] text-accent">{{ $product->brand->name }}</span>
+                @if ($fits = $product->vehicleLabel())
+                    <span class="text-xs font-semibold uppercase tracking-[.14em] text-accent">Fits {{ $fits }}</span>
                 @endif
                 <h1 class="mt-1.5 text-xl font-semibold leading-snug tracking-tight sm:text-[26px] sm:leading-[1.25]">{{ $product->title }}</h1>
 

@@ -51,7 +51,8 @@
         <div class="flex flex-1 flex-col p-3.5 sm:p-4">
             {{-- one quiet meta line keeps every card's title on the same baseline --}}
             <p class="h-4 truncate text-[11px] font-semibold uppercase tracking-[.12em] text-muted">
-                {{ $product->brand?->name }}{{ $product->brand && $product->part_number ? ' · ' : '' }}{{ $product->part_number ? 'Part no. '.$product->part_number : '' }}
+                @php $fits = $product->vehicleLabel(); @endphp
+                {{ $fits ? 'Fits '.$fits : ($product->part_number ? 'Part no. '.$product->part_number : '') }}
             </p>
             <h3 class="mt-1.5 line-clamp-2 min-h-[2.6em] text-[13.5px] font-medium leading-[1.3] text-fg transition-colors group-hover:text-accent">{{ $product->title }}</h3>
 

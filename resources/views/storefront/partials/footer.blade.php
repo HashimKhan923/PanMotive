@@ -15,7 +15,7 @@
         </div>
 
         @foreach ([
-            'Shop' => [['All parts', route('products.index')], ["Today's deals", route('deals.index')], ['Fit Guarantee', route('fit-guarantee')], ['Brands', route('products.index')]],
+            'Shop' => [['All parts', route('products.index')], ["Today's deals", route('deals.index')], ['Fit Guarantee', route('fit-guarantee')], ['Find parts by vehicle', route('find-parts')]],
             'Account' => [['Your orders', route('orders.index')], ['Wallet and credits', route('wallet.index')], ['Log in', route('login')]],
             'Sell' => [['Become a seller', route('seller.onboarding.start')], ['Seller portal', route('seller.dashboard')]],
             ...(($footerPages = cache()->remember('footer.pages', 300, fn () => \App\Models\Page::where('is_published', true)->where('show_in_footer', true)->orderBy('title')->get(['title', 'slug'])))->isNotEmpty()
