@@ -70,6 +70,9 @@ class ProcessBulkProductUpload implements ShouldQueue
             }
         };
 
+        // Photos download on their own queue; the page counts them as they land.
+        $importer->photoTracker = $this->importId ? self::progressKey($this->sellerId, $this->importId) : null;
+
         try {
             $result = $importer->import(
                 $this->sellerId,

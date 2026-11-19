@@ -37,6 +37,9 @@ class BulkUpload extends Component
     /** @var array{format:string, created:int, skipped:int, errors:array, uncategorised?:int, variants?:int, fitted?:int, headers?:array}|null */
     public ?array $result = null;
 
+    /** Photos downloading in the background for this import. @var array{done:int, total:int} */
+    public array $photos = ['done' => 0, 'total' => 0];
+
     public function mount(): void
     {
         // Came back while an import is still running? Pick it up again.
@@ -101,11 +104,22 @@ class BulkUpload extends Component
             return;
         }
         $this->progress = $state;
+        $key = ProcessBulkProductUpload::progressKey(auth()->id(), $this->importId);
+        $this->photos = [
+            'done' => (int) Cache::get("{$key}:photos_done", 0),
+            'total' => (int) Cache::get("{$key}:photos_total", 0),
+        ];
 
         if ($state['status'] === 'done') {
+            $firstTime = $this->result === null;
             $this->result = $state['result'];
-            session()->forget('bulk-import-id');
-            if ($this->result['created'] > 0) {
+            // Keep the page able to show photo progress after a reload until every photo is in.
+            if ($this->photosPending()) {
+                session(['bulk-import-id' => $this->importId]);
+            } else {
+                session()->forget('bulk-import-id');
+            }
+            if ($firstTime && $this->result['created'] > 0) {
                 $this->dispatch('toast', message: "{$this->result['created']} product(s) imported as drafts.");
             }
         } elseif ($state['status'] === 'cancelled') {
@@ -114,6 +128,11 @@ class BulkUpload extends Component
             session()->forget('bulk-import-id');
             $this->addError('csvFile', $state['message'] ?? 'The import failed.');
         }
+    }
+
+    public function photosPending(): bool
+    {
+        return $this->photos['total'] > 0 && $this->photos['done'] < $this->photos['total'];
     }
 
     public function cancelImport(): void
@@ -133,7 +152,7 @@ class BulkUpload extends Component
 
     public function startOver(): void
     {
-        $this->reset('result', 'progress', 'importId', 'csvFile');
+        $this->reset('result', 'progress', 'importId', 'csvFile', 'photos');
         session()->forget('bulk-import-id');
     }
 

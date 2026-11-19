@@ -26,9 +26,7 @@
                 </div>
             </div>
 
-            @if ($result['created'] > 0 && $withImages)
-                <p class="mt-4 rounded-lg bg-surface-2 px-3 py-2 text-xs text-muted">Photos are downloading in the background and saved as WebP. They'll appear on your products over the next few minutes.</p>
-            @endif
+            @include('livewire.seller.partials.bulk-upload-photos')
 
             @if ($result['created'] === 0 && !empty($result['headers']))
                 <div class="mt-4 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-700 dark:text-amber-400">
@@ -101,9 +99,13 @@
             </div>
             <p class="mt-2 text-sm text-muted">{{ ($progress['status'] ?? '') === 'cancelling' ? 'Stopping after the current product…' : $label }}</p>
             @isset($progress['photos'])
-                <p class="mt-1 text-xs {{ $progress['photos'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted' }}">
-                    Photos: {{ $progress['photos'] ? 'On — they download in the background as products are created' : 'Off — products are created without photos' }}
-                </p>
+                @if ($progress['photos'] && $photos['total'] > 0)
+                    @include('livewire.seller.partials.bulk-upload-photos')
+                @else
+                    <p class="mt-1 text-xs {{ $progress['photos'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted' }}">
+                        Photos: {{ $progress['photos'] ? 'On — they download in the background as products are created' : 'Off — products are created without photos' }}
+                    </p>
+                @endif
             @endisset
             <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
                 <p class="text-xs text-muted">You can leave this page — the import keeps going and you'll get a notification when it's done.</p>

@@ -35,19 +35,54 @@ class FetchProductImages implements ShouldQueue
         public int $productId,
         public array $urls,
         public array $variantPhotos = [],
-    ) {}
+        public ?string $tracker = null,
+    ) {
+        // Own queue with several workers: thousands of photos (≈3 s each with R2) must not wait in one line.
+        $this->onQueue('photos');
+    }
+
+    /** Photo counters for a bulk import, shown on the upload page: "{tracker}:photos_done" / ":photos_total". */
+    public static function countPlanned(?string $tracker, int $count): void
+    {
+        if ($tracker && $count > 0) {
+            \Illuminate\Support\Facades\Cache::add("{$tracker}:photos_total", 0, now()->addDays(2));
+            \Illuminate\Support\Facades\Cache::add("{$tracker}:photos_done", 0, now()->addDays(2));
+            \Illuminate\Support\Facades\Cache::increment("{$tracker}:photos_total", $count);
+        }
+    }
+
+    private function countDone(int $count = 1): void
+    {
+        if ($this->tracker && $count > 0) {
+            \Illuminate\Support\Facades\Cache::increment("{$this->tracker}:photos_done", $count);
+        }
+    }
+
+    /** How many of this job's links it will try (what countPlanned() was told). */
+    public static function planned(array $urls): int
+    {
+        return min(count($urls), self::MAX_PER_PRODUCT);
+    }
 
     public function handle(): void
     {
         set_time_limit(0);
 
+        $urls = array_slice($this->urls, 0, self::MAX_PER_PRODUCT);
         $product = Product::find($this->productId);
         if (! $product) {
+            $this->countDone(count($urls)); // deleted before its turn — nothing to download
+
             return;
         }
 
         $mediaIds = [];
-        foreach (array_slice($this->urls, 0, self::MAX_PER_PRODUCT) as $url) {
+        foreach ($urls as $i => $url) {
+            // Deleted while we were downloading: stop, and don't leave its photos in storage.
+            if ($i > 0 && Product::whereKey($product->id)->doesntExist()) {
+                $this->countDone(count($urls) - $i);
+                break;
+            }
             $download = null;
             $webp = null;
             try {
@@ -68,7 +103,15 @@ class FetchProductImages implements ShouldQueue
             } finally {
                 $download && @unlink($download);
                 $webp && is_file($webp) && @unlink($webp);
+                $this->countDone();
             }
+        }
+
+        if (Product::whereKey($product->id)->doesntExist()) {
+            // The listing was deleted mid-download (its photo cleanup may already have run).
+            $product->media()->get()->each->delete();
+
+            return;
         }
 
         foreach ($this->variantPhotos as $label => $url) {

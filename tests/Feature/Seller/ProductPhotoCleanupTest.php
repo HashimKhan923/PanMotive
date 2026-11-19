@@ -43,7 +43,7 @@ class ProductPhotoCleanupTest extends TestCase
             'seller_id' => $this->seller->id, 'category_id' => $cat->id, 'title' => 'Pads '.uniqid(),
             'slug' => 'pads-'.uniqid(), 'price' => 20, 'quantity' => 3, 'status' => 'draft', 'condition' => 'new',
         ]);
-        foreach (range(1, $count) as $i) {
+        for ($i = 1; $i <= $count; $i++) {
             $p->addMedia(UploadedFile::fake()->image("p{$i}.jpg", 400, 400))->toMediaCollection('images');
         }
 
@@ -94,6 +94,61 @@ class ProductPhotoCleanupTest extends TestCase
             $this->assertStringStartsWith($second->id.'/', $f);
         }
         $this->assertNotEmpty($this->filesOnDisk());
+    }
+
+    public function test_photos_run_on_their_own_queue_and_are_counted_for_the_upload_page(): void
+    {
+        $p = $this->productWithPhotos(0);
+        $tracker = 'bulk-import:'.$this->seller->id.':run-9';
+        $gd = imagecreatetruecolor(300, 300);
+        imagefill($gd, 0, 0, imagecolorallocate($gd, 229, 27, 43));
+        ob_start();
+        imagejpeg($gd);
+        $jpeg = (string) ob_get_clean();
+        imagedestroy($gd);
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response($jpeg, 200, ['Content-Type' => 'image/jpeg'])]);
+
+        $job = new \App\Jobs\FetchProductImages($p->id, ['https://cdn.example.com/a.jpg', 'https://cdn.example.com/b.jpg'], [], $tracker);
+        $this->assertSame('photos', $job->queue);
+
+        \App\Jobs\FetchProductImages::countPlanned($tracker, 2);
+        $job->handle();
+
+        $this->assertSame(2, $p->fresh()->getMedia('images')->count());
+        $this->assertSame(2, (int) \Illuminate\Support\Facades\Cache::get("{$tracker}:photos_total"));
+        $this->assertSame(2, (int) \Illuminate\Support\Facades\Cache::get("{$tracker}:photos_done"));
+    }
+
+    public function test_a_listing_deleted_before_its_photos_download_leaves_nothing_in_storage(): void
+    {
+        $p = $this->productWithPhotos(0);
+        $tracker = 'bulk-import:'.$this->seller->id.':run-10';
+        \App\Jobs\FetchProductImages::countPlanned($tracker, 3);
+        $p->delete();
+
+        (new \App\Jobs\FetchProductImages($p->id, ['https://x/1.jpg', 'https://x/2.jpg', 'https://x/3.jpg'], [], $tracker))->handle();
+
+        $this->assertSame([], $this->filesOnDisk());
+        $this->assertSame(3, (int) \Illuminate\Support\Facades\Cache::get("{$tracker}:photos_done"), 'skipped photos still count, so the bar finishes');
+    }
+
+    public function test_upload_page_shows_photo_progress_after_the_products_are_done(): void
+    {
+        $id = 'run-11';
+        $key = \App\Jobs\ProcessBulkProductUpload::progressKey($this->seller->id, $id);
+        \Illuminate\Support\Facades\Cache::put($key, ['status' => 'done', 'result' => ['format' => 'shopify', 'created' => 5, 'skipped' => 0, 'errors' => []]]);
+        \Illuminate\Support\Facades\Cache::put("{$key}:photos_total", 40);
+        \Illuminate\Support\Facades\Cache::put("{$key}:photos_done", 12);
+
+        Livewire::actingAs($this->withTwoFactor($this->seller))->test(\App\Livewire\Seller\BulkUpload::class)
+            ->set('importId', $id)->call('refreshProgress')
+            ->assertSee('Photos: 12 of 40 saved')
+            ->assertSeeHtml('wire:poll.3s="refreshProgress"');
+        $this->assertSame($id, session('bulk-import-id'), 'coming back to the page still shows the photo bar');
+
+        \Illuminate\Support\Facades\Cache::put("{$key}:photos_done", 40);
+        Livewire::actingAs($this->seller)->test(\App\Livewire\Seller\BulkUpload::class)
+            ->assertSee('All 40 photos saved')->assertDontSeeHtml('wire:poll.3s');
     }
 
     public function test_weekly_sweep_removes_only_unused_photo_folders(): void

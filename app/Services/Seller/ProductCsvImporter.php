@@ -48,6 +48,9 @@ class ProductCsvImporter
     private int $fitted = 0;
     private int $existing = 0;
 
+    /** Cache key prefix for the upload page's photo counter (set by the bulk upload job). */
+    public ?string $photoTracker = null;
+
     public function __construct(
         private CategoryResolver $categories,
         private \App\Support\Html\DescriptionSanitizer $sanitizer,
@@ -626,7 +629,8 @@ class ProductCsvImporter
         if (! $this->withImages || $urls === []) {
             return;
         }
-        FetchProductImages::dispatch($product->id, $urls, $variantPhotos);
+        FetchProductImages::countPlanned($this->photoTracker, FetchProductImages::planned($urls));
+        FetchProductImages::dispatch($product->id, $urls, $variantPhotos, $this->photoTracker);
     }
 
     /**
