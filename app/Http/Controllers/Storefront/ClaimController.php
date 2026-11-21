@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers\Storefront;
 
-use App\Enums\OrderStatus;
+use App\Services\Buyer\OrderActionRefused;
+use App\Services\Buyer\OrderActions;
 use App\Http\Controllers\Controller;
 use App\Models\BuyerClaim;
 use App\Models\OrderItem;
@@ -11,13 +12,7 @@ use Illuminate\Validation\ValidationException;
 
 class ClaimController extends Controller
 {
-    private const ELIGIBLE = [
-        OrderStatus::Shipped->value, OrderStatus::OutForDelivery->value,
-        OrderStatus::Delivered->value, OrderStatus::PayoutReleased->value,
-        OrderStatus::ReturnRequested->value, OrderStatus::ReturnApproved->value,
-    ];
-
-    public function store(Request $request, OrderItem $orderItem)
+    public function store(Request $request, OrderItem $orderItem, OrderActions $actions)
     {
         abort_unless($orderItem->order->buyer_id === auth()->id(), 403);
 
@@ -26,25 +21,11 @@ class ClaimController extends Controller
             'detail' => 'required|string|max:2000',
         ]);
 
-        if (! in_array($orderItem->status->value, self::ELIGIBLE, true)) {
-            throw ValidationException::withMessages(['reason' => 'This item is not eligible for a claim right now.']);
+        try {
+            $claim = $actions->fileClaim($orderItem, auth()->user(), $data['reason'], $data['detail']);
+        } catch (OrderActionRefused $e) {
+            throw ValidationException::withMessages([$e->field => $e->getMessage()]);
         }
-
-        if (BuyerClaim::where('order_item_id', $orderItem->id)->whereIn('status', ['open', 'seller_responded', 'escalated'])->exists()) {
-            throw ValidationException::withMessages(['reason' => 'You already have an open claim for this item.']);
-        }
-
-        $claim = BuyerClaim::create([
-            'order_item_id' => $orderItem->id,
-            'buyer_id' => auth()->id(),
-            'seller_id' => $orderItem->seller_id,
-            'reason' => $data['reason'],
-            'detail' => $data['detail'],
-            'amount' => $orderItem->line_total,
-            'status' => 'open',
-        ]);
-
-        $orderItem->seller?->notify(new \App\Notifications\BuyerClaimFiled($claim));
 
         return back()->with('success', "Claim {$claim->claim_number} filed. The seller has 72 hours to respond before Panmotive steps in.");
     }

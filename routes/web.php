@@ -48,7 +48,12 @@ if (app()->environment('local')) {
 }
 
 // Payment / carrier webhooks — apex domain, CSRF-exempt (see bootstrap/app.php).
-Route::post('webhooks/stripe', [StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
+// Links that open the shopping app (off until the app's store ids are in .env).
+Route::get('.well-known/apple-app-site-association', [\App\Http\Controllers\AppLinksController::class, 'apple'])->name('applinks.apple');
+Route::get('apple-app-site-association', [\App\Http\Controllers\AppLinksController::class, 'apple']);
+Route::get('.well-known/assetlinks.json', [\App\Http\Controllers\AppLinksController::class, 'android'])->name('applinks.android');
+
+Route::post('webhooks/stripe',[StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
 Route::post('webhooks/easypost', [EasyPostWebhookController::class, 'handle'])->name('webhooks.easypost');
 Route::post('webhooks/shopify', [\App\Http\Controllers\Webhooks\ShopifyWebhookController::class, 'handle'])
     ->middleware('throttle:600,1')->name('webhooks.shopify');

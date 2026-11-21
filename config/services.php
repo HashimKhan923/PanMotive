@@ -66,6 +66,27 @@ return [
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        // The shopping app's own Google client ids (iOS, Android), comma separated: tokens from
+        // native "Sign in with Google" are issued to these.
+        'app_client_ids' => env('GOOGLE_APP_CLIENT_IDS'),
+    ],
+
+    // "Sign in with Apple" in the shopping app: the app's bundle id (e.g. com.panmotive.app), comma separated.
+    'apple' => [
+        'client_ids' => env('APPLE_CLIENT_IDS', 'com.panmotive.app'),
+        // Apple Developer team id: switches on links that open the app (apple-app-site-association).
+        'team_id' => env('APPLE_TEAM_ID'),
+    ],
+
+    // Android App Links: the app's package and its signing certificate's SHA-256 (from Google Play).
+    'android' => [
+        'package' => env('ANDROID_PACKAGE', 'com.panmotive.app'),
+        'cert_sha256' => env('ANDROID_CERT_SHA256'),
+    ],
+
+    // Push notifications to the shopping app go through Expo's push service.
+    'expo' => [
+        'access_token' => env('EXPO_ACCESS_TOKEN'),
     ],
 
     // Facebook Pages + Instagram auto-posting (one Meta app). Without an app id + secret,

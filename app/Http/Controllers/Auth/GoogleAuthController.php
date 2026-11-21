@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use App\Services\Auth\SocialAccountService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -17,8 +15,6 @@ use Illuminate\Support\Str;
  */
 class GoogleAuthController extends Controller
 {
-    private const STAFF = ['super_admin', 'support_agent', 'finance', 'catalog_manager'];
-
     public static function configured(): bool
     {
         return filled(config('services.google.client_id')) && filled(config('services.google.client_secret'));
@@ -80,32 +76,12 @@ class GoogleAuthController extends Controller
             return $fail('We could not reach Google. Please try again.');
         }
 
-        $sub = (string) ($google['sub'] ?? '');
-        $email = Str::lower(trim((string) ($google['email'] ?? '')));
-        if ($sub === '' || $email === '' || ($google['email_verified'] ?? false) !== true) {
-            return $fail('Your Google account has no verified email address.');
-        }
-
-        $user = User::where('google_id', $sub)->first() ?? User::whereRaw('LOWER(email) = ?', [$email])->first();
-
-        if ($user && $user->hasAnyRole(self::STAFF)) {
-            return $fail('Staff accounts sign in with their email and password.');
-        }
-        if ($user && $user->is_active === false) {
-            return $fail('This account has been suspended. Contact support if you think this is a mistake.');
-        }
-
-        if ($user) {
-            // Google confirmed this email belongs to them: link the account.
-            $user->forceFill(['google_id' => $sub, 'email_verified_at' => $user->email_verified_at ?? now()])->save();
-        } else {
-            $user = User::create([
-                'name' => Str::limit(trim((string) ($google['name'] ?? '')) ?: Str::before($email, '@'), 250, ''),
-                'email' => $email,
-                'password' => Hash::make(Str::random(48)), // they can set one later with "Forgot password"
-            ]);
-            $user->forceFill(['google_id' => $sub, 'email_verified_at' => now()])->save();
-            event(new Registered($user));
+        $user = app(SocialAccountService::class)->resolve(
+            'google', (string) ($google['sub'] ?? ''), $google['email'] ?? null,
+            ($google['email_verified'] ?? false) === true, $google['name'] ?? null,
+        );
+        if (is_string($user)) {
+            return $fail($user);
         }
 
         Auth::login($user, remember: true);

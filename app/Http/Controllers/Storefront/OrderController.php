@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
-use App\Jobs\ReleaseSellerPayout;
 use App\Models\Order;
 use App\Models\OrderItem;
 
@@ -64,24 +63,15 @@ class OrderController extends Controller
         return view('storefront.checkout.pay', ['order' => $order, 'clientSecret' => $intent->client_secret]);
     }
 
-    public function confirmDelivery(OrderItem $orderItem)
+    public function confirmDelivery(OrderItem $orderItem, \App\Services\Buyer\OrderActions $actions)
     {
         abort_unless($orderItem->order->buyer_id === auth()->id(), 403);
-        abort_unless(in_array($orderItem->status->value, ['shipped', 'out_for_delivery'], true), 400);
 
-        $orderItem->update([
-            'status' => OrderStatus::Delivered,
-            'delivered_at' => now(),
-        ]);
-
-        $orderItem->statusHistory()->create([
-            'status' => OrderStatus::Delivered->value,
-            'note' => 'Buyer confirmed delivery.',
-            'changed_by' => auth()->id(),
-        ]);
-        app(\App\Services\Integrations\WebhookDispatcher::class)->orderEvent('order.delivered', [$orderItem->fresh('order')]);
-
-        ReleaseSellerPayout::dispatch($orderItem->id);
+        try {
+            $actions->confirmDelivery($orderItem, auth()->user());
+        } catch (\App\Services\Buyer\OrderActionRefused $e) {
+            abort($e->status, $e->getMessage());
+        }
 
         return back()->with('success', 'Delivery confirmed — thanks!');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Cart;
 
+use App\Support\ShopContext;
 use App\Models\Product;
 use App\Models\Wishlist;
 use App\Models\WishlistItem;
@@ -29,10 +30,8 @@ class WishlistService
             return $this->wishlist = $list;
         }
 
-        $sid = session('wishlist_session_id');
-        if (! $sid) {
-            session(['wishlist_session_id' => $sid = (string) Str::uuid()]);
-        }
+        // Website: the guest's session. App: the install's device id (see ShopContext).
+        $sid = ShopContext::guestKey('wishlist_session_id') ?? (string) Str::uuid();
 
         return $this->wishlist = Wishlist::firstOrCreate(['session_id' => $sid]);
     }
@@ -92,14 +91,14 @@ class WishlistService
         if ($user = auth()->user()) {
             return $user->wishlist()->first();
         }
-        $sid = session('wishlist_session_id');
+        $sid = ShopContext::guestKey('wishlist_session_id', create: false);
 
         return $sid ? Wishlist::where('session_id', $sid)->first() : null;
     }
 
     private function mergeGuest(Wishlist $userList): void
     {
-        $sid = session('wishlist_session_id');
+        $sid = ShopContext::guestKey('wishlist_session_id', create: false);
         if (! $sid) {
             return;
         }
@@ -114,6 +113,6 @@ class WishlistService
             }
             $guest->delete();
         }
-        session()->forget('wishlist_session_id');
+        ShopContext::forgetGuestKey('wishlist_session_id');
     }
 }

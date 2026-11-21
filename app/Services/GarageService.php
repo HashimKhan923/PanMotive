@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Vehicle;
+use App\Support\ShopContext;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -20,7 +21,9 @@ class GarageService
             'label' => $vehicle->label(),
         ];
 
-        session([self::KEY => $payload]);
+        if (! ShopContext::isApp()) {
+            session([self::KEY => $payload]);
+        }
 
         if (Auth::check()) {
             Auth::user()->forceFill(['active_vehicle' => $payload])->save();
@@ -29,7 +32,9 @@ class GarageService
 
     public function clear(): void
     {
-        session()->forget(self::KEY);
+        if (! ShopContext::isApp()) {
+            session()->forget(self::KEY);
+        }
 
         if (Auth::check()) {
             Auth::user()->forceFill(['active_vehicle' => null])->save();
@@ -39,6 +44,17 @@ class GarageService
     /** @return array{id:int,label:string}|null */
     public function current(): ?array
     {
+        // The app keeps the garage on the phone and sends the vehicle with each request.
+        if (ShopContext::isApp()) {
+            if ($id = ShopContext::appVehicleId()) {
+                $vehicle = Vehicle::with('make', 'model', 'engine')->find($id);
+
+                return $vehicle ? ['id' => $vehicle->id, 'label' => $vehicle->label()] : null;
+            }
+
+            return Auth::user()?->active_vehicle ?: null;
+        }
+
         $fromSession = session(self::KEY);
 
         if ($fromSession) {

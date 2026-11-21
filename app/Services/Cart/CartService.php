@@ -4,6 +4,7 @@ namespace App\Services\Cart;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Support\ShopContext;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -29,11 +30,8 @@ class CartService
             return $this->cart = $cart;
         }
 
-        $sessionId = session('cart_session_id');
-
-        if (! $sessionId) {
-            session(['cart_session_id' => $sessionId = (string) Str::uuid()]);
-        }
+        // Website: the guest's session. App: the install's device id (see ShopContext).
+        $sessionId = ShopContext::guestKey('cart_session_id') ?? (string) Str::uuid();
 
         return $this->cart = Cart::firstOrCreate(['session_id' => $sessionId]);
     }
@@ -207,14 +205,14 @@ class CartService
             return $user->cart()->first();
         }
 
-        $sessionId = session('cart_session_id');
+        $sessionId = ShopContext::guestKey('cart_session_id', create: false);
 
         return $sessionId ? Cart::where('session_id', $sessionId)->first() : null;
     }
 
     private function mergeGuestCartInto(Cart $userCart): void
     {
-        $sessionId = session('cart_session_id');
+        $sessionId = ShopContext::guestKey('cart_session_id', create: false);
 
         if (! $sessionId) {
             return;
@@ -224,13 +222,17 @@ class CartService
 
         if ($guest && $guest->id !== $userCart->id) {
             foreach ($guest->items as $item) {
-                $existing = $userCart->items()->firstOrNew(['product_id' => $item->product_id]);
+                // Keep the chosen option (size, colour…): the same product in another variant is a different line.
+                $existing = $userCart->items()->firstOrNew([
+                    'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
+                ]);
                 $existing->quantity = ($existing->quantity ?? 0) + $item->quantity;
                 $existing->save();
             }
             $guest->delete();
         }
 
-        session()->forget('cart_session_id');
+        ShopContext::forgetGuestKey('cart_session_id');
     }
 }

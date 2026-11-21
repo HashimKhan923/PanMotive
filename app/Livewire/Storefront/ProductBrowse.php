@@ -8,13 +8,9 @@ use App\Models\Product;
 use App\Models\Vehicle;
 use App\Models\VehicleMake;
 use App\Models\VehicleModel;
-use App\Services\AI\AiClient;
-use App\Services\Search\CatalogSearch;
-use App\Services\Search\SemanticFallbackService;
+use App\Services\Search\ShopQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -54,10 +50,7 @@ class ProductBrowse extends Component
 
     public string $fallbackNotice = '';
 
-    /** The words actually searched — the shopper's, or the AI rewrite when theirs found nothing. */
-    protected ?string $searchTerm = null;
-
-    protected ?CatalogSearch $catalog = null;
+    protected ?ShopQuery $shopQuery = null;
 
     public function updating($name): void
     {
@@ -121,81 +114,26 @@ class ProductBrowse extends Component
     #[Computed]
     public function results(): LengthAwarePaginator
     {
-        $this->fallbackNotice = '';
-        $this->searchTerm = $this->q;
-        $results = $this->runSearch();
-
-        if ($results->total() === 0 && ($rewritten = $this->rewrittenQuery())) {
-            $this->searchTerm = $rewritten;
-            $retry = $this->runSearch();
-
-            if ($retry->total() > 0) {
-                $this->fallbackNotice = "No exact match for \"{$this->q}\". Showing results for \"{$rewritten}\".";
-
-                return $retry;
-            }
-            $this->searchTerm = $this->q;
-        }
+        $search = $this->shopQuery();
+        $results = $search->results(15);
+        $this->fallbackNotice = $search->fallbackNotice;
 
         return $results;
     }
 
-    protected function runSearch(): LengthAwarePaginator
+    /** The shared search + filters (also used by the shopping app's API), built from this page's filters. */
+    protected function shopQuery(): ShopQuery
     {
-        $query = $this->filtered()->with('brand', 'seller.sellerProfile', 'media')
-            ->orderByRaw('CASE WHEN products.quantity > 0 THEN 0 ELSE 1 END');
-
-        match ($this->sort) {
-            'price_asc' => $query->orderByLivePrice('asc'),
-            'price_desc' => $query->orderByLivePrice('desc'),
-            'newest' => null,
-            default => $this->catalog()->orderByRelevance($query, (string) $this->searchTerm),
-        };
-
-        return $query->latest('products.created_at')->orderByDesc('products.id')->paginate(15);
+        return $this->shopQuery ??= ShopQuery::make([
+            'q' => $this->q, 'category' => $this->category, 'brand' => $this->brand, 'condition' => $this->condition,
+            'make' => $this->make, 'model' => $this->model, 'vehicleId' => $this->vehicleId, 'sort' => $this->sort,
+        ]);
     }
 
     /** The listings the current filters allow. $except leaves one filter out, which is what its own counts need. */
     protected function filtered(?string $except = null): Builder
     {
-        $query = Product::query()->listed();
-
-        $this->catalog()->apply($query, $this->searchTerm ?? $this->q);
-
-        if ($except !== 'category' && $this->category !== '') {
-            $selected = $this->selectedCategory();
-            $query->whereIn('products.category_id', $selected
-                ? Category::where('parent_id', $selected->id)->pluck('id')->push($selected->id)
-                : [0]);
-        }
-        if ($except !== 'brand' && $this->brand !== '') {
-            $query->whereIn('products.brand_id', Brand::where('slug', $this->brand)->select('id'));
-        }
-        if ($except !== 'condition' && $this->condition !== '') {
-            $query->where('products.condition', $this->condition);
-        }
-        if ($this->make !== '') {
-            $make = $this->selectedMake();
-            $make ? $query->forVehicleMake($make, $this->selectedModel()) : $query->whereRaw('1 = 0');
-        }
-        if ($this->vehicleId) {
-            $query->whereHas('fitments', fn ($f) => $f->where('vehicles.id', $this->vehicleId));
-        }
-
-        return $query;
-    }
-
-    /** Ask the AI what a search that found nothing probably meant. Limited, since a miss spends money. */
-    protected function rewrittenQuery(): ?string
-    {
-        if (mb_strlen(trim($this->q)) <= 3 || ! app(AiClient::class)->isConfigured()) {
-            return null;
-        }
-
-        $rewritten = RateLimiter::attempt('search-rewrite:'.request()->ip(), 10,
-            fn () => app(SemanticFallbackService::class)->rewriteQuery($this->q), 60);
-
-        return is_string($rewritten) && strcasecmp($rewritten, trim($this->q)) !== 0 ? $rewritten : null;
+        return $this->shopQuery()->filtered($except);
     }
 
     /** Sponsored placements (boosts + targeted ad campaigns) above organic results — only ones the filters allow. */
@@ -223,51 +161,19 @@ class ProductBrowse extends Component
         return $served;
     }
 
-    protected function catalog(): CatalogSearch
-    {
-        return $this->catalog ??= app(CatalogSearch::class);
-    }
-
     protected function selectedCategory(): ?Category
     {
-        return $this->category !== '' ? Category::where('slug', $this->category)->first() : null;
+        return $this->shopQuery()->selectedCategory();
     }
 
     protected function selectedMake(): ?VehicleMake
     {
-        return $this->make !== '' ? VehicleMake::where('slug', $this->make)->first() : null;
+        return $this->shopQuery()->selectedMake();
     }
 
     protected function selectedModel(): ?VehicleModel
     {
-        $make = $this->selectedMake();
-
-        return $make && $this->model !== ''
-            ? VehicleModel::where('vehicle_make_id', $make->id)->where('slug', $this->model)->first()
-            : null;
-    }
-
-    /** Root categories with live counts. Empty ones are hidden; a selected branch also lists its subcategories. */
-    protected function categoryTree(?Category $selected): Collection
-    {
-        $counts = $this->filtered('category')->reorder()
-            ->selectRaw('products.category_id, COUNT(*) AS aggregate')
-            ->groupBy('products.category_id')->pluck('aggregate', 'category_id');
-
-        $all = Category::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get(['id', 'parent_id', 'name', 'slug']);
-        $openRoot = $selected?->parent_id ?: $selected?->id;
-
-        return $all->whereNull('parent_id')->map(function (Category $root) use ($all, $counts, $selected, $openRoot) {
-            $children = $all->where('parent_id', $root->id)->values();
-            $children->each(fn ($c) => $c->listings_count = (int) ($counts[$c->id] ?? 0));
-
-            $root->listings_count = (int) ($counts[$root->id] ?? 0) + $children->sum('listings_count');
-            $root->shown_children = $root->id === $openRoot
-                ? $children->filter(fn ($c) => $c->listings_count > 0 || $c->id === $selected?->id)->values()
-                : collect();
-
-            return $root;
-        })->filter(fn ($root) => $root->listings_count > 0 || $root->id === $openRoot)->values();
+        return $this->shopQuery()->selectedModel();
     }
 
     public function render()
@@ -275,19 +181,14 @@ class ProductBrowse extends Component
         $results = $this->results; // first: the counts below must use the same search words
         $selected = $this->selectedCategory();
 
-        $brandCounts = $this->filtered('brand')->reorder()->whereNotNull('products.brand_id')
-            ->selectRaw('products.brand_id, COUNT(*) AS aggregate')
-            ->groupBy('products.brand_id')->pluck('aggregate', 'brand_id');
-
-        $conditionCounts = $this->filtered('condition')->reorder()
-            ->select('products.condition')->selectRaw('COUNT(*) AS aggregate')
-            ->groupBy('products.condition')->pluck('aggregate', 'condition');
+        $brandCounts = $this->shopQuery()->brandCounts();
+        $conditionCounts = $this->shopQuery()->conditionCounts();
 
         return view('livewire.storefront.product-browse', [
             'results' => $results,
             'selectedCategory' => $selected,
             'parentCategory' => $selected?->parent_id ? Category::find($selected->parent_id) : null,
-            'categories' => $this->categoryTree($selected),
+            'categories' => $this->shopQuery()->categoryTree(),
             'brands' => Brand::orderBy('name')->get(['id', 'name', 'slug'])
                 ->each(fn ($b) => $b->listings_count = (int) ($brandCounts[$b->id] ?? 0))
                 ->filter(fn ($b) => $b->listings_count > 0 || $b->slug === $this->brand)->values(),

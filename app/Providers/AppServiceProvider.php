@@ -26,6 +26,12 @@ class AppServiceProvider extends ServiceProvider
         \Illuminate\Support\Facades\Event::listen(\Spatie\Backup\Events\BackupWasSuccessful::class, fn () => \App\Support\Heartbeat::beat('backup-success'));
         \Illuminate\Support\Facades\Event::listen(\Spatie\Backup\Events\BackupHasFailed::class, fn () => \App\Support\Heartbeat::beat('backup-failed'));
 
+        // Shopper notifications also go to their phones when they use the shopping app.
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Notifications\Events\NotificationSent::class,
+            fn ($event) => app(\App\Services\Push\AppPush::class)->handleSent($event),
+        );
+
         $this->configureRateLimiters();
         $this->configureEmails();
 
@@ -101,6 +107,12 @@ class AppServiceProvider extends ServiceProvider
         // Seller REST API: per token (hashed — the raw token never becomes a cache key), else per IP.
         RateLimiter::for('seller-api', fn (Request $request) => Limit::perMinute(120)
             ->by($request->bearerToken() ? 'tok:'.hash('sha256', $request->bearerToken()) : 'ip:'.$request->ip()));
+
+        // The shopping app: per signed-in token, else per phone (device id), else per IP.
+        RateLimiter::for('shop-api', fn (Request $request) => Limit::perMinute(240)->by(
+            $request->bearerToken() ? 'tok:'.hash('sha256', $request->bearerToken())
+                : ($request->header('X-Device-Id') ? 'dev:'.substr((string) $request->header('X-Device-Id'), 0, 64).'|'.$request->ip() : 'ip:'.$request->ip())));
+        RateLimiter::for('shop-auth', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
 
         RateLimiter::for('checkout', fn (Request $request) => Limit::perMinute(10)
             ->by($request->user()?->id ?: $request->ip()));
