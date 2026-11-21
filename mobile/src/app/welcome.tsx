@@ -55,6 +55,8 @@ export default function WelcomeScreen() {
       </View>
 
       <AList
+        style={{ flex: 1 }}
+        contentContainerStyle={{ alignItems: 'stretch' }}
         data={SLIDES}
         horizontal
         pagingEnabled
@@ -91,7 +93,7 @@ function Slide({ item, index, x, width }: { item: (typeof SLIDES)[number]; index
   });
 
   return (
-    <View style={{ width, paddingHorizontal: 28, justifyContent: 'center' }}>
+    <View style={{ width, flex: 1, paddingHorizontal: 28, justifyContent: 'center' }}>
       <Animated.View style={[styles.iconWrap, iconStyle]}>
         <View style={styles.iconCut} />
         <Icon name={item.icon} size={48} color="#fff" />
