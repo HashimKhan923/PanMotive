@@ -1,21 +1,20 @@
-// Android release builds run a "lint vital" check on every library. The Stripe SDK's lint
-// classpath asks for com.google.android.gms:play-services-tapandpay, which Google doesn't publish
-// publicly (it's only for push provisioning, which Panmotive doesn't use), so the check can't
-// resolve and the whole build fails. Lint isn't needed to build the app: skip those tasks.
+// The Stripe SDK declares (compileOnly) Stripe's card-issuing "push provisioning" library, which in
+// turn needs com.google.android.gms:play-services-tapandpay — a library Google doesn't publish
+// publicly. Panmotive never uses push provisioning (it's for card issuers adding cards to Google
+// Wallet; Stripe reaches it by reflection, so it's optional), but Gradle still tries to download it
+// and the Android build fails. Leave it out everywhere.
 const { withProjectBuildGradle } = require('expo/config-plugins');
 
-const MARK = '// panmotive: skip release lint (see plugins/withoutReleaseLint.js)';
+const MARK = '// panmotive: no play-services-tapandpay (see plugins/withoutReleaseLint.js)';
 
-module.exports = function withoutReleaseLint(config) {
+module.exports = function withoutTapAndPay(config) {
   return withProjectBuildGradle(config, (cfg) => {
     if (!cfg.modResults.contents.includes(MARK)) {
       cfg.modResults.contents += `
 ${MARK}
-subprojects {
-    tasks.configureEach { task ->
-        if (task.name.toLowerCase().contains('lintvital') || task.name.toLowerCase().contains('lintanalyze')) {
-            task.enabled = false
-        }
+allprojects {
+    configurations.configureEach {
+        exclude group: 'com.google.android.gms', module: 'play-services-tapandpay'
     }
 }
 `;
