@@ -41,6 +41,7 @@ export default function GarageScreen() {
   const [model, setModel] = useState<Item | null>(null);
   const [year, setYear] = useState<number | null>(null);
   const [filter, setFilter] = useState('');
+  const leave = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   const choose = async (v: Vehicle) => {
     haptic('success');
@@ -48,7 +49,7 @@ export default function GarageScreen() {
     void qc.invalidateQueries();
     if (signedIn) void put('/garage', { vehicle_id: v.id }).catch(() => {});
     toast(`Shopping for ${v.label}`);
-    router.back();
+    leave();
   };
 
   const resolve = useMutation({
@@ -119,7 +120,7 @@ export default function GarageScreen() {
           <View style={styles.iconBtn} />
         )}
         <Text variant="h3">{picking ? 'Add your vehicle' : 'Your garage'}</Text>
-        <Press onPress={() => router.back()} style={styles.iconBtn} accessibilityLabel="Close">
+        <Press onPress={leave} style={styles.iconBtn} accessibilityLabel="Close">
           <Icon name="x" size={22} />
         </Press>
       </View>
@@ -160,7 +161,7 @@ export default function GarageScreen() {
                 setVehicle(null);
                 void qc.invalidateQueries();
                 if (signedIn) void put('/garage', { vehicle_id: null }).catch(() => {});
-                router.back();
+                leave();
               }}
             />
           ) : null}
@@ -199,7 +200,7 @@ export default function GarageScreen() {
             </View>
           </View>
           <Animated.View key={step} entering={FadeInRight.springify().damping(20)} exiting={FadeOutLeft.duration(160)} style={{ flex: 1 }}>
-            {list.isLoading || resolve.isPending ? (
+            {list.isLoading || resolve.isPending || noEngines ? (
               <View style={{ padding: 16, gap: 10 }}>
                 {Array.from({ length: 8 }).map((_, i) => (
                   <Skeleton key={i} height={48} radius={radius.md} />

@@ -67,7 +67,7 @@ export function ForwardCutOverlay() {
   }));
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}>
       <Animated.View style={[styles.band, { width: bandW, height: H, backgroundColor: palette.red }, red]} />
       <Animated.View style={[styles.band, { width: bandW, height: H, backgroundColor: palette.charcoal }, charcoal]} />
     </View>

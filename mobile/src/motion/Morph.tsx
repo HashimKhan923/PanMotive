@@ -71,7 +71,7 @@ export function MorphOverlay() {
   if (!uri || !from) return null;
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}>
       <Animated.View style={[styles.img, style]}>
         <Image source={uri} style={StyleSheet.absoluteFill} contentFit="cover" />
       </Animated.View>

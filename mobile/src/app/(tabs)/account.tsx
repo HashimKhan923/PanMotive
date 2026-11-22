@@ -204,7 +204,7 @@ export default function AccountScreen() {
 
 const styles = StyleSheet.create({
   hero: { paddingHorizontal: GUTTER, paddingBottom: 26, overflow: 'hidden' },
-  cut: { position: 'absolute', right: -40, top: -40, bottom: -40, width: 90, backgroundColor: palette.red, transform: [{ skewX: '-16deg' }] },
+  cut: { position: 'absolute', right: -46, top: -40, height: 150, width: 84, backgroundColor: palette.red, transform: [{ skewX: '-16deg' }] },
   avatar: { width: 60, height: 60, borderRadius: 18, backgroundColor: palette.red, alignItems: 'center', justifyContent: 'center' },
   plus: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', marginTop: 6, backgroundColor: 'rgba(229,27,43,0.9)', borderRadius: 999, paddingHorizontal: 8, paddingVertical: 2 },
   group: { borderWidth: 1, borderRadius: radius.lg, overflow: 'hidden' },

@@ -38,7 +38,7 @@ export const ProductCard = memo(function ProductCard({ product: p, width, index 
 
   return (
     <Animated.View entering={FadeInDown.delay(Math.min(index, 8) * STAGGER).springify().damping(18).stiffness(160)} style={{ width }}>
-      <Press onPress={open} scaleTo={0.97} haptic={false} accessibilityLabel={`${p.title}, $${p.effective_price.toFixed(2)}`}>
+      <Press onPress={open} scaleTo={0.97} haptic={false} accessibilityRole="link" accessibilityLabel={`${p.title}, $${p.effective_price.toFixed(2)}`}>
         <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.line }]}>
           <View ref={imgRef} collapsable={false} style={{ width: width - 2, height: width - 2, backgroundColor: c.surface2 }}>
             {p.image ? (

@@ -32,7 +32,7 @@ export function Confetti({ count = 70 }: { count?: number }) {
   if (reduced) return null;
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}>
       {bits.map((b, i) => (
         <Bit key={i} {...b} floor={height} />
       ))}

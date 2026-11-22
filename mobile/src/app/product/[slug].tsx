@@ -605,14 +605,8 @@ function BuyBar({ product: p, variantId, qty, soldOut, paused, price }: { produc
         />
       ) : (
         <>
-          <View style={{ flex: 0.9 }}>
-            <Text variant="small" tone="muted">
-              Total
-            </Text>
-            <Text variant="price">{money(price)}</Text>
-          </View>
-          <Button title="Add to cart" icon="cart" kind="outline" loading={add.isPending} onPress={() => addIt()} style={{ flex: 1.2 }} />
-          <Button title="Buy now" kind="accent" onPress={() => addIt(() => router.navigate('/cart'))} style={{ flex: 1 }} />
+          <Button title="Add to cart" icon="cart" kind="outline" loading={add.isPending} onPress={() => addIt()} style={{ flex: 1 }} />
+          <Button title={`Buy now · ${money(price)}`} kind="accent" onPress={() => addIt(() => router.navigate('/cart'))} style={{ flex: 1.15 }} />
         </>
       )}
     </Animated.View>

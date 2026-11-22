@@ -39,7 +39,9 @@ export function BannerSlider({ banners }: { banners: Banner[] }) {
   const [paused, setPaused] = useState(false);
   const reduced = useReducedMotion();
   const w = width - GUTTER * 2;
-  const h = Math.round(w * 1.02);
+  // The rail grows to fit the slide's words; the wipe bands need its height for their 16° lean.
+  const [h, setH] = useState(Math.round(w * 1.1));
+  const photoH = Math.round(w * 0.5);
   const sweep = useSharedValue(0);
   const fill = useSharedValue(0);
   const many = banners.length > 1;
@@ -109,8 +111,8 @@ export function BannerSlider({ banners }: { banners: Banner[] }) {
 
   return (
     <GestureDetector gesture={swipe}>
-      <View style={[styles.rail, { width: w, height: h, marginHorizontal: GUTTER }]} accessibilityRole="adjustable" accessibilityLabel={`Promotions, ${index + 1} of ${banners.length}`}>
-        <Slide key={b.id} banner={b} w={w} h={h} />
+      <View onLayout={(e) => setH(Math.round(e.nativeEvent.layout.height))} style={[styles.rail, { width: w, marginHorizontal: GUTTER }]} accessibilityRole="adjustable" accessibilityLabel={`Promotions, ${index + 1} of ${banners.length}`}>
+        <Slide key={b.id} banner={b} photoH={photoH} many={many} />
         <Animated.View pointerEvents="none" style={[styles.band, { width: bandW, height: h * 1.1, backgroundColor: palette.red }, red]} />
         <Animated.View pointerEvents="none" style={[styles.band, { width: bandW, height: h * 1.1, backgroundColor: palette.charcoal }, charcoal]} />
         {many && (
@@ -130,7 +132,7 @@ export function BannerSlider({ banners }: { banners: Banner[] }) {
   );
 }
 
-function Slide({ banner: b, w, h }: { banner: Banner; w: number; h: number }) {
+function Slide({ banner: b, photoH, many }: { banner: Banner; photoH: number; many: boolean }) {
   const { c } = useTheme();
   const reduced = useReducedMotion();
   const zoom = useSharedValue(1);
@@ -144,10 +146,10 @@ function Slide({ banner: b, w, h }: { banner: Banner; w: number; h: number }) {
   const bg = b.style === 'red' ? palette.red : b.style === 'light' ? c.surface2 : palette.charcoal;
 
   return (
-    <Animated.View entering={FadeIn.duration(260)} style={[StyleSheet.absoluteFill, { backgroundColor: bg }]}>
+    <Animated.View entering={FadeIn.duration(260)} style={{ backgroundColor: bg, paddingBottom: many ? 72 : 24 }}>
       {b.style === 'red' && <LinearGradient colors={['#BB1220', '#BB1220', '#E51B2B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />}
       {b.image ? (
-        <View style={[styles.photo, { height: h * 0.5 }]}>
+        <View style={[styles.photo, { height: photoH }]}>
           <Animated.View style={[StyleSheet.absoluteFill, kenBurns]}>
             <Image source={b.image} style={StyleSheet.absoluteFill} contentFit="cover" transition={300} />
           </Animated.View>
@@ -155,7 +157,7 @@ function Slide({ banner: b, w, h }: { banner: Banner; w: number; h: number }) {
           <View style={[styles.edge, { backgroundColor: b.style === 'red' ? '#fff' : palette.red }]} />
         </View>
       ) : (
-        <View style={[styles.photo, styles.mark, { height: h * 0.46 }]}>
+        <View style={[styles.photo, styles.mark, { height: photoH * 0.8 }]}>
           <Logo variant="symbol" height={86} onRed={b.style === 'red'} />
         </View>
       )}
@@ -188,10 +190,10 @@ function Slide({ banner: b, w, h }: { banner: Banner; w: number; h: number }) {
 const styles = StyleSheet.create({
   rail: { borderRadius: radius.xl, overflow: 'hidden' },
   band: { position: 'absolute', top: '-5%', left: 0 },
-  photo: { position: 'absolute', top: 0, left: 0, right: 0, overflow: 'hidden' },
+  photo: { overflow: 'hidden' },
   mark: { alignItems: 'center', justifyContent: 'center' },
   edge: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 4 },
-  copy: { position: 'absolute', left: 22, right: 22, bottom: 64 },
+  copy: { paddingHorizontal: 22, paddingTop: 18 },
   controls: {
     position: 'absolute',
     bottom: 16,

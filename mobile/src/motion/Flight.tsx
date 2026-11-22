@@ -32,7 +32,7 @@ export function FlightOverlay() {
   const list = useFlights((s) => s.list);
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View pointerEvents="none" style={[StyleSheet.absoluteFill, { overflow: 'hidden' }]}>
       {list.map((f) => (
         <FlightItem key={f.id} flight={f} />
       ))}

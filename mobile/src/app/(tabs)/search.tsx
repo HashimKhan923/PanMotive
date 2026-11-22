@@ -70,7 +70,7 @@ export default function SearchScreen() {
             placeholder="Parts, vehicles or part numbers"
             placeholderTextColor={c.muted}
             autoCorrect={false}
-            style={{ flex: 1, color: c.fg, fontFamily: font.regular, fontSize: 16 }}
+            style={{ flex: 1, color: c.fg, fontFamily: font.regular, fontSize: 16, outlineStyle: 'none' } as object}
           />
           {text ? (
             <Press onPress={() => setText('')} style={{ padding: 4 }} accessibilityLabel="Clear search">
