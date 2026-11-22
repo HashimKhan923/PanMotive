@@ -12,12 +12,16 @@
       "bundleIdentifier": "com.panmotive.app",
       "supportsTablet": false,
       "usesAppleSignIn": true,
-      "associatedDomains": ["applinks:panmotive.com", "applinks:www.panmotive.com"],
+      "associatedDomains": [
+        "applinks:panmotive.com",
+        "applinks:www.panmotive.com"
+      ],
       "infoPlist": {
         "NSCameraUsageDescription": "Panmotive uses the camera to scan your vehicle's VIN, so we can find parts that fit.",
         "NSPhotoLibraryUsageDescription": "Panmotive lets you attach photos when you message a seller or report a problem.",
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "1"
     },
     "android": {
       "package": "com.panmotive.app",
@@ -27,21 +31,50 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "permissions": ["CAMERA"],
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
       "predictiveBackGestureEnabled": false,
       "intentFilters": [
         {
           "action": "VIEW",
           "autoVerify": true,
           "data": [
-            { "scheme": "https", "host": "panmotive.com", "pathPrefix": "/products" },
-            { "scheme": "https", "host": "panmotive.com", "pathPrefix": "/sellers" },
-            { "scheme": "https", "host": "panmotive.com", "pathPrefix": "/shop" },
-            { "scheme": "https", "host": "panmotive.com", "pathPrefix": "/deals" },
-            { "scheme": "https", "host": "panmotive.com", "pathPrefix": "/orders" }
+            {
+              "scheme": "https",
+              "host": "panmotive.com",
+              "pathPrefix": "/products"
+            },
+            {
+              "scheme": "https",
+              "host": "panmotive.com",
+              "pathPrefix": "/sellers"
+            },
+            {
+              "scheme": "https",
+              "host": "panmotive.com",
+              "pathPrefix": "/shop"
+            },
+            {
+              "scheme": "https",
+              "host": "panmotive.com",
+              "pathPrefix": "/deals"
+            },
+            {
+              "scheme": "https",
+              "host": "panmotive.com",
+              "pathPrefix": "/orders"
+            }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
+      ],
+      "versionCode": 1,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -62,23 +95,45 @@
       "expo-apple-authentication",
       [
         "expo-camera",
-        { "cameraPermission": "Panmotive uses the camera to scan your vehicle's VIN, so we can find parts that fit." }
+        {
+          "cameraPermission": "Panmotive uses the camera to scan your vehicle's VIN, so we can find parts that fit.",
+          "recordAudioAndroid": false,
+          "microphonePermission": false
+        }
       ],
       [
         "expo-notifications",
-        { "color": "#E51B2B", "defaultChannel": "orders" }
+        {
+          "color": "#E51B2B",
+          "defaultChannel": "orders"
+        }
       ],
       [
         "@stripe/stripe-react-native",
-        { "merchantIdentifier": "merchant.com.panmotive.app", "enableGooglePay": true }
+        {
+          "merchantIdentifier": "merchant.com.panmotive.app",
+          "enableGooglePay": true
+        }
       ]
     ],
     "extra": {
-      "apiUrl": "https://panmotive.com/api/shop/v1"
+      "apiUrl": "https://panmotive.com/api/shop/v1",
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "bed30553-2e76-40e8-95c6-81238228dfb1"
+      }
     },
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "owner": "hashimkhan923s-organization",
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }
