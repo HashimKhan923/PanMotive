@@ -20,8 +20,7 @@
         "NSCameraUsageDescription": "Panmotive uses the camera to scan your vehicle's VIN, so we can find parts that fit.",
         "NSPhotoLibraryUsageDescription": "Panmotive lets you attach photos when you message a seller or report a problem.",
         "ITSAppUsesNonExemptEncryption": false
-      },
-      "buildNumber": "1"
+      }
     },
     "android": {
       "package": "com.panmotive.app",
@@ -72,7 +71,6 @@
           ]
         }
       ],
-      "versionCode": 1,
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO"
       ]
