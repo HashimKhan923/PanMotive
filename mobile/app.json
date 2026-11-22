@@ -112,7 +112,8 @@
           "merchantIdentifier": "merchant.com.panmotive.app",
           "enableGooglePay": true
         }
-      ]
+      ],
+      "./plugins/withoutReleaseLint"
     ],
     "extra": {
       "apiUrl": "https://panmotive.com/api/shop/v1",
