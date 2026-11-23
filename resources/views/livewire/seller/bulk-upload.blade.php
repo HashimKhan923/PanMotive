@@ -20,6 +20,7 @@
                         @if (($result['fitted'] ?? 0) > 0) · {{ $result['fitted'] }} with vehicle fitment @endif
                         @if (($result['uncategorised'] ?? 0) > 0) · {{ $result['uncategorised'] }} put in the fallback category @endif
                         @if (($result['existing'] ?? 0) > 0) · {{ $result['existing'] }} already in your store (not duplicated; missing photos added) @endif
+                        @if (($result['not_parts'] ?? 0) > 0) · {{ $result['not_parts'] }} store add-ons left out (shipping protection, warranties, gift cards and similar aren't parts) @endif
                         @if (($result['archived'] ?? 0) > 0) · {{ $result['archived'] }} archived in your old store, so kept hidden (find them under Archived) @endif
                         @if (($result['assumed_stock'] ?? 0) > 0) · {{ $result['assumed_stock'] }} don't track stock in your old store, so we set them to {{ \App\Services\Seller\ProductCsvImporter::UNTRACKED_STOCK }} in stock (please check) @endif
                         @if ($result['skipped']) · {{ $result['skipped'] }} skipped (no title) @endif

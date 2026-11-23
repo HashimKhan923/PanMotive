@@ -86,7 +86,10 @@ class BulkProductImportTest extends TestCase
         $result = app(ProductCsvImporter::class)->import(
             $seller->id, base_path('tests/Fixtures/shopify_stock_status.csv'), $c['default'], withImages: false, useAi: false
         );
-        $this->assertSame(5, $result['created'], 'import errors: '.implode(' | ', $result['errors']));
+        $this->assertSame(6, $result['created'], 'import errors: '.implode(' | ', $result['errors']));
+        $this->assertSame(2, $result['not_parts']);                                    // shipping protection + signature add-ons
+        $this->assertFalse(Product::where('title', 'Shipping Protection')->exists());
+        $this->assertSame(4, Product::where('title', 'Tip Light Bar')->value('quantity')); // a real part named "Tip..." stays
         $this->assertSame(1, $result['archived']);
         $this->assertSame(2, $result['assumed_stock']);
 

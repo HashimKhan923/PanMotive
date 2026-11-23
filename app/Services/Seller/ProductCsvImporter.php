@@ -54,6 +54,11 @@ class ProductCsvImporter
     /** Products whose stock the source store doesn't count (untracked, or "keep selling when sold out"). */
     private int $assumedStock = 0;
 
+    /** Store add-ons that aren't parts (shipping protection, warranties, gift cards...): never imported. */
+    private int $notParts = 0;
+
+    private const NOT_PARTS = '/^_*\s*(shipping protection|package protection|route (shipping )?protection|shipping insurance|signature (on|upon) delivery|signature required|extended warranty|warranty( plan| protection)?|gift ?card|e-?gift card|tip|tips|donation|customi[sz]ed[- ]items?|custom order( fee)?|rush (order|processing)( fee)?|handling fee|processing fee|deposit)\s*([-\x{2013}\x{2014}(:|].{0,40})?$/iu';
+
     /** Stock given to items the source store sells without counting stock. */
     public const UNTRACKED_STOCK = 10;
 
@@ -170,6 +175,11 @@ class ProductCsvImporter
             try {
                 $base = $rows[0];
                 $title = trim((string) $this->get($base, ...$NAME));
+                if ($title !== '' && $this->notAPart($title, $base)) {
+                    $this->notParts++;
+
+                    continue;
+                }
                 if ($title === '') {
                     $skipped++;
 
@@ -219,7 +229,7 @@ class ProductCsvImporter
         }
         $this->report('products', $total, $total);
 
-        return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised, 'variants' => $this->variantCount, 'fitted' => $this->fitted, 'existing' => $this->existing, 'archived' => $this->archived, 'assumed_stock' => $this->assumedStock];
+        return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised, 'variants' => $this->variantCount, 'fitted' => $this->fitted, 'existing' => $this->existing, 'archived' => $this->archived, 'assumed_stock' => $this->assumedStock, 'not_parts' => $this->notParts];
     }
 
     /**
@@ -240,6 +250,23 @@ class ProductCsvImporter
         }
 
         return $qty;
+    }
+
+    /**
+     * A store add-on rather than a part: known add-on names (shipping protection, signature on delivery,
+     * extended warranty, gift cards, custom-order fees...), or Shopify rows marked as a gift card or as
+     * not needing shipping.
+     */
+    private function notAPart(string $title, array $row): bool
+    {
+        if (preg_match(self::NOT_PARTS, trim($title))) {
+            return true;
+        }
+        $lower = array_change_key_case($row, CASE_LOWER);
+        $no = fn (string $col) => array_key_exists($col, $lower) && in_array(strtolower(trim((string) $lower[$col])), ['false', 'no', '0'], true);
+        $yes = fn (string $col) => array_key_exists($col, $lower) && in_array(strtolower(trim((string) $lower[$col])), ['true', 'yes', '1'], true);
+
+        return $yes('gift card') || $no('variant requires shipping');
     }
 
     /** @return array<string,string> variant label => the URL of its own photo */
@@ -327,6 +354,11 @@ class ProductCsvImporter
             $row = $g['row'];
             try {
                 $title = (string) $cols->get($row, 'title');
+                if ($title !== '' && $this->notAPart($title, $row)) {
+                    $this->notParts++;
+
+                    continue;
+                }
                 if ($title === '') {
                     $skipped++;
 
