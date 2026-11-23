@@ -13,7 +13,7 @@
         <section class="card p-6">
             <h2 class="font-bold">Branding</h2>
             <div class="mt-4 flex flex-wrap items-center gap-5">
-                @php $logoPreview = $logo && method_exists($logo, 'temporaryUrl') && ! $errors->has('logo') ? $logo->temporaryUrl() : $profile->logoUrl(); @endphp
+                @php $logoPreview = $logo && method_exists($logo, 'isPreviewable') && $logo->isPreviewable() && ! $errors->has('logo') ? $logo->temporaryUrl() : $profile->logoUrl(); @endphp
                 <div class="grid h-20 w-20 shrink-0 place-items-center overflow-hidden rounded-2xl border border-line bg-surface-2">
                     @if ($logoPreview)
                         <img src="{{ $logoPreview }}" alt="Store logo" class="h-full w-full object-contain">

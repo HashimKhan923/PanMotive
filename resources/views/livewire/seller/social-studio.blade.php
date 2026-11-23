@@ -127,7 +127,7 @@
                             @endforeach
                         </div>
                     @endif
-                    @if ($media && method_exists($media, 'temporaryUrl'))
+                    @if ($media && method_exists($media, 'isPreviewable') && $media->isPreviewable())
                         <div class="mb-2 flex items-center gap-3">
                             <img src="{{ $media->temporaryUrl() }}" alt="" class="h-20 w-20 rounded-lg object-cover ring-1 ring-line">
                             <button type="button" wire:click="$set('media', null)" class="text-xs text-muted hover:text-rose-600">Remove</button>
@@ -210,7 +210,7 @@
                 {{-- how it looks on each app --}}
                 <div class="card p-5" data-reveal>
                     <p class="font-semibold">How it looks</p>
-                    @php($baseImg = $media && method_exists($media, 'temporaryUrl') ? $media->temporaryUrl() : $designImage)
+                    @php($baseImg = $media && method_exists($media, 'isPreviewable') && $media->isPreviewable() ? $media->temporaryUrl() : $designImage)
                     <div class="mt-3 space-y-4">
                         @forelse (array_slice($channels, 0, 4) as $c)
                             @php($text = trim((string) ($captions[$c] ?? $body)))

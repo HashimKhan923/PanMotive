@@ -334,7 +334,10 @@ class CategoryResolver
             if ($ask) {
                 $answers = $this->matchWithAi($ask, $cats);
                 foreach ($ask as $hint) {
-                    $slug = $answers[$hint] ?? null;
+                    if (! array_key_exists($hint, $answers)) {
+                        continue;                   // no answer (failed batch): try again next import, don't remember "no match"
+                    }
+                    $slug = $answers[$hint];
                     $cat = $slug ? $cats->firstWhere('slug', $slug) : null;
                     Cache::put("catres:{$taxHash}:".md5($hint), $cat?->slug ?? '-', now()->addDays(90));
                     if ($cat) {
@@ -443,7 +446,7 @@ class CategoryResolver
 
     /**
      * @param  array<int,string>  $hints
-     * @return array<string,string>  hint => category slug
+     * @return array<string,?string>  hint => category slug, or null when the AI said nothing fits (unanswered hints are absent)
      */
     private function matchWithAi(array $hints, Collection $cats): array
     {
@@ -454,13 +457,15 @@ class CategoryResolver
 
         // Small batches so every item gets an answer within the reply size.
         foreach (array_chunk(array_values($hints), 25) as $chunk) {
-            $list = collect($chunk)->map(fn ($h) => '- '.$h)->implode("\n");
+            // Numbered, so the reply is just "number": "slug" — echoing long tag strings back used to overflow
+            // the reply and lose the whole batch.
+            $list = collect($chunk)->map(fn ($h, $i) => ($i + 1).'. '.Str::limit($h, 300))->implode("\n");
             try {
                 $out = $this->ai->completeJson(
-                    'You classify auto-parts products into a fixed category taxonomy. Each input is a product title and/or a category '
-                    .'path from another store. Return a compact JSON object mapping each input string exactly as given to the single '
-                    .'best category slug from the taxonomy (prefer the most specific sub-category), or null if it is not an auto part '
-                    .'or nothing fits. Use only slugs from the list. No explanation.',
+                    'You classify auto-parts products into a fixed category taxonomy. Each numbered input is a product title and/or '
+                    .'a category path or tags from another store. Return a compact JSON object mapping each input NUMBER (as a string key) '
+                    .'to the single best category slug from the taxonomy (prefer the most specific sub-category), or null if it is not '
+                    .'an auto part or nothing fits. Use only slugs from the list. No explanation.',
                     "Taxonomy:\n{$taxonomy}\n\nClassify these:\n{$list}",
                     1200,
                 );
@@ -469,9 +474,10 @@ class CategoryResolver
 
                 continue;
             }
-            foreach ((array) $out as $hint => $slug) {
-                if (is_string($slug) && $valid->has($slug)) {
-                    $answers[Str::lower(trim((string) $hint))] = $slug;
+            foreach ((array) $out as $n => $slug) {
+                $hint = $chunk[(int) $n - 1] ?? null;
+                if ($hint !== null) {
+                    $answers[Str::lower(trim((string) $hint))] = is_string($slug) && $valid->has($slug) ? $slug : null;
                 }
             }
         }

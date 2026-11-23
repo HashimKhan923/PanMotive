@@ -36,9 +36,23 @@
                 <div class="text-left"><span class="inline-block rounded-2xl bg-surface-2 px-3 py-2 text-muted">Typing…</span></div>
             @endif
         </div>
-        <form wire:submit="send" class="flex gap-2 border-t border-line p-3">
-            <input wire:model="input" placeholder="Type your question…" class="input h-10 flex-1 text-sm" aria-label="Your question">
-            <button class="btn-accent btn-sm">Send</button>
-        </form>
+        @if ($handoff)
+            <form wire:submit="requestHuman" class="border-t border-line p-3">
+                <label for="pm-chat-email" class="text-xs font-semibold">Your email</label>
+                <div class="mt-1 flex gap-2">
+                    <input id="pm-chat-email" type="email" wire:model="email" autocomplete="email" placeholder="you@example.com" class="input h-10 flex-1 text-sm">
+                    <button class="btn-accent btn-sm" wire:loading.attr="disabled" wire:target="requestHuman">Send to support</button>
+                </div>
+                @error('email') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+            </form>
+        @else
+            <form wire:submit="send" class="flex gap-2 border-t border-line p-3">
+                <input wire:model="input" maxlength="1000" placeholder="Type your question…" class="input h-10 flex-1 text-sm" aria-label="Your question">
+                <button class="btn-accent btn-sm">Send</button>
+            </form>
+            @unless ($handedOff)
+                <button type="button" wire:click="askForPerson" class="border-t border-line py-2 text-xs font-semibold text-muted hover:text-fg">Talk to a person</button>
+            @endunless
+        @endif
     </div>
 </div>
