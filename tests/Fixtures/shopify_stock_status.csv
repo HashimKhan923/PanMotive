@@ -1,0 +1,7 @@
+Handle,Title,Body (HTML),Vendor,Type,Option1 Name,Option1 Value,Variant SKU,Variant Inventory Tracker,Variant Inventory Qty,Variant Inventory Policy,Variant Price,Status
+in-stock-lamp,In Stock Lamp,,HRS,Headlights,Title,Default Title,L1,shopify,7,deny,100.00,active
+sold-out-lamp,Sold Out Lamp,,HRS,Headlights,Title,Default Title,L2,shopify,0,deny,100.00,active
+untracked-lamp,Untracked Lamp,,HRS,Headlights,Title,Default Title,L3,,0,deny,100.00,active
+keeps-selling-lamp,Keeps Selling Lamp,,HRS,Headlights,Color,Red,L4R,shopify,0,continue,100.00,active
+keeps-selling-lamp,,,,,Color,Smoke,L4S,shopify,3,deny,100.00,
+old-lamp,Old Lamp,,HRS,Headlights,Title,Default Title,L5,shopify,0,deny,100.00,archived

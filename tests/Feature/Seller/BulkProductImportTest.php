@@ -78,6 +78,29 @@ class BulkProductImportTest extends TestCase
         $this->assertEquals(8.99, (float) $filter->price);
     }
 
+    public function test_shopify_archived_items_stay_hidden_and_untracked_stock_is_not_sold_out(): void
+    {
+        $seller = $this->seller();
+        $c = $this->cats();
+
+        $result = app(ProductCsvImporter::class)->import(
+            $seller->id, base_path('tests/Fixtures/shopify_stock_status.csv'), $c['default'], withImages: false, useAi: false
+        );
+        $this->assertSame(5, $result['created'], 'import errors: '.implode(' | ', $result['errors']));
+        $this->assertSame(1, $result['archived']);
+        $this->assertSame(2, $result['assumed_stock']);
+
+        $p = fn (string $t) => Product::where('seller_id', $seller->id)->where('title', $t)->firstOrFail();
+        $this->assertSame(7, $p('In Stock Lamp')->quantity);
+        $this->assertSame(0, $p('Sold Out Lamp')->quantity);                          // really sold out
+        $this->assertSame(ProductCsvImporter::UNTRACKED_STOCK, $p('Untracked Lamp')->quantity);
+        $keeps = $p('Keeps Selling Lamp');
+        $this->assertSame(ProductCsvImporter::UNTRACKED_STOCK + 3, $keeps->quantity); // options add up
+        $this->assertSame(ProductCsvImporter::UNTRACKED_STOCK, $keeps->variants()->where('label', 'Color: Red')->value('quantity'));
+        $this->assertSame('archived', $p('Old Lamp')->status);                         // not swept up by "publish all drafts"
+        $this->assertSame('draft', $p('In Stock Lamp')->status);
+    }
+
     public function test_real_world_variant_export_imports(): void
     {
         $seller = $this->seller();

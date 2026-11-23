@@ -48,6 +48,15 @@ class ProductCsvImporter
     private int $fitted = 0;
     private int $existing = 0;
 
+    /** Products the source store had archived: imported hidden, so "publish all drafts" can't make them live. */
+    private int $archived = 0;
+
+    /** Products whose stock the source store doesn't count (untracked, or "keep selling when sold out"). */
+    private int $assumedStock = 0;
+
+    /** Stock given to items the source store sells without counting stock. */
+    public const UNTRACKED_STOCK = 10;
+
     /** Cache key prefix for the upload page's photo counter (set by the bulk upload job). */
     public ?string $photoTracker = null;
 
@@ -171,6 +180,9 @@ class ProductCsvImporter
                     continue;
                 }
 
+                $archived = strcasecmp(trim((string) $this->get($base, 'Status')), 'archived') === 0;
+                $assumed = false;
+
                 $compareAt = $this->money($this->get($base, ...$CMP));
                 $variantPrice = $this->money($this->get($base, ...$PRICE)) ?? 0.0;
                 [$price, $salePrice] = ($compareAt && $compareAt > $variantPrice) ? [$compareAt, $variantPrice] : [$variantPrice, null];
@@ -187,12 +199,17 @@ class ProductCsvImporter
                     'condition' => 'new',
                     'price' => $price > 0 ? $price : 0.01,
                     'sale_price' => $salePrice,
-                    'quantity' => $this->qty($this->get($base, ...$QTY)),
+                    'quantity' => $this->shopifyQty($base, $assumed),
                     'weight_lbs' => $this->weightToLbs($this->get($base, 'Variant Grams', 'Grams', 'Weight'), $this->get($base, 'Variant Weight Unit', 'Weight Unit')),
-                    'status' => 'draft',
+                    'status' => $archived ? 'archived' : 'draft',
                 ]);
+                $this->archived += $archived ? 1 : 0;
 
-                $variantPhotos = $this->attachShopifyVariants($product, $rows);
+                $variantPhotos = $this->attachShopifyVariants($product, $rows, $assumed);
+                if ($product->variants()->exists()) {
+                    $product->update(['quantity' => (int) $product->variants()->sum('quantity')]);
+                }
+                $this->assumedStock += $assumed ? 1 : 0;
                 $this->attachFitment($product, $cols, $rows, $title);
                 $this->fetchImages($product, $this->shopifyImageUrls($rows), $variantPhotos);
                 $created++;
@@ -202,11 +219,31 @@ class ProductCsvImporter
         }
         $this->report('products', $total, $total);
 
-        return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised, 'variants' => $this->variantCount, 'fitted' => $this->fitted, 'existing' => $this->existing];
+        return ['created' => $created, 'skipped' => $skipped, 'errors' => $errors, 'uncategorised' => $this->uncategorised, 'variants' => $this->variantCount, 'fitted' => $this->fitted, 'existing' => $this->existing, 'archived' => $this->archived, 'assumed_stock' => $this->assumedStock];
+    }
+
+    /**
+     * Shopify stock for one variant row. When Shopify doesn't count stock for it (no inventory tracker) or keeps
+     * selling when it's sold out (policy "continue"), the 0 in the file doesn't mean sold out, so it gets
+     * UNTRACKED_STOCK instead and $assumed is set so the import summary can say so.
+     */
+    private function shopifyQty(array $row, bool &$assumed): int
+    {
+        $qty = $this->qty($this->get($row, 'Variant Inventory Qty', 'Inventory Quantity', 'Inventory Qty', 'Qty', 'Quantity', 'Stock'));
+        $lower = array_change_key_case($row, CASE_LOWER);
+        $untracked = array_key_exists('variant inventory tracker', $lower) && trim((string) $lower['variant inventory tracker']) === '';
+        $keepsSelling = strcasecmp(trim((string) $this->get($row, 'Variant Inventory Policy')), 'continue') === 0;
+        if ($qty <= 0 && ($untracked || $keepsSelling)) {
+            $assumed = true;
+
+            return self::UNTRACKED_STOCK;
+        }
+
+        return $qty;
     }
 
     /** @return array<string,string> variant label => the URL of its own photo */
-    private function attachShopifyVariants(Product $product, array $rows): array
+    private function attachShopifyVariants(Product $product, array $rows, bool &$assumed = false): array
     {
         $photos = [];
         $seen = [];
@@ -233,7 +270,7 @@ class ProductCsvImporter
                 'options' => [$optKey => $optValue],
                 'sku' => $this->get($row, 'Variant SKU', 'SKU') ?: null,
                 'price' => $this->money($this->get($row, 'Variant Price', 'Price')),
-                'quantity' => $this->qty($this->get($row, 'Variant Inventory Qty', 'Inventory Quantity', 'Qty', 'Stock')),
+                'quantity' => $this->shopifyQty($row, $assumed),
                 'is_active' => true,
                 'sort_order' => $sort++,
             ]);
