@@ -28,3 +28,6 @@ rr
 **/caddy
 frankenphp
 frankenphp-worker.php
+
+# media-library work files (created while converting photos, safe to delete)
+/storage/media-library/temp/
