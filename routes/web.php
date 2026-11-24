@@ -58,5 +58,5 @@ Route::post('webhooks/easypost', [EasyPostWebhookController::class, 'handle'])->
 Route::post('webhooks/shopify', [\App\Http\Controllers\Webhooks\ShopifyWebhookController::class, 'handle'])
     ->middleware('throttle:600,1')->name('webhooks.shopify');
 
-// Storefront (default domain)
-require __DIR__.'/storefront.php';
+// Storefront (default domain). On the seller/admin addresses these forward to the shop.
+Route::middleware(\App\Http\Middleware\ShopOnShopHost::class)->group(__DIR__.'/storefront.php');

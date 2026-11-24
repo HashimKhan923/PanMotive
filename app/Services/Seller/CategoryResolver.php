@@ -137,7 +137,7 @@ class CategoryResolver
         'exhaust temperature sensor' => 'exhaust-temperature-sensors', 'sensor' => 'sensors',
 
         // lighting
-        'headlight bulb' => 'light-bulbs', 'led headlight bulb' => 'led-headlight-bulbs', 'led headlight' => 'led-headlight-bulbs',
+        'headlight bulb' => 'light-bulbs', 'led headlight bulb' => 'led-headlight-bulbs', 'led headlight' => 'headlights',
         'h11 led' => 'led-headlight-bulbs', '9005 led' => 'led-headlight-bulbs', 'h4 led' => 'led-headlight-bulbs',
         'hid kit' => 'hid-kits', 'hid conversion' => 'hid-kits', 'xenon kit' => 'hid-kits',
         'head lamp' => 'headlights', 'headlamp' => 'headlights', 'headlight' => 'headlights', 'projector headlight' => 'headlights',
@@ -150,6 +150,25 @@ class CategoryResolver
         'dome light' => 'interior-lights', 'map light' => 'interior-lights', 'interior light' => 'interior-lights', 'bulb' => 'light-bulbs',
         'led reflector' => 'led-accent-lights', 'reflector' => 'led-accent-lights', 'underglow' => 'led-accent-lights',
         'rock light' => 'led-accent-lights', 'led light' => 'led-accent-lights', 'lighting' => 'lighting',
+        // aftermarket styling words (checked against a real 500-listing catalog)
+        'puddle light' => 'led-accent-lights', 'trunk light' => 'led-accent-lights', 'led trunk bar' => 'led-accent-lights',
+        'grille led light' => 'led-accent-lights', 'ambient light' => 'interior-lights', 'ambient lighting' => 'interior-lights',
+        'side reflector' => 'side-marker-lights', 'marker light' => 'side-marker-lights', '3rd brake light' => 'third-brake-lights',
+        'side mirror light' => 'turn-signal-lights', 'side mirrors light' => 'turn-signal-lights', 'mirror turn signal' => 'turn-signal-lights',
+        'mirror light' => 'turn-signal-lights', 'drls with led fog light' => 'daytime-running-lights', 'drl plus fog light' => 'daytime-running-lights',
+        'bumper drl' => 'daytime-running-lights', 'drl turn signal' => 'daytime-running-lights',
+        'fog light trim' => 'bumpers-grilles', 'fog lights trim' => 'bumpers-grilles', 'fog light cover' => 'bumpers-grilles',
+        'fog lights cover' => 'bumpers-grilles', 'lower grille' => 'bumpers-grilles',
+        'headlight harness' => 'wiring-harnesses', 'headlights harness' => 'wiring-harnesses', 'conversion harness' => 'wiring-harnesses',
+        'aero kit' => 'body-kits', 'side apron' => 'body-kits', 'canard' => 'body-kits', 'lower lip' => 'body-kits', 'spat' => 'body-kits',
+        'winglet' => 'spoilers-wings', 'duckbill' => 'spoilers-wings', 'duck bill' => 'spoilers-wings', 'trunk spoiler' => 'spoilers-wings',
+        'roof spoiler' => 'spoilers-wings', 'chrome delete' => 'emblems-badges', 'deflector' => 'bug-deflectors-window-visors',
+        'visors/deflector' => 'bug-deflectors-window-visors', 'window closer' => 'body-control-modules', 'sunroof closer' => 'body-control-modules',
+        '360 view camera' => 'backup-cameras', '360 camera' => 'backup-cameras', 'license plate cover' => 'license-plate-frames',
+        'airbag cover' => 'steering-wheels', 'paddle shifter' => 'dash-covers-trim', 'interior trim' => 'dash-covers-trim',
+        'interior overlay' => 'dash-covers-trim', 'control panel cover' => 'dash-covers-trim', 'exhaust system' => 'cat-back-exhaust-systems',
+        'catback' => 'cat-back-exhaust-systems', 'pro exhaust' => 'cat-back-exhaust-systems', 'carbon fiber trunk' => 'trunk-lids', 'carbon fiber trunk bar' => 'emblems-badges', 'trunk bar' => 'emblems-badges',
+        'engine cover' => 'valve-covers', 'sun shade' => 'sunshades', 'window sun shade' => 'sunshades', 'key fob cover' => 'key-fobs-remotes',
 
         // suspension & steering
         'shock absorber' => 'shocks-struts', 'strut assembly' => 'shocks-struts', 'quick strut' => 'shocks-struts',
@@ -408,7 +427,8 @@ class CategoryResolver
             if (Str::length($needle) * 100 + 30 <= $bestScore) {
                 continue;
             }
-            if (preg_match('/(?<![a-z0-9])'.preg_quote(trim($needle), '/').'/', $hint) && ($cat = $cats->firstWhere('slug', $slug))) {
+            // Whole words only (a plural is fine): "carb" must not match "carbon fiber".
+            if (preg_match('/(?<![a-z0-9])'.preg_quote(trim($needle), '/').'(?:s|es)?(?![a-z0-9])/', $hint) && ($cat = $cats->firstWhere('slug', $slug))) {
                 $score = Str::length($needle) * 100 + ($cat->parent_id ? 20 : 0);
                 if ($score > $bestScore) {
                     [$best, $bestScore] = [$cat->id, $score];

@@ -90,7 +90,7 @@
                     <tbody class="divide-y divide-line">
                         @foreach ($listings->take(20) as $l)
                             <tr>
-                                <td class="py-2"><a href="{{ route('seller.products.edit', $l['product_id']) }}" class="font-medium hover:text-accent">{{ Str::limit($l['title'], 60) }}</a></td>
+                                <td class="py-2">@if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $l['product_id']) }}" class="font-medium hover:text-accent">{{ Str::limit($l['title'], 60) }}</a>@else<span class="font-medium">{{ Str::limit($l['title'], 60) }}</span>@endif</td>
                                 <td class="py-2 text-right">{{ number_format($l['views']) }}</td>
                                 <td class="py-2 text-right">{{ number_format($l['visitors']) }}</td>
                                 <td class="py-2 text-right">{{ $l['orders'] }}</td>
@@ -129,7 +129,9 @@
                 <div><p class="text-muted">Return rate</p><p class="text-lg font-bold">{{ $return_rate }}%</p><p class="text-xs text-muted">returns ÷ deliveries this period</p></div>
                 <div><p class="text-muted">Repeat buyers</p><p class="text-lg font-bold">{{ $repeat_rate }}%</p><p class="text-xs text-muted">of registered customers, all time</p></div>
             </div>
+            @if (\App\Support\SellerContext::can('marketing'))
             <a href="{{ route('seller.marketing.analytics', ['days' => min($days, 90)]) }}" class="mt-4 inline-block text-xs font-medium text-accent hover:underline">Where your sales come from → Marketing insights</a>
+            @endif
         </div>
     </div>
 </div>

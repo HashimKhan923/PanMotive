@@ -362,11 +362,13 @@
             </div>
 
             {{-- related --}}
+            {{-- Only parts that suit the same vehicle: real "bought together" items, else other parts for this
+                 vehicle; never parts for some other car. --}}
+            @php($companions = app(\App\Services\Recommendations\RecommendationService::class)->companions($product))
             <aside data-reveal>
-                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">Frequently bought together</h2>
-                @php($recs = app(\App\Services\Recommendations\RecommendationService::class)->frequentlyBoughtWith($product->id))
+                <h2 class="text-sm font-bold uppercase tracking-wide text-muted">{{ $companions['title'] }}</h2>
                 <div class="mt-4 space-y-3">
-                    @forelse ($recs->isNotEmpty() ? $recs : $related as $r)
+                    @forelse ($companions['items'] as $r)
                         <a href="{{ route('products.show', $r->slug) }}" class="flex gap-3 rounded-xl border border-line bg-surface p-3 hover:shadow-card">
                             <img src="{{ $r->getFirstMediaUrl('images', 'thumb') ?: $r->getFirstMediaUrl('images') }}" alt="" class="h-14 w-14 shrink-0 rounded-lg object-cover">
                             <div class="min-w-0">

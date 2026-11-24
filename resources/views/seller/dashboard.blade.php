@@ -172,7 +172,7 @@
                 <ul class="mt-4 space-y-2 text-sm">
                     @foreach ($topProducts as $product)
                         <li class="flex items-center justify-between gap-3">
-                            <a href="{{ route('seller.products.edit', $product) }}" class="truncate font-medium hover:text-accent">{{ $product->title }}</a>
+                            @if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $product) }}" class="truncate font-medium hover:text-accent">{{ $product->title }}</a>@else<span class="truncate font-medium">{{ $product->title }}</span>@endif
                             <span class="shrink-0 text-muted">{{ $product->order_items_count }} sold</span>
                         </li>
                     @endforeach
@@ -184,7 +184,7 @@
                 <ul class="mt-2 space-y-2 text-sm">
                     @foreach ($lowStockProducts as $product)
                         <li class="flex items-center justify-between gap-3">
-                            <a href="{{ route('seller.products.edit', $product) }}" class="truncate hover:text-accent">{{ $product->title }}</a>
+                            @if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $product) }}" class="truncate hover:text-accent">{{ $product->title }}</a>@else<span class="truncate">{{ $product->title }}</span>@endif
                             <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold {{ $product->quantity <= 0 ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-600' }}">
                                 {{ $product->quantity }} left
                             </span>

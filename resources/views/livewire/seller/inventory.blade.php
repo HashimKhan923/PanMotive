@@ -42,7 +42,7 @@
                         @php($hasOptions = $p->activeVariants->isNotEmpty())
                         <tr wire:key="inv-{{ $p->id }}" class="{{ $p->quantity <= 0 && $p->status === 'active' ? 'bg-rose-500/5' : ($p->isLowStock() ? 'bg-amber-500/5' : '') }}">
                             <td class="p-3">
-                                <a href="{{ route('seller.products.edit', $p) }}" class="font-medium hover:text-accent">{{ $p->title }}</a>
+                                @if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $p) }}" class="font-medium hover:text-accent">{{ $p->title }}</a>@else<span class="font-medium">{{ $p->title }}</span>@endif
                                 @if ($p->sku)<span class="ml-1 font-mono text-xs text-muted">{{ $p->sku }}</span>@endif
                                 @if ($p->quantity <= 0 && $p->status === 'active')<span class="pill ml-1 !bg-rose-500/15 !text-rose-600">Out</span>
                                 @elseif ($p->isLowStock())<span class="pill ml-1 !bg-amber-500/15 !text-amber-700 dark:!text-amber-400">Low</span>@endif

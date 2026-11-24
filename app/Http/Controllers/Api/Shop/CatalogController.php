@@ -222,13 +222,15 @@ class CatalogController extends Controller
             ->with('seller.sellerProfile', 'media')->withCount('activeVariants')->get()
             ->sortBy(fn ($p) => collect($items)->pluck('id')->search($p->id))->values();
 
-        $together = $load($recs->frequentlyBoughtWith($product->id));
+        $companions = $recs->companions($product, 6);
+        $together = $load($companions['items']);
         $alsoViewed = $load($recs->alsoViewed($product->id));
         $sameCategory = Product::listed()->where('id', '!=', $product->id)->where('category_id', $product->category_id)
             ->with('seller.sellerProfile', 'media')->withCount('activeVariants')->take(8)->get();
 
         return response()->json([
             'frequently_bought' => $present->cards($together),
+            'frequently_bought_title' => $companions['title'],
             'also_viewed' => $present->cards($alsoViewed),
             'related' => $present->cards($sameCategory),
         ]);

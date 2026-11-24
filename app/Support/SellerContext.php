@@ -18,6 +18,9 @@ class SellerContext
     private static ?User $actor = null;
     private static ?SellerTeamMember $membership = null;
 
+    /** @var array<int,bool> user id => owns a store (only used before the team-member step has run) */
+    private static array $ownsStore = [];
+
     public static function set(User $owner, User $actor, ?SellerTeamMember $membership = null): void
     {
         self::$owner = $owner;
@@ -29,6 +32,7 @@ class SellerContext
     {
         self::$owner = self::$actor = null;
         self::$membership = null;
+        self::$ownsStore = [];
     }
 
     /** The store owner — the user every seller-portal query should scope to. */
@@ -67,9 +71,16 @@ class SellerContext
     /** True when the current actor may perform $ability for this store. */
     public static function can(string $ability): bool
     {
-        // The owner (no membership context) can do everything.
+        // The owner (no membership context) can do everything. On the few seller pages that run before the
+        // team-member step (onboarding, "application pending", team invites) that must really be a store
+        // owner, or a team member there would be shown the owner's whole menu.
         if (! self::$membership) {
-            return true;
+            if (self::$owner) {
+                return true;
+            }
+            $user = auth()->user();
+
+            return ! $user || (self::$ownsStore[$user->id] ??= $user->sellerProfile()->exists());
         }
 
         return self::$membership->can($ability);

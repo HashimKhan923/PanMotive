@@ -61,6 +61,135 @@ class FitmentMatcher
         return array_keys($ids);
     }
 
+    /**
+     * A product title such as "HRS 2023-26 11th Gen Honda Accord Front Lip" or
+     * "2022-26 Toyota GR86 / Subaru BRZ Tail Lights": one year range anywhere in the title, then every
+     * make + model it names ("Model 3/Y" means both). Falls back to fromText() for other layouts.
+     *
+     * @return list<int> vehicle ids
+     */
+    public function fromTitle(?string $title): array
+    {
+        $title = trim((string) $title);
+        if ($title === '' || $this->allMakes() === []) {
+            return [];
+        }
+        // the year range: "2018-2022", "2018-22", "2018–22", "17-21" or a single "2019"
+        if (preg_match('/\b((?:19|20)\d{2})\s*(?:-|–|—|to|thru)\s*((?:19|20)?\d{2})\b/u', $title, $m)) {
+            [$from, $to] = $this->years($m[1].'-'.$m[2]);
+        } elseif (preg_match('/(?:^|\s)(\d{2})\s*[-–]\s*(\d{2})(?=\s)/u', $title, $m) && (int) $m[1] < (int) $m[2]) {
+            [$from, $to] = $this->years($m[1].'-'.$m[2]);
+        } elseif (preg_match('/\b((?:19|20)\d{2})\b/', $title, $m)) {
+            [$from, $to] = [(int) $m[1], (int) $m[1]];
+        } else {
+            return $this->fromText($title);
+        }
+        if (! $from) {
+            return [];
+        }
+
+        $names = array_keys($this->allMakes());
+        usort($names, fn ($a, $b) => strlen($b) <=> strlen($a));
+        $makeAlt = implode('|', array_map(fn ($m) => preg_quote($m, '/'), $names));
+        $ids = [];
+        if (preg_match_all('/\b('.$makeAlt.')\b/iu', $title, $all, PREG_OFFSET_CAPTURE)) {
+            foreach ($all[1] as [$make, $at]) {
+                // the words after this make, up to a "|" (several makes in one title each get their own look)
+                $rest = (string) strtok(substr($title, $at + strlen($make)), '|');
+                $makeId = $this->makeId($make);
+                if (! $makeId) {
+                    continue;
+                }
+                // "Model 3/Y": the shared first word goes with every part after a slash
+                $pieces = preg_split('/\s*\/\s*/', trim($rest)) ?: [];
+                $first = preg_split('/\s+/', trim($pieces[0] ?? '')) ?: [];
+                foreach ($pieces as $i => $piece) {
+                    $tries = [$piece];
+                    if ($i > 0 && count($first) > 1 && preg_match('/^\w{1,2}\b/', $piece)) {
+                        $tries[] = $first[0].' '.$piece;
+                    }
+                    foreach ($tries as $try) {
+                        $modelIds = $this->modelsAtStart($makeId, $try);
+                        foreach ($modelIds as $modelId) {
+                            foreach ($this->vehicles($modelId, $from, $to) as $id) {
+                                $ids[$id] = true;
+                            }
+                        }
+                        if ($modelIds) {
+                            break;
+                        }
+                    }
+                    if ($i === 0 && ! $this->modelsAtStart($makeId, $piece)) {
+                        break;   // the slash wasn't a list of models
+                    }
+                }
+            }
+        }
+
+        // "Civic … FK8 Type-R …": the Type R is its own model ("Type R Style" is only a look)
+        if ($ids && preg_match('/\bcivic\b/i', $title) && preg_match('/\btype[- ]r\b(?!\s+style)/i', $title)
+            && ($honda = $this->makeId('honda')) && ($typeR = $this->modelsOf($honda)['civic type r'] ?? null)) {
+            foreach ($this->vehicles($typeR, $from, $to) as $id) {
+                $ids[$id] = true;
+            }
+        }
+
+        return $ids ? array_keys($ids) : $this->fromText($title);
+    }
+
+    /**
+     * Model(s) named at the start of $text for a make: the longest match, so "Civic Type R" beats "Civic".
+     * Toyota's "86" became the "GR86" in 2022, so "Toyota 86" also means the GR86.
+     *
+     * @return list<int> model ids
+     */
+    private function modelsAtStart(int $makeId, string $text): array
+    {
+        // hyphens split words too ("Armada-Patrol"); compact() joins them back for "F-150" / "GT-R"
+        $words = preg_split('/[\s,()\-]+/', Str::lower(trim($text)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $models = $this->modelsOf($makeId);
+        $byCompact = [];
+        foreach ($models as $name => $modelId) {
+            $byCompact[self::compact($name)] ??= $modelId;
+        }
+        for ($n = min(4, count($words)); $n >= 1; $n--) {
+            $key = self::compact(implode(' ', array_slice($words, 0, $n)));
+            if ($modelId = $byCompact[$key] ?? null) {
+                $out = [$modelId];
+                if ($key === '86' && isset($byCompact['gr86'])) {
+                    $out[] = $byCompact['gr86'];
+                }
+
+                return $out;
+            }
+        }
+        // BMW lists cars by trim (330i, 340i…): "3 Series" / "G20" / "F30" means every 3-series sedan
+        if (preg_match('/\b(3 series|g20|f30)\b/', Str::lower($text))) {
+            $out = [];
+            foreach ($models as $name => $modelId) {
+                if (preg_match('/^3\d\d[a-z]*$/', (string) $name) && ! preg_match('/(ci|is|ic)$/', (string) $name) && (string) $name !== '335') {
+                    $out[] = $modelId;
+                }
+            }
+            if ($out) {
+                return $out;
+            }
+        }
+        // a family name without its size ("Silverado" → "Silverado 1500"): the 1500, or the only one
+        if ($words) {
+            $family = array_filter($models, fn ($id, $name) => str_starts_with((string) $name, $words[0].' '), ARRAY_FILTER_USE_BOTH);
+            $half = array_filter($family, fn ($id, $name) => str_contains((string) $name, '1500'), ARRAY_FILTER_USE_BOTH);
+            if ($half) {
+                return [reset($half)];
+            }
+            if (count($family) === 1) {
+                return [reset($family)];
+            }
+        }
+
+        return [];
+    }
+
     /** @return list<int> */
     private function parseSegment(string $segment): array
     {

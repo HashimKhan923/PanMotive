@@ -49,15 +49,9 @@ class ProductController extends Controller
             }
         }
 
-        $related = Product::listed()
-            ->where('id', '!=', $product->id)
-            ->where('category_id', $product->category_id)
-            ->with('brand')
-            ->take(4)->get();
-
         $recent = $recentlyViewed->products(excludeId: $product->id, limit: 6);
         $recentlyViewed->push($product->id);
 
-        return view('storefront.products.show', compact('product', 'related', 'recent', 'bundles'));
+        return view('storefront.products.show', compact('product', 'recent', 'bundles'));
     }
 }

@@ -19,7 +19,7 @@
             @forelse ($lookers as $p)
                 <div class="mt-3 border-t border-line pt-3">
                     <div class="flex items-center justify-between gap-3">
-                        <a href="{{ route('seller.products.edit', $p) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>
+                        @if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $p) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>@else<span class="line-clamp-1 text-sm font-medium">{{ $p->title }}</span>@endif
                         <span class="shrink-0 text-xs text-muted">{{ $p->recent_visitors }} shoppers</span>
                     </div>
                     @php($missing = collect($p->quality['checks'])->where('ok', false)->pluck('label'))
@@ -39,7 +39,7 @@
             @forelse ($lowQuality as $p)
                 <div class="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3">
                     <div class="min-w-0">
-                        <a href="{{ route('seller.products.edit', $p) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>
+                        @if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $p) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>@else<span class="line-clamp-1 text-sm font-medium">{{ $p->title }}</span>@endif
                         <p class="text-xs text-muted">Add: {{ collect($p->quality['checks'])->where('ok', false)->pluck('label')->take(3)->implode(', ') }}</p>
                     </div>
                     <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold {{ $p->quality['score'] < 40 ? 'bg-rose-500/10 text-rose-500' : 'bg-amber-500/10 text-amber-600' }}">{{ $p->quality['score'] }}/100</span>
@@ -58,7 +58,7 @@
             @forelse ($stale as $p)
                 <div class="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3" wire:key="stale-{{ $p->id }}">
                     <div class="min-w-0">
-                        <a href="{{ route('seller.products.edit', $p) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>
+                        @if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $p) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>@else<span class="line-clamp-1 text-sm font-medium">{{ $p->title }}</span>@endif
                         <p class="text-xs text-muted">${{ number_format($p->price, 2) }} · {{ $p->views_count }} views · {{ $p->quantity }} in stock</p>
                     </div>
                     <form method="POST" action="{{ route('seller.insights.run-sale', $p) }}">
@@ -78,7 +78,7 @@
             <p class="mt-1 text-xs text-muted">High interest, nearly gone.</p>
             @forelse ($hotLowStock as $p)
                 <div class="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3">
-                    <a href="{{ route('seller.products.edit', $p) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>
+                    @if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $p) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>@else<span class="line-clamp-1 text-sm font-medium">{{ $p->title }}</span>@endif
                     <span class="shrink-0 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-600">{{ $p->quantity }} left · {{ $p->recent_views }} views (30d)</span>
                 </div>
             @empty
@@ -92,7 +92,7 @@
             <p class="mt-1 text-xs text-muted">Out-of-stock listings on wishlists.</p>
             @forelse ($demand as $p)
                 <div class="mt-3 flex items-center justify-between gap-3 border-t border-line pt-3">
-                    <a href="{{ route('seller.products.edit', $p->id) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>
+                    @if (\App\Support\SellerContext::can('products.manage'))<a href="{{ route('seller.products.edit', $p->id) }}" class="line-clamp-1 text-sm font-medium hover:text-accent">{{ $p->title }}</a>@else<span class="line-clamp-1 text-sm font-medium">{{ $p->title }}</span>@endif
                     <span class="shrink-0 text-xs text-muted">{{ $p->want_count }} waiting</span>
                 </div>
             @empty

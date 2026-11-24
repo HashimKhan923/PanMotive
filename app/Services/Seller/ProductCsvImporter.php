@@ -48,6 +48,9 @@ class ProductCsvImporter
     private int $fitted = 0;
     private int $existing = 0;
 
+    /** @var array<int,bool> category id => is a sub-category */
+    private array $isSub = [];
+
     /** Products the source store had archived: imported hidden, so "publish all drafts" can't make them live. */
     private int $archived = 0;
 
@@ -630,16 +633,31 @@ class ProductCsvImporter
 
                 continue;
             }
+            // 1. the store's own category, when it names a specific sub-category ("Tail Lights")
+            $hintIds = [];
             foreach (array_filter($item['hints']) as $hint) {
                 $key = Str::lower(trim((string) $hint));
                 if (isset($this->categoryMap[$key])) {
-                    $out[$k] = $this->categoryMap[$key];
-
-                    continue 2;
+                    $hintIds[] = $this->categoryMap[$key];
+                } elseif ($id = $this->categories->resolve((string) $hint)) {
+                    $hintIds[] = $id;
                 }
             }
-            if ($id = $this->categories->resolve(...array_values(array_filter([...$item['hints'], $item['title']], 'strlen')))) {
+            if ($hintIds && $this->isSubCategory($hintIds[0]) && trim((string) ($item['hints'][0] ?? '')) !== '') {
+                $out[$k] = $hintIds[0];
+
+                continue;
+            }
+            // 2. the title (what the product actually is), before tags: store tags like "accessories" or
+            //    "new arrival" used to file nearly a whole catalog under one broad category
+            if (trim($item['title']) !== '' && ($id = $this->categories->resolve($item['title']))) {
                 $out[$k] = $id;
+
+                continue;
+            }
+            // 3. whatever the category column or tags matched
+            if ($hintIds) {
+                $out[$k] = $hintIds[0];
 
                 continue;
             }
@@ -666,6 +684,11 @@ class ProductCsvImporter
         return $out;
     }
 
+    private function isSubCategory(int $id): bool
+    {
+        return $this->isSub[$id] ??= Category::whereKey($id)->whereNotNull('parent_id')->exists();
+    }
+
     /** Year/Make/Model columns or fitment text (any row of the product), else "2018-2022 Honda Accord" in the title. */
     private function attachFitment(Product $product, ColumnMap $cols, array $rows, string $title): void
     {
@@ -677,7 +700,7 @@ class ProductCsvImporter
             array_push($ids, ...$this->fitment->fromText($cols->get($row, 'fitment')));
         }
         if ($ids === []) {
-            $ids = $this->fitment->fromText($title);
+            $ids = $this->fitment->fromTitle($title);
         }
         $ids = array_values(array_unique($ids));
         if ($ids) {
