@@ -59,7 +59,8 @@ Route::get('/p/{page}', function (\App\Models\Page $page) {
 })->name('pages.show');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
-Route::get('/plus', [\App\Http\Controllers\Storefront\MembershipController::class, 'show'])->name('plus.show');
+Route::get('/membership', [\App\Http\Controllers\Storefront\MembershipController::class, 'show'])->name('plus.show');
+Route::permanentRedirect('/plus', '/membership');
 Route::get('/find-parts', [\App\Http\Controllers\Storefront\PartFinderController::class, 'index'])->name('find-parts');
 
 // Wishlist + compare (guest-friendly)
@@ -103,8 +104,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/affiliate', [\App\Http\Controllers\Storefront\AffiliateLinkController::class, 'dashboard'])->name('affiliate.dashboard');
     Route::post('/loyalty/{sellerProfile}/redeem', [\App\Http\Controllers\Storefront\LoyaltyController::class, 'redeem'])->name('loyalty.redeem');
 
-    Route::post('/plus/join', [\App\Http\Controllers\Storefront\MembershipController::class, 'join'])->name('plus.join');
-    Route::post('/plus/cancel', [\App\Http\Controllers\Storefront\MembershipController::class, 'cancel'])->name('plus.cancel');
+    Route::post('/membership/join', [\App\Http\Controllers\Storefront\MembershipController::class, 'join'])->name('plus.join');
+    Route::post('/membership/cancel', [\App\Http\Controllers\Storefront\MembershipController::class, 'cancel'])->name('plus.cancel');
 
     Route::get('/subscriptions', [\App\Http\Controllers\Storefront\SubscriptionController::class, 'index'])->name('subscriptions.index');
     Route::post('/subscriptions', [\App\Http\Controllers\Storefront\SubscriptionController::class, 'store'])->name('subscriptions.store');

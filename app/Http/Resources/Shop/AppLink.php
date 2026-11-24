@@ -36,7 +36,7 @@ class AppLink
             (bool) preg_match('#^/@([^/]+)$#', $path, $m) => ['screen' => 'seller', 'slug' => $m[1]],
             (bool) preg_match('#^/orders/([^/]+)$#', $path, $m) => ['screen' => 'order', 'id' => $m[1]],
             $path === '/shop' => ['screen' => 'shop', 'params' => array_intersect_key($query, array_flip(['q', 'category', 'condition', 'make', 'model', 'vehicleId', 'sort']))],
-            in_array($path, ['/deals', '/plus', '/find-parts', '/fit-guarantee', '/orders', '/cart', '/wishlist', '/wallet', '/messages', '/subscriptions', '/track'], true)
+            in_array($path, ['/deals', '/plus', '/membership', '/find-parts', '/fit-guarantee', '/orders', '/cart', '/wishlist', '/wallet', '/messages', '/subscriptions', '/track'], true)
                 => ['screen' => ltrim($path, '/')],
             default => ['screen' => 'web', 'url' => $host === '' ? rtrim((string) config('app.url'), '/').$path.(isset($parts['query']) ? '?'.$parts['query'] : '') : $url],
         };

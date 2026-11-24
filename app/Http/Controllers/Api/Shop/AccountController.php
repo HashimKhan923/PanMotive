@@ -148,7 +148,7 @@ class AccountController extends Controller
             return response()->json(['message' => 'Not enough Panmotive credit to start membership. Top up your wallet first.'], 422);
         }
 
-        return response()->json(['message' => 'Welcome to Panmotive Plus! Active through '.$until->format('M j, Y').'.', 'until' => $until->toIso8601String()]);
+        return response()->json(['message' => 'Welcome to Panmotive Membership! Active through '.$until->format('M j, Y').'.', 'until' => $until->toIso8601String()]);
     }
 
     public function cancelPlus(Request $request, MembershipService $membership): JsonResponse

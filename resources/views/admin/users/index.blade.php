@@ -33,7 +33,7 @@
                             @if ($u->is_active === false)
                                 <x-admin.status value="suspended" />
                             @elseif ($u->isPlusMember())
-                                <x-admin.status value="active" label="Plus" />
+                                <x-admin.status value="active" label="Member" />
                             @else
                                 <x-admin.status value="active" />
                             @endif

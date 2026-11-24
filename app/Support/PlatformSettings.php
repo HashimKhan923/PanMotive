@@ -40,13 +40,13 @@ class PlatformSettings
                 'marketplace.seller_tiers.top_rated.commission_rate' => ['label' => 'Top Rated commission', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 50],
                 'marketplace.seller_tiers.powerseller.commission_rate' => ['label' => 'Powerseller commission', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 50],
             ]],
-            'rewards' => ['label' => 'Buyer rewards', 'hint' => 'Cashback, referrals and Panmotive Plus.', 'icon' => 'sparkles', 'fields' => [
+            'rewards' => ['label' => 'Buyer rewards', 'hint' => 'Cashback, referrals and Panmotive Membership.', 'icon' => 'sparkles', 'fields' => [
                 'marketplace.loyalty_tiers.bronze.cashback_rate' => ['label' => 'Bronze cashback', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 25],
                 'marketplace.loyalty_tiers.silver.cashback_rate' => ['label' => 'Silver cashback', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 25],
                 'marketplace.loyalty_tiers.gold.cashback_rate' => ['label' => 'Gold cashback', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 25],
                 'marketplace.referral_reward_amount' => ['label' => 'Referral reward', 'type' => 'number', 'prefix' => '$', 'min' => 0, 'max' => 500],
-                'marketplace.plus.price' => ['label' => 'Plus membership price (yearly)', 'type' => 'number', 'prefix' => '$', 'min' => 0, 'max' => 1000],
-                'marketplace.plus.cashback_bonus_rate' => ['label' => 'Plus extra cashback', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 25],
+                'marketplace.plus.price' => ['label' => 'Membership price (yearly)', 'type' => 'number', 'prefix' => '$', 'min' => 0, 'max' => 1000],
+                'marketplace.plus.cashback_bonus_rate' => ['label' => 'Member extra cashback', 'type' => 'number', 'suffix' => '%', 'min' => 0, 'max' => 25],
             ]],
             'marketing' => ['label' => 'Marketing rules', 'hint' => 'Limits that protect buyers from too many messages.', 'icon' => 'mail', 'fields' => [
                 'marketplace.marketing.frequency_cap_hours' => ['label' => 'Minimum gap between store emails', 'type' => 'int', 'suffix' => 'hours', 'min' => 1, 'max' => 720],

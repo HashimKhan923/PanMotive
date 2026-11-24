@@ -76,6 +76,56 @@ class CheckoutService
     }
 
     /**
+     * The billing address, only when "Same as shipping address" is unticked (billing_same = 0).
+     *
+     * @return array<string, mixed>
+     */
+    public static function billingRules(): array
+    {
+        $req = 'required_if:billing_same,0';
+
+        return [
+            'billing_same' => 'nullable|boolean',
+            'billing' => 'nullable|array',
+            'billing.name' => "{$req}|nullable|string|max:255",
+            'billing.line1' => "{$req}|nullable|string|max:255",
+            'billing.line2' => 'nullable|string|max:255',
+            'billing.city' => "{$req}|nullable|string|max:120",
+            'billing.state' => "{$req}|nullable|string|max:120",
+            'billing.postal_code' => "{$req}|nullable|string|max:20",
+            'billing.country' => "{$req}|nullable|string|size:2",
+        ];
+    }
+
+    public static function billingMessages(): array
+    {
+        return [
+            'billing.name.required_if' => 'Enter the name on your billing address.',
+            'billing.line1.required_if' => 'Enter your billing street address.',
+            'billing.city.required_if' => 'Enter your billing city.',
+            'billing.state.required_if' => 'Enter your billing state.',
+            'billing.postal_code.required_if' => 'Enter your billing ZIP code.',
+            'billing.country.required_if' => 'Enter your billing country.',
+        ];
+    }
+
+    /**
+     * The billing address to store: the one the buyer typed when it differs, else the shipping address.
+     *
+     * @param  array<string, mixed>  $data  validated checkout input
+     * @return array<string, mixed>|null
+     */
+    public static function billingFrom(array $data): ?array
+    {
+        if (filter_var($data['billing_same'] ?? true, FILTER_VALIDATE_BOOLEAN) || empty($data['billing'])) {
+            return null;
+        }
+
+        return collect($data['billing'])->only(['name', 'line1', 'line2', 'city', 'state', 'postal_code', 'country'])
+            ->map(fn ($v) => is_string($v) ? trim($v) : $v)->all();
+    }
+
+    /**
      * The checkout summary before paying (cart, shipping, discounts, credit). Tax is only known once
      * the order is placed with an address, so it isn't included here.
      *
@@ -127,14 +177,14 @@ class CheckoutService
      *
      * @throws CheckoutProblem when the order can't be placed as it is
      */
-    public function place(CartService $cart, ?User $user, array $address, ?string $couponCode, bool $useCredits, array $attribution = []): Order
+    public function place(CartService $cart, ?User $user, array $address, ?string $couponCode, bool $useCredits, array $attribution = [], ?array $billing = null): Order
     {
         if ($cart->isEmpty()) {
             throw new CheckoutProblem('cart', 'Your cart is empty.');
         }
 
         $email = $address['email'] ?? null;
-        $address = collect($address)->except('email')->all();
+        $address = collect($address)->only(['name', 'line1', 'line2', 'city', 'state', 'postal_code', 'country', 'phone'])->all();
         $address['phone'] = self::cleanPhone((string) $address['phone']);
 
         // Remember the phone on the account for next time.
@@ -150,6 +200,10 @@ class CheckoutService
         // Store the state as its 2-letter code ("California" → "CA") so restrictions, surcharges,
         // labels and tax all see the same value.
         $address['state'] = ShippingEstimateService::normalizeState($address['state'] ?? null);
+        if ($billing) {
+            $billing['state'] = ShippingEstimateService::normalizeState($billing['state'] ?? null);
+            $billing['country'] = strtoupper((string) ($billing['country'] ?? 'US'));
+        }
 
         // Sellers away with sales paused aren't taking new orders.
         $away = $lines->filter(fn ($l) => $l['product']->seller?->sellerProfile?->salesPaused())
@@ -209,7 +263,7 @@ class CheckoutService
 
         $total = round(max(0, $subtotal + $shippingTotal + $tax->total - $discountTotal - $creditsToUse), 2);
 
-        $order = DB::transaction(function () use ($lines, $lineDiscounts, $couponDiscount, $address, $email, $user, $subtotal, $shippingTotal, $discountTotal, $creditsToUse, $total, $tax, $appliedCoupon) {
+        $order = DB::transaction(function () use ($lines, $lineDiscounts, $couponDiscount, $address, $billing, $email, $user, $subtotal, $shippingTotal, $discountTotal, $creditsToUse, $total, $tax, $appliedCoupon) {
             $order = Order::create([
                 'order_number' => 'PM-'.strtoupper(Str::random(10)),
                 'buyer_id' => $user?->id,
@@ -227,7 +281,7 @@ class CheckoutService
                 'total' => $total,
                 'currency' => 'USD',
                 'shipping_address' => $address,
-                'billing_address' => $address,
+                'billing_address' => $billing ?? $address,
             ]);
 
             foreach ($lines as $i => $line) {

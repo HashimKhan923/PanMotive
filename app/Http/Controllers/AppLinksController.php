@@ -12,7 +12,7 @@ use Illuminate\Http\JsonResponse;
 class AppLinksController extends Controller
 {
     /** Paths the app can show. Everything else (seller portal, admin, checkout pages…) stays on the web. */
-    private const PATHS = ['/', '/products/*', '/sellers/*', '/shop', '/shop/*', '/deals', '/plus', '/find-parts', '/fit-guarantee', '/orders', '/orders/*', '/wishlist', '/cart'];
+    private const PATHS = ['/', '/products/*', '/sellers/*', '/shop', '/shop/*', '/deals', '/plus', '/membership', '/find-parts', '/fit-guarantee', '/orders', '/orders/*', '/wishlist', '/cart'];
 
     public function apple(): JsonResponse
     {

@@ -1,11 +1,11 @@
 @extends('layouts.storefront')
-@section('title', 'Panmotive Plus')
+@section('title', 'Panmotive Membership')
 
 @section('content')
 <div class="container-x max-w-3xl py-12">
     <div class="text-center" data-reveal>
         <span class="pill !bg-surface-2 !text-fg">Membership</span>
-        <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Panmotive <span class="text-accent">Plus</span></h1>
+        <h1 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Panmotive <span class="text-accent">Membership</span></h1>
         <p class="mx-auto mt-3 max-w-xl text-muted">Free shipping on every order, extra cashback, and first access to deals — for people who wrench year-round.</p>
     </div>
 
@@ -32,7 +32,7 @@
                 @auth
                     @if ($active)
                         <div class="rounded-xl bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-400">
-                            You're a Plus member through <strong>{{ auth()->user()->plus_until->format('M j, Y') }}</strong>.
+                            You're a member through <strong>{{ auth()->user()->plus_until->format('M j, Y') }}</strong>.
                             @if (auth()->user()->plus_auto_renew)
                                 <form method="POST" action="{{ route('plus.cancel') }}" class="mt-2">
                                     @csrf
@@ -49,7 +49,7 @@
                                 <input type="checkbox" name="auto_renew" value="1" checked class="rounded border-line text-accent focus:ring-accent">
                                 Auto-renew each year (cancel anytime)
                             </label>
-                            <button class="btn-accent w-full">Join Plus — ${{ number_format($price, 0) }}</button>
+                            <button class="btn-accent w-full">Become a member — ${{ number_format($price, 0) }}</button>
                         </form>
                     @endif
                 @else

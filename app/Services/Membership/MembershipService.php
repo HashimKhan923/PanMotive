@@ -41,7 +41,7 @@ class MembershipService
      */
     public function join(User $user, bool $autoRenew = true): Carbon
     {
-        $this->wallet->debit($user, $this->price(), 'Panmotive Plus membership');
+        $this->wallet->debit($user, $this->price(), 'Panmotive Membership');
 
         $from = $this->isActive($user) ? $user->plus_until : now();
         $until = $from->copy()->addMonths($this->termMonths());

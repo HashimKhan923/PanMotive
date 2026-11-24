@@ -44,7 +44,7 @@ class UserController extends Controller
                 'buyers' => ['Buyers', User::whereDoesntHave('roles', fn ($r) => $r->whereIn('name', [...self::STAFF_ROLES, 'seller']))->count()],
                 'sellers' => ['Sellers', User::whereHas('roles', $sellers)->count()],
                 'staff' => ['Staff', User::whereHas('roles', $staff)->count()],
-                'plus' => ['Plus members', User::where('plus_until', '>', now())->count()],
+                'plus' => ['Members', User::where('plus_until', '>', now())->count()],
                 'banned' => ['Suspended', User::where('is_active', false)->count()],
             ],
         ]);
@@ -127,9 +127,9 @@ class UserController extends Controller
         $data = $request->validate(['until' => 'nullable|date|after:today', 'reason' => 'required|string|max:255']);
 
         $user->forceFill(['plus_until' => $data['until'] ?? null, 'plus_auto_renew' => false])->save();
-        $this->audit(filled($data['until'] ?? null) ? 'Granted Plus membership' : 'Ended Plus membership', $user, $data);
+        $this->audit(filled($data['until'] ?? null) ? 'Granted membership' : 'Ended membership', $user, $data);
 
-        return back()->with('success', 'Plus membership updated.');
+        return back()->with('success', 'Membership updated.');
     }
 
     /** Store credit is real money the platform owes, so every change needs a reason and stays in the ledger. */

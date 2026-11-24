@@ -127,8 +127,8 @@ class CartController extends Controller
         }
         $user = $request->user();
         $data = $request->validate(
-            CheckoutService::addressRules(guest: ! $user) + ['coupon' => 'nullable|string|max:64', 'use_credits' => 'nullable|boolean'],
-            CheckoutService::addressMessages(),
+            CheckoutService::addressRules(guest: ! $user) + CheckoutService::billingRules() + ['coupon' => 'nullable|string|max:64', 'use_credits' => 'nullable|boolean'],
+            CheckoutService::addressMessages() + CheckoutService::billingMessages(),
         );
 
         try {
@@ -137,6 +137,8 @@ class CartController extends Controller
                 collect($data)->only(['name', 'line1', 'line2', 'city', 'state', 'postal_code', 'country', 'phone', 'email'])->all(),
                 $data['coupon'] ?? null,
                 $user && (bool) ($data['use_credits'] ?? false),
+                [],
+                CheckoutService::billingFrom($data),
             );
         } catch (CheckoutProblem $problem) {
             return response()->json(['message' => $problem->getMessage(), 'errors' => [$problem->field => [$problem->getMessage()]]], 422);

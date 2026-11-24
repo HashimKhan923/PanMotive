@@ -32,7 +32,7 @@ class MembershipController extends Controller
         }
 
         return redirect()->route('plus.show')
-            ->with('success', 'Welcome to Panmotive Plus! Active through '.$until->format('M j, Y').'.');
+            ->with('success', 'Welcome to Panmotive Membership! Active through '.$until->format('M j, Y').'.');
     }
 
     public function cancel()

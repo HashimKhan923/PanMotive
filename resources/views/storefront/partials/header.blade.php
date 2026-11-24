@@ -118,7 +118,7 @@
             @foreach (\App\Models\Category::shopRoots()->take(7) as $cat)
                 <a href="{{ route('products.index', ['category' => $cat->slug]) }}" class="text-muted hover:text-accent">{{ $cat->name }}</a>
             @endforeach
-            <a href="{{ route('plus.show') }}" class="ml-auto font-semibold text-fg hover:text-accent">Plus</a>
+            <a href="{{ route('plus.show') }}" class="ml-auto font-semibold text-fg hover:text-accent">Membership</a>
             <a href="{{ route('deals.index') }}" class="font-semibold text-accent">Today's deals</a>
         </div>
     </div>
@@ -142,7 +142,7 @@
             <nav class="mt-4 flex flex-col text-sm">
                 <a href="{{ route('products.index') }}" class="py-2.5 font-semibold">All parts</a>
                 <a href="{{ route('find-parts') }}" class="py-2.5 font-semibold">Find parts for my vehicle</a>
-                <a href="{{ route('plus.show') }}" class="py-2.5 font-semibold">Panmotive Plus</a>
+                <a href="{{ route('plus.show') }}" class="py-2.5 font-semibold">Panmotive Membership</a>
                 <a href="{{ route('deals.index') }}" class="py-2.5 font-semibold text-accent">Today's deals</a>
                 @foreach (\App\Models\Category::shopRoots() as $cat)
                     <a href="{{ route('products.index', ['category' => $cat->slug]) }}" class="py-2.5 text-muted">{{ $cat->name }}</a>

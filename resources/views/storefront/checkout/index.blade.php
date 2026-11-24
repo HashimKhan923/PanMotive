@@ -66,6 +66,33 @@
                     </div>
                 </div>
 
+                @php($billingSame = old('billing_same', '1') === '1')
+                <div class="card p-6" x-data="{ same: @js($billingSame) }">
+                    <h2 class="font-bold">Billing address</h2>
+                    <p class="mt-1 text-xs text-muted">The address linked to your card or payment method.</p>
+                    <input type="hidden" name="billing_same" value="0">
+                    <label class="mt-4 flex items-center gap-2 text-sm font-medium">
+                        <input type="checkbox" name="billing_same" value="1" x-model="same" @checked($billingSame) class="rounded text-accent focus:ring-accent">
+                        Same as shipping address
+                    </label>
+
+                    <div x-show="! same" x-cloak x-collapse class="mt-4 grid gap-4 sm:grid-cols-2">
+                        @foreach (['name' => 'Full name', 'line1' => 'Address', 'line2' => 'Apt, suite (optional)', 'city' => 'City', 'state' => 'State', 'postal_code' => 'ZIP code', 'country' => 'Country'] as $field => $label)
+                            @php($required = $field !== 'line2')
+                            <div class="{{ in_array($field, ['name', 'line1', 'line2']) ? 'sm:col-span-2' : '' }}">
+                                <label for="bill-{{ $field }}" class="label">{{ $label }} @if ($required)<span class="text-rose-500" aria-hidden="true">*</span>@endif</label>
+                                <input id="bill-{{ $field }}" name="billing[{{ $field }}]" value="{{ old('billing.'.$field, $field === 'country' ? 'US' : null) }}"
+                                       autocomplete="billing {{ ['name'=>'name','line1'=>'address-line1','line2'=>'address-line2','city'=>'address-level2','state'=>'address-level1','postal_code'=>'postal-code','country'=>'country'][$field] }}"
+                                       @if ($field === 'postal_code') inputmode="numeric" maxlength="10" @endif
+                                       @if ($field === 'country') maxlength="2" @endif
+                                       x-bind:disabled="same" @if ($required) x-bind:required="! same" @endif
+                                       class="input @error('billing.'.$field) !border-rose-500 @enderror">
+                                @error('billing.'.$field) <p class="mt-1 text-xs text-rose-500">{{ $message }}</p> @enderror
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
                 <button class="btn-accent w-full !py-3.5 text-base">Continue to payment <x-ui.icon name="arrow-right" class="w-4 h-4" /></button>
             </form>
 

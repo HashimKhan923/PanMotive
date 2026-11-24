@@ -31,7 +31,7 @@
     <x-admin.stat label="Orders" :value="$orderCount" icon="list" />
     <x-admin.stat label="Paid order value" :value="$orderTotal" prefix="$" :decimals="2" icon="dollar" />
     <x-admin.stat label="Wallet balance" :value="(float) $user->wallet_balance" prefix="$" :decimals="2" icon="archive" />
-    <x-admin.stat label="Loyalty tier" :value="ucfirst($user->loyalty_tier ?? 'bronze')" icon="star" :hint="$user->isPlusMember() ? 'Plus until '.$user->plus_until->format('M j, Y') : 'Not a Plus member'" />
+    <x-admin.stat label="Loyalty tier" :value="ucfirst($user->loyalty_tier ?? 'bronze')" icon="star" :hint="$user->isPlusMember() ? 'Member until '.$user->plus_until->format('M j, Y') : 'Not a member'" />
 </div>
 
 <div class="mt-4 grid gap-4 xl:grid-cols-3">
@@ -125,7 +125,7 @@
         @endcan
 
         @can('users.manage')
-            <x-admin.card title="Plus membership">
+            <x-admin.card title="Membership">
                 <form method="POST" action="{{ route('admin.users.plus', $user) }}" class="space-y-3">
                     @csrf
                     <div><label class="label" for="p-until">Member until <span class="font-normal text-muted">(empty ends it)</span></label>

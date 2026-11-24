@@ -65,13 +65,17 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('status', 'Your cart is empty.');
         }
 
-        $data = $request->validate(CheckoutService::addressRules(guest: ! auth()->check()), CheckoutService::addressMessages());
+        $data = $request->validate(
+            CheckoutService::addressRules(guest: ! auth()->check()) + CheckoutService::billingRules(),
+            CheckoutService::addressMessages() + CheckoutService::billingMessages(),
+        );
 
         try {
             $order = $checkout->place(
                 $cart, auth()->user(), $data, session('checkout.coupon_code'),
                 auth()->check() && $request->boolean('use_credits'),
                 CheckoutAttribution::cookiesFrom($request),
+                CheckoutService::billingFrom($data),
             );
         } catch (CheckoutProblem $problem) {
             return $problem->field === 'cart'
