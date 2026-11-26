@@ -130,7 +130,7 @@ class MarketplaceInsights
     /** Live listings with something wrong, each with its count and the filter that lists them. */
     public function catalogIssues(): array
     {
-        $live = fn () => Product::listed();
+        $live = fn () => Product::listed()->original();
 
         return [
             ['label' => 'Out of stock', 'count' => $live()->where('quantity', '<=', 0)->count(), 'filter' => 'out_of_stock', 'hint' => 'Shoppers can see these but can\'t buy them.'],

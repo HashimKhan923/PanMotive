@@ -31,7 +31,7 @@ class SearchSuggestController extends Controller
         $key = 'search.suggest.'.md5(mb_strtolower($q)).'.'.($vehicleId ?? 0);
 
         $data = Cache::remember($key, 60, function () use ($q, $search, $vehicleId) {
-            $products = $search->orderByRelevance($search->apply(Product::listed(), $q), $q)
+            $products = $search->orderByRelevance($search->apply(Product::listed()->original(), $q), $q)
                 ->with(['media', 'fitments:id'])
                 ->take(6)->get();
 

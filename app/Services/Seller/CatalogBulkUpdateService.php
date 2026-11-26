@@ -25,7 +25,7 @@ class CatalogBulkUpdateService
     /** One row per simple listing, one row per option for listings sold by option. */
     public function exportRows(int $sellerId): Collection
     {
-        return Product::where('seller_id', $sellerId)
+        return Product::where('seller_id', $sellerId)->whereNull('source_product_id')
             ->with(['activeVariants' => fn ($q) => $q->orderBy('sort_order')])
             ->orderBy('title')->get()
             ->flatMap(function (Product $p) {
@@ -56,7 +56,7 @@ class CatalogBulkUpdateService
             return ['changes' => [], 'errors' => ['The file needs a "listing_id" or "sku" column — start from the export so the columns match.'], 'unchanged' => 0];
         }
 
-        $products = Product::where('seller_id', $sellerId)->with('activeVariants')->get();
+        $products = Product::where('seller_id', $sellerId)->whereNull('source_product_id')->with('activeVariants')->get();
         $byId = $products->keyBy('id');
         $bySku = $products->filter(fn ($p) => filled($p->sku))->keyBy(fn ($p) => strtolower($p->sku));
         $variantsBySku = $products->flatMap->activeVariants->filter(fn ($v) => filled($v->sku))->keyBy(fn ($v) => strtolower($v->sku));
@@ -197,7 +197,7 @@ class CatalogBulkUpdateService
 
         DB::transaction(function () use ($sellerId, $changes, $reviewRequired, &$applied) {
             foreach ($changes as $c) {
-                $product = Product::where('seller_id', $sellerId)->find($c['product_id']);
+                $product = Product::where('seller_id', $sellerId)->whereNull('source_product_id')->find($c['product_id']);
                 if (! $product) {
                     continue;
                 }

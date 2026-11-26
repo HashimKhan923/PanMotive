@@ -2,6 +2,12 @@
     <x-slot name="title">{{ $product->meta_title ?: $product->title }} — {{ config('app.name') }}</x-slot>
     <x-slot name="meta_description">{{ $product->meta_description ?: Str::limit(strip_tags($product->description), 155) }}</x-slot>
 
+    @if ($product->source_product_id && $product->source)
+        @push('structured_data')
+            {{-- Supply Network listing: the supplier's own page is the original for search engines. --}}
+            <link rel="canonical" href="{{ route('products.show', $product->source->slug) }}">
+        @endpush
+    @endif
     @push('structured_data')
         <script type="application/ld+json">
         {!! json_encode($product->structured_data ?: [
@@ -135,7 +141,15 @@
                     @endif
                 </div>
 
-                @php($sp = $product->seller?->sellerProfile)
+                {{-- A Supply Network listing ships from the supplier; this store sells it. --}}
+                @php($shipped = $product->shippedProduct())
+                @php($sp = $shipped->seller?->sellerProfile)
+                @if ($shipped->id !== $product->id)
+                    <p class="mt-2 inline-flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
+                        <x-ui.icon name="store" class="w-4 h-4" /> Sold by
+                        <a href="{{ route('sellers.show', $product->seller->sellerProfile) }}" class="font-medium text-fg hover:text-accent">{{ $product->seller->sellerProfile->business_name }}</a>
+                    </p>
+                @endif
                 <p class="mt-2 inline-flex flex-wrap items-center gap-x-1.5 text-sm text-muted">
                     <x-ui.icon name="truck" class="w-4 h-4" /> Ships from
                     @if ($sp?->slug)
@@ -143,9 +157,9 @@
                     @else
                         {{ $sp?->business_name ?? 'a verified seller' }}
                     @endif
-                    @php($handling = $product->effectiveHandlingDays())
+                    @php($handling = $shipped->effectiveHandlingDays())
                     · ships {{ $handling <= 0 ? 'same day' : 'within '.$handling.' business '.Str::plural('day', $handling) }}
-                    @php($shipPolicy = app(\App\Services\Shipping\ShippingEstimateService::class)->policyForProduct($product))
+                    @php($shipPolicy = app(\App\Services\Shipping\ShippingEstimateService::class)->policyForProduct($shipped))
                     @if ($shipPolicy?->method() === 'free')
                         · <span class="font-medium text-emerald-600">Free shipping</span>
                     @endif
@@ -356,9 +370,10 @@
                     @endif
                 </section>
 
-                @livewire('storefront.product-reviews', ['product' => $product], key('reviews-'.$product->id))
+                {{-- A resold listing shares its supplier's reviews and questions: same part, and the supplier answers. --}}
+                @livewire('storefront.product-reviews', ['product' => $product->shippedProduct()], key('reviews-'.$product->id))
 
-                @livewire('storefront.product-questions', ['product' => $product], key('qa-'.$product->id))
+                @livewire('storefront.product-questions', ['product' => $product->shippedProduct()], key('qa-'.$product->id))
             </div>
 
             {{-- related --}}

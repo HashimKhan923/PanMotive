@@ -15,7 +15,7 @@ class RecommendationService
 {
     public function forVehicle(int $vehicleId, int $limit = 8): Collection
     {
-        return Product::listed()
+        return Product::listed()->original()
             ->whereHas('fitments', fn ($q) => $q->where('vehicles.id', $vehicleId))
             ->inRandomOrder()->limit($limit)->get();
     }
@@ -51,7 +51,7 @@ class RecommendationService
 
         $vehicleIds = $this->vehicleIds($product);
 
-        return Product::whereIn('id', $ids)->listed()
+        return Product::whereIn('id', $ids)->listed()->original()
             ->when($product->category_id, fn ($q) => $q->where('category_id', '!=', $product->category_id))
             ->when($vehicleIds, fn ($q) => $q->where(fn ($w) => $w
                 ->whereHas('fitments', fn ($f) => $f->whereIn('vehicles.id', $vehicleIds))
@@ -81,7 +81,7 @@ class RecommendationService
             return ['title' => 'Frequently bought together', 'items' => new Collection];
         }
 
-        $items = Product::listed()
+        $items = Product::listed()->original()
             ->where('id', '!=', $product->id)
             ->when($product->category_id, fn ($q) => $q->where('category_id', '!=', $product->category_id))
             ->whereHas('fitments', fn ($f) => $f->whereIn('vehicles.id', $vehicleIds))
@@ -133,7 +133,7 @@ class RecommendationService
             return new Collection;
         }
 
-        return Product::whereIn('id', $ids)->listed()->with('brand')
+        return Product::whereIn('id', $ids)->listed()->original()->with('brand')
             ->get()->sortBy(fn ($p) => array_search($p->id, $ids))->values();
     }
 
@@ -146,10 +146,10 @@ class RecommendationService
             ->pluck('products.category_id')->unique();
 
         if ($purchasedCategoryIds->isEmpty()) {
-            return Product::listed()->inRandomOrder()->limit($limit)->get();
+            return Product::listed()->original()->inRandomOrder()->limit($limit)->get();
         }
 
-        return Product::listed()
+        return Product::listed()->original()
             ->whereIn('category_id', $purchasedCategoryIds)
             ->inRandomOrder()->limit($limit)->get();
     }

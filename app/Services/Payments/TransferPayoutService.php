@@ -34,6 +34,24 @@ class TransferPayoutService
         ]);
     }
 
+    /** Supply Network: the reseller's margin on a delivered resold line, as its own transfer. */
+    public function transferResellerMargin(OrderItem $orderItem, string $connectedAccountId): Transfer
+    {
+        return $this->stripe->transfers->create([
+            'amount' => (int) round($orderItem->reseller_margin * 100),
+            'currency' => 'usd',
+            'destination' => $connectedAccountId,
+            'transfer_group' => "order_{$orderItem->order_id}",
+            'metadata' => [
+                'order_item_id' => $orderItem->id,
+                'order_id' => $orderItem->order_id,
+                'kind' => 'reseller_margin',
+            ],
+        ], [
+            'idempotency_key' => "reseller-margin-item-{$orderItem->id}",
+        ]);
+    }
+
     /**
      * Front an instant payout: only the net goes out, so the fee really is kept. Same group and
      * metadata as a normal payout, so a later refund can find this transfer and pull it back.

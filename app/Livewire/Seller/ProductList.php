@@ -58,7 +58,7 @@ class ProductList extends Component
 
     private function owned(int $id): Product
     {
-        return Product::where('seller_id', auth()->id())->findOrFail($id);
+        return Product::where('seller_id', auth()->id())->whereNull('source_product_id')->findOrFail($id);
     }
 
     public function archive(int $id): void
@@ -140,7 +140,7 @@ class ProductList extends Component
         abort_unless(SellerContext::can('products.manage'), 403);
 
         $ids = collect($this->selected)->map(fn ($i) => (int) $i);
-        $q = Product::where('seller_id', auth()->id())->whereIn('id', $ids);
+        $q = Product::where('seller_id', auth()->id())->whereNull('source_product_id')->whereIn('id', $ids);
 
         if ($action === 'delete') {
             $sellable = $q->pluck('id');
@@ -181,7 +181,7 @@ class ProductList extends Component
         $this->validate(['priceValue' => 'required|numeric|min:0']);
         $v = (float) $this->priceValue;
 
-        Product::where('seller_id', auth()->id())
+        Product::where('seller_id', auth()->id())->whereNull('source_product_id')
             ->whereIn('id', collect($this->selected)->map(fn ($i) => (int) $i))
             ->get()
             ->each(function ($p) use ($v) {
@@ -270,7 +270,7 @@ class ProductList extends Component
 
     public function exportCsv()
     {
-        $rows = Product::where('seller_id', auth()->id())
+        $rows = Product::where('seller_id', auth()->id())->whereNull('source_product_id')
             ->orderBy('title')
             ->get(['title', 'sku', 'part_number', 'oem_number', 'condition', 'price', 'sale_price', 'quantity', 'status']);
 
@@ -286,8 +286,10 @@ class ProductList extends Component
 
     private function baseQuery()
     {
+        // Own listings only; Supply Network resold listings are managed in Supply Network.
         return Product::query()
             ->where('seller_id', auth()->id())
+            ->whereNull('source_product_id')
             ->withCount('orderItems')
             ->when($this->status !== '', fn ($q) => $q->where('status', $this->status))
             ->when($this->stock === 'out', fn ($q) => $q->where('quantity', '<=', 0))
@@ -310,7 +312,7 @@ class ProductList extends Component
 
     public function render()
     {
-        $counts = Product::where('seller_id', auth()->id())
+        $counts = Product::where('seller_id', auth()->id())->whereNull('source_product_id')
             ->selectRaw('status, COUNT(*) as c')->groupBy('status')->pluck('c', 'status');
 
         $products = $this->baseQuery()->paginate(15);

@@ -5,14 +5,14 @@
 @section('content')
 @php
     $homeBanners = \App\Models\Banner::forHome();
-    $featured = \App\Models\Product::listed()->with('brand', 'seller.sellerProfile')->latest()->take(8)->get();
-    $deals = \App\Models\Product::onDeal()->listed()
+    $featured = \App\Models\Product::listed()->original()->with('brand', 'seller.sellerProfile')->latest()->take(8)->get();
+    $deals = \App\Models\Product::onDeal()->listed()->original()
         ->with('brand', 'seller.sellerProfile')->orderByRaw('(price - sale_price) / price DESC')->take(4)->get();
     $categories = \App\Models\Category::shopRoots()->take(8);
 
     $garage = app(\App\Services\GarageService::class)->current();
     $forVehicle = $garage
-        ? \App\Models\Product::listed()
+        ? \App\Models\Product::listed()->original()
             ->whereHas('fitments', fn ($q) => $q->where('vehicles.id', $garage['id']))
             ->with('brand')->latest()->take(4)->get()
         : collect();
@@ -24,7 +24,7 @@
     $adServer->recordImpressions($sponsored);
 
     $fromFollowed = auth()->check()
-        ? \App\Models\Product::listed()
+        ? \App\Models\Product::listed()->original()
             ->whereIn('seller_id', auth()->user()->followedSellers()->pluck('users.id'))
             ->with('brand')->latest()->take(4)->get()
         : collect();

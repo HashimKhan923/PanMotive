@@ -168,6 +168,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/account-health', AccountHealth::class)->name('seller.account-health.index');
 
         // Bundles
+        Route::get('/supply-network', \App\Livewire\Seller\SupplyNetwork::class)->middleware('seller.can:products.view,products.manage')->name('seller.supply.index');
         Route::get('/bundles', Bundles::class)->middleware('seller.can:products.manage')->name('seller.bundles.index');
 
         // Insights

@@ -59,7 +59,7 @@ class LifecycleEmailService
             $inCart = DB::table('cart_items')->join('carts', 'carts.id', '=', 'cart_items.cart_id')
                 ->where('carts.user_id', $user->id)->pluck('cart_items.product_id');
 
-            $products = Product::listed()->whereIn('id', $viewed->diff($bought)->diff($inCart)->take(10))
+            $products = Product::listed()->original()->whereIn('id', $viewed->diff($bought)->diff($inCart)->take(10))
                 ->where('quantity', '>', 0)->with('seller.sellerProfile', 'media')->get()
                 ->sortBy(fn ($p) => $viewed->search($p->id))->take(3)->values();
             if ($products->isEmpty()) {
@@ -137,7 +137,7 @@ class LifecycleEmailService
                         continue;
                     }
                     $vehicle = $user->active_vehicle;
-                    $products = Product::listed()->where('quantity', '>', 0)
+                    $products = Product::listed()->original()->where('quantity', '>', 0)
                         ->when($vehicle['id'] ?? null, fn ($q, $id) => $q->whereHas('fitments', fn ($f) => $f->where('vehicles.id', $id)))
                         ->with('seller.sellerProfile', 'media')->latest('id')->take(4)->get();
                     if ($products->isEmpty() && ($vehicle['id'] ?? null)) {

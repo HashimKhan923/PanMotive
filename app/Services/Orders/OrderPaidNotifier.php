@@ -43,5 +43,19 @@ class OrderPaidNotifier
                 report($e);
             }
         }
+
+        // Supply Network: the reseller made a sale the supplier will ship.
+        foreach ($order->items->whereNotNull('reseller_id')->groupBy('reseller_id') as $resellerId => $lines) {
+            try {
+                $margin = number_format((float) $lines->sum('reseller_margin'), 2);
+                User::find($resellerId)?->notify(new \App\Notifications\AccountNotice(
+                    "You made a resale — order {$order->order_number}",
+                    "A buyer ordered {$lines->pluck('product_title')->implode(', ')} from your store. The supplier ships it; you earn \${$margin} once it's delivered.",
+                    route('seller.supply.index', ['tab' => 'sales']),
+                ));
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
     }
 }

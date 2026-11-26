@@ -248,7 +248,7 @@ class Inventory extends Component
 
     private function ownedProduct(int $id): Product
     {
-        return Product::where('seller_id', auth()->id())->findOrFail($id);
+        return Product::where('seller_id', auth()->id())->whereNull('source_product_id')->findOrFail($id);
     }
 
     private function ownedVariant(Product $product, int $id): ProductVariant
@@ -282,7 +282,7 @@ class Inventory extends Component
     public function render()
     {
         $sellerId = auth()->id();
-        $mine = fn () => Product::where('seller_id', $sellerId)->where('status', '!=', 'archived');
+        $mine = fn () => Product::where('seller_id', $sellerId)->whereNull('source_product_id')->where('status', '!=', 'archived');
 
         $products = $mine()
             ->with(['activeVariants' => fn ($v) => $v->orderBy('sort_order')])

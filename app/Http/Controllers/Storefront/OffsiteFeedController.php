@@ -43,7 +43,7 @@ class OffsiteFeedController extends Controller
             .'<link>'.$x(url('/')).'</link>'
             .'<description>'.$x(config('app.name').' auto parts catalog').'</description>';
 
-        Product::listed()
+        Product::listed()->original()
             ->where('price', '>', 0)
             ->with(['brand', 'category.parent', 'seller.sellerProfile', 'media'])
             ->chunkById(200, function ($products) use (&$out, $x, $money, $channel, $offsite) {

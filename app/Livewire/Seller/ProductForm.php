@@ -125,6 +125,14 @@ class ProductForm extends Component
         if ($product?->exists) {
             abort_unless($product->seller_id === auth()->id(), 403);
 
+            // A Supply Network listing mirrors its supplier's product — nothing here to edit.
+            if ($product->source_product_id) {
+                session()->flash('status', 'This listing is supplied by another store: price, stock, photos and details update by themselves. You can pause or remove it here.');
+                $this->redirectRoute('seller.supply.index', ['tab' => 'listings']);
+
+                return;
+            }
+
             $this->product = $product;
             $this->title = $product->title;
             $this->category_id = $product->category_id;

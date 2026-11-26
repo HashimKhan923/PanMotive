@@ -44,9 +44,10 @@ class CartPage extends Component
             ->map(fn ($lines) => [
                 'seller' => $lines->first()['product']->seller,
                 'lines' => $lines->map(fn ($line) => [
-                    'product_id' => $line['product']->id,
-                    'variant_id' => $line['variant']?->id,
-                    'slug' => $line['product']->slug,
+                    'product_id' => $line['cart_product_id'] ?? $line['product']->id,
+                    'variant_id' => $line['cart_variant_id'] ?? $line['variant']?->id,
+                    'slug' => ($line['listing'] ?? $line['product'])->slug,
+                    'resold_by' => $line['listing']?->seller?->sellerProfile?->business_name,
                     'title' => $line['product']->title,
                     'variant_label' => $line['variant']?->label,
                     'image' => $line['product']->getFirstMediaUrl('images', 'thumb') ?: $line['product']->getFirstMediaUrl('images'),

@@ -26,7 +26,7 @@ class Category extends Model
     public static function shopRoots(): \Illuminate\Support\Collection
     {
         return \Illuminate\Support\Facades\Cache::remember('shop.category_roots', 300, function () {
-            $counts = Product::listed()->selectRaw('category_id, COUNT(*) AS aggregate')
+            $counts = Product::listed()->original()->selectRaw('category_id, COUNT(*) AS aggregate')
                 ->groupBy('category_id')->pluck('aggregate', 'category_id');
 
             $all = static::where('is_active', true)->orderBy('sort_order')->orderBy('name')->get();

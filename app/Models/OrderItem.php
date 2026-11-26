@@ -18,6 +18,7 @@ class OrderItem extends Model
         'payout_released_at', 'cashback_credited_at',
         'stock_committed_at', 'cancelled_at', 'cancel_reason', 'cancel_note',
         'fit_vehicle_id', 'fit_vehicle_label', 'fit_confirmed',
+        'reseller_id', 'listing_product_id', 'reseller_margin', 'reseller_margin_pct', 'reseller_paid_at', 'reseller_transfer_id',
     ];
 
     protected $casts = [
@@ -25,6 +26,7 @@ class OrderItem extends Model
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
         'payout_released_at' => 'datetime',
+        'reseller_paid_at' => 'datetime',
         'cashback_credited_at' => 'datetime',
         'stock_committed_at' => 'datetime',
         'cancelled_at' => 'datetime',
@@ -50,6 +52,23 @@ class OrderItem extends Model
     public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');
+    }
+
+    /** Supply Network: the store that resold this line (the seller above is the supplier who ships it). */
+    public function reseller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reseller_id');
+    }
+
+    /** Supply Network: the reseller's listing the buyer bought from. */
+    public function listingProduct(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'listing_product_id')->withTrashed();
+    }
+
+    public function isResold(): bool
+    {
+        return (bool) $this->reseller_id;
     }
 
     public function product(): BelongsTo

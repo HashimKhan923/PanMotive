@@ -67,7 +67,7 @@ class AdServingService
                 'headline' => $c->headline, 'text' => $c->primary_text,
             ]));
 
-        $listed = Product::listed()->whereIn('id', $out->map(fn ($r) => $r['product']->id))->pluck('id')->flip();
+        $listed = Product::listed()->original()->whereIn('id', $out->map(fn ($r) => $r['product']->id))->pluck('id')->flip();
 
         return $out->filter(fn ($r) => $listed->has($r['product']->id))
             ->unique(fn ($r) => $r['product']->id)->shuffle()->take($limit)->values();

@@ -28,11 +28,11 @@ class CatalogController extends Controller
         $present = new ShopPresenter;
         $vehicle = $garage->current();
 
-        $featured = Product::listed()->with('seller.sellerProfile', 'media')->withCount('activeVariants')->latest()->take(8)->get();
-        $deals = Product::onDeal()->listed()->with('seller.sellerProfile', 'media')->withCount('activeVariants')
+        $featured = Product::listed()->original()->with('seller.sellerProfile', 'media')->withCount('activeVariants')->latest()->take(8)->get();
+        $deals = Product::onDeal()->listed()->original()->with('seller.sellerProfile', 'media')->withCount('activeVariants')
             ->orderByRaw('(price - sale_price) / price DESC')->take(8)->get();
         $forVehicle = $vehicle
-            ? Product::listed()->whereHas('fitments', fn ($q) => $q->where('vehicles.id', $vehicle['id']))
+            ? Product::listed()->original()->whereHas('fitments', fn ($q) => $q->where('vehicles.id', $vehicle['id']))
                 ->with('seller.sellerProfile', 'media')->withCount('activeVariants')->latest()->take(8)->get()
             : collect();
         $fromFollowed = $request->user()
@@ -248,7 +248,7 @@ class CatalogController extends Controller
 
     public function deals(Request $request): JsonResponse
     {
-        $deals = Product::onDeal()->listed()->with('seller.sellerProfile', 'media')->withCount('activeVariants')
+        $deals = Product::onDeal()->listed()->original()->with('seller.sellerProfile', 'media')->withCount('activeVariants')
             ->orderByRaw('CASE WHEN deal_ends_at IS NULL THEN 1 ELSE 0 END, deal_ends_at ASC')
             ->orderByRaw('(price - sale_price) / price DESC')
             ->paginate(24, ['*'], 'page', (int) $request->input('page', 1));
@@ -257,7 +257,7 @@ class CatalogController extends Controller
         $out = ['products' => $present->cards($deals->getCollection()), 'meta' => ShopPresenter::page($deals)];
 
         if ($deals->currentPage() === 1) {
-            $top = Product::onDeal()->listed()->with('seller.sellerProfile', 'media')->withCount('activeVariants')
+            $top = Product::onDeal()->listed()->original()->with('seller.sellerProfile', 'media')->withCount('activeVariants')
                 ->orderByRaw('(price - sale_price) / price DESC')->first();
             $out['deal_of_the_day'] = $top ? $present->prime([$top])->card($top) : null;
             $out['total'] = $deals->total();
@@ -280,7 +280,7 @@ class CatalogController extends Controller
             $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $q).'%';
 
             return [
-                'ids' => $search->orderByRelevance($search->apply(Product::listed(), $q), $q)->take(6)->pluck('products.id')->all(),
+                'ids' => $search->orderByRelevance($search->apply(Product::listed()->original(), $q), $q)->take(6)->pluck('products.id')->all(),
                 'categories' => Category::where('is_active', true)->where('name', 'like', $like)->orderBy('name')->take(4)
                     ->get(['name', 'slug'])->map(fn ($c) => ['name' => $c->name, 'slug' => $c->slug])->all(),
             ];

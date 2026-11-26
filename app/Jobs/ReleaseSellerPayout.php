@@ -140,6 +140,11 @@ class ReleaseSellerPayout implements ShouldQueue
         }
 
         $orderItem->seller?->notify(new \App\Notifications\SellerPayoutReleased($orderItem));
+
+        // Supply Network: the reseller's margin goes out once the supplier is paid.
+        if ($orderItem->reseller_id && (float) $orderItem->reseller_margin > 0 && ! $orderItem->reseller_paid_at) {
+            ReleaseResellerMargin::dispatch($orderItem->id);
+        }
     }
 
     public function failed(Throwable $e): void

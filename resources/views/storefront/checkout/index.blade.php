@@ -106,7 +106,7 @@
                         @foreach ($grouped as $group)
                             <div wire:key="cs-{{ $group['seller']?->id ?? $loop->index }}">
                                 <p class="text-xs font-semibold uppercase tracking-wide text-muted">
-                                    Sold by {{ $group['seller']?->sellerProfile?->business_name ?? 'Verified seller' }}
+                                    Ships from {{ $group['seller']?->sellerProfile?->business_name ?? 'Verified seller' }}
                                 </p>
                                 <ul class="mt-2 space-y-2 text-sm">
                                     @foreach ($group['lines'] as $line)

@@ -50,7 +50,7 @@ class DashboardController extends Controller
             'refunds' => $refunds,
             'new_buyers' => $newBuyers, 'new_buyers_delta' => $this->delta($newBuyers, $prevNewBuyers),
             'active_sellers' => SellerProfile::where('status', 'approved')->count(),
-            'live_listings' => Product::listed()->count(),
+            'live_listings' => Product::listed()->original()->count(),
         ];
 
         return view('admin.dashboard', [

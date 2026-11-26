@@ -41,6 +41,9 @@
                     <div>
                         <p class="font-semibold">{{ $item->product_title }}</p>
                         <p class="mt-0.5 text-sm text-muted">Qty {{ $item->quantity }} · ${{ number_format($item->line_total, 2) }}</p>
+                        @if ($item->reseller_id)
+                            <p class="mt-0.5 text-xs text-muted">Bought through {{ $item->reseller?->sellerProfile?->business_name ?? 'a Panmotive store' }} · ships from {{ $item->seller?->sellerProfile?->business_name ?? 'the supplier' }}</p>
+                        @endif
                     </div>
                     <div class="flex shrink-0 flex-col items-end gap-1.5">
                         <span class="pill">{{ $item->status->label() }}</span>

@@ -15,7 +15,7 @@
                     <div class="card p-4" wire:key="grp-{{ $group['seller']?->id ?? $loop->index }}">
                         <p class="mb-3 flex items-center gap-2 border-b border-line pb-3 text-sm">
                             <x-ui.icon name="box" class="w-4 h-4 text-muted" />
-                            Sold by <span class="font-semibold">{{ $group['seller']?->sellerProfile?->business_name ?? 'Verified seller' }}</span>
+                            Ships from <span class="font-semibold">{{ $group['seller']?->sellerProfile?->business_name ?? 'Verified seller' }}</span>
                         </p>
                         @if ($group['seller']?->sellerProfile?->salesPaused())
                             {{-- Same rule checkout enforces — better to say so here than fail at the last step. --}}
@@ -33,6 +33,9 @@
                                     @php($v = $line['variant_id'] ? ', ' . $line['variant_id'] : '')
                                     <div class="flex flex-1 flex-col">
                                         <a href="{{ route('products.show', $line['slug']) }}" class="line-clamp-2 text-sm font-semibold hover:text-accent">{{ $line['title'] }}</a>
+                                        @if (! empty($line['resold_by']))
+                                            <span class="mt-0.5 block text-xs text-muted">Sold through {{ $line['resold_by'] }}</span>
+                                        @endif
                                         @if ($line['variant_label'])
                                             <span class="mt-0.5 text-xs text-muted">Option: {{ $line['variant_label'] }}</span>
                                         @endif

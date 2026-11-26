@@ -27,7 +27,7 @@ class SaleEventService
             throw ValidationException::withMessages(['saleEnds' => 'The sale must end after it starts, and in the future.']);
         }
 
-        $products = Product::where('seller_id', $seller->id)->whereIn('id', $productIds)->where('status', 'active')->get();
+        $products = Product::where('seller_id', $seller->id)->whereNull('source_product_id')->whereIn('id', $productIds)->where('status', 'active')->get();
         if ($products->isEmpty()) {
             throw ValidationException::withMessages(['saleProducts' => 'Pick at least one active listing.']);
         }

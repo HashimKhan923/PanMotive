@@ -183,8 +183,8 @@ class CartController extends Controller
                 'subtotal' => round($group->sum('line_total'), 2),
                 'shipping' => round((float) ($q['shipping_per_seller'][$sellerId] ?? 0), 2),
                 'lines' => $group->map(fn ($l) => [
-                    'product_id' => $l['product']->id,
-                    'variant_id' => $l['variant']?->id,
+                    'product_id' => $l['cart_product_id'] ?? $l['product']->id,
+                    'variant_id' => $l['cart_variant_id'] ?? $l['variant']?->id,
                     'slug' => $l['product']->slug,
                     'title' => $l['product']->title,
                     'variant' => $l['variant']?->label,

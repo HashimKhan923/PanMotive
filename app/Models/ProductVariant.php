@@ -10,7 +10,7 @@ class ProductVariant extends Model
 {
     protected $fillable = [
         'product_id', 'shopify_variant_id', 'label', 'options', 'sku', 'price', 'sale_price',
-        'quantity', 'weight_lbs', 'is_active', 'sort_order', 'media_id',
+        'quantity', 'weight_lbs', 'is_active', 'sort_order', 'media_id', 'source_variant_id',
     ];
 
     protected $casts = [
@@ -28,6 +28,13 @@ class ProductVariant extends Model
         // products.quantity stays correct without having to know about variants.
         $sync = fn (ProductVariant $v) => $v->product?->syncStockFromVariants();
         static::saved($sync);
+
+        // A supplier's option price or stock change reaches resellers' copies straight away.
+        static::saved(function (ProductVariant $v) {
+            if (! $v->source_variant_id && ProductVariant::where('source_variant_id', $v->id)->exists()) {
+                app(\App\Services\Seller\SupplyNetworkService::class)->pushVariant($v);
+            }
+        });
         static::deleted($sync);
     }
 

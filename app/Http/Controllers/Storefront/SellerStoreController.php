@@ -16,9 +16,9 @@ class SellerStoreController extends Controller
 
         $sellerId = $sellerProfile->user_id;
 
-        $products = Product::where('seller_id', $sellerId)
-            ->where('status', 'active')
-            ->with('brand')
+        // Own listings and Supply Network resold ones, while they're buyable.
+        $products = Product::listed()->where('seller_id', $sellerId)
+            ->with('brand', 'source')
             ->when($request->filled('q'), fn ($q) => app(CatalogSearch::class)->apply($q, (string) $request->q))
             ->when($request->sort === 'price_asc', fn ($q) => $q->orderByLivePrice('asc'))
             ->when($request->sort === 'price_desc', fn ($q) => $q->orderByLivePrice('desc'))
@@ -28,13 +28,13 @@ class SellerStoreController extends Controller
             ->withQueryString();
 
         $stats = [
-            'listings' => Product::where('seller_id', $sellerId)->where('status', 'active')->count(),
+            'listings' => Product::listed()->where('seller_id', $sellerId)->count(),
             'since' => $sellerProfile->created_at,
         ];
 
         $featured = collect($sellerProfile->featured_product_ids ?? [])->isNotEmpty()
-            ? Product::whereIn('id', $sellerProfile->featured_product_ids)->where('seller_id', $sellerId)
-                ->where('status', 'active')->with('brand')->get()
+            ? Product::listed()->whereIn('id', $sellerProfile->featured_product_ids)->where('seller_id', $sellerId)
+                ->with('brand')->get()
             : collect();
 
         $offers = \App\Models\Coupon::where('seller_id', $sellerId)

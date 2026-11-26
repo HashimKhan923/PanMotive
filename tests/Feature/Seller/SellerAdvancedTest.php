@@ -184,7 +184,7 @@ class SellerAdvancedTest extends TestCase
         $this->assertNotNull($review->fresh()->seller_responded_at);
 
         // Shows on the storefront product page
-        $this->get(route('products.show', $product->slug))->assertSee('Seller response');
+        $this->get(rtrim(config('app.url'), '/').'/products/'.$product->slug)->assertSee('Seller response');   // on the shop address (after a portal request, route() reuses the portal host)
     }
 
     public function test_other_seller_cannot_respond_to_review(): void

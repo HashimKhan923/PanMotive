@@ -24,6 +24,7 @@
 @php
     $sellerProfile = auth()->user()?->sellerProfile;
     $unreadMessages = auth()->user()?->unreadSellerMessageCount() ?? 0;
+    $supplyRequests = \App\Models\SupplyConnection::where('supplier_id', \App\Support\SellerContext::ownerId())->where('status', 'pending')->count();
     $openOffers = auth()->user()?->offersReceived()->whereIn('status', ['pending', 'countered'])->count() ?? 0;
     $newOrders = \App\Models\OrderItem::where('seller_id', auth()->id())->where('status', \App\Enums\OrderStatus::Paid->value)->count();
     $unansweredQuestions = \App\Models\Question::where('status', 'published')
@@ -40,6 +41,7 @@
             ['seller.products.index', 'Products', 'box', 0, 'products.view'],
             ['seller.inventory.index', 'Inventory', 'archive', 0, 'inventory.manage'],
             ['seller.bundles.index', 'Bundles', 'grid', 0, 'products.manage'],
+            ['seller.supply.index', 'Supply Network', 'package', $supplyRequests, 'products.view'],
             ['seller.shipping.index', 'Shipping policies', 'truck', 0, 'products.manage'],
         ]],
         ['label' => 'Orders', 'icon' => 'truck', 'items' => [

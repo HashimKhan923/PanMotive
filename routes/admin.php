@@ -82,6 +82,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
         Route::post('/sellers/{sellerProfile}/payout-hold', [SellerController::class, 'payoutHold'])->name('admin.sellers.payout-hold');
         Route::post('/sellers/{sellerProfile}/notes', [SellerController::class, 'notes'])->name('admin.sellers.notes');
         Route::post('/sellers/{sellerProfile}/violation', [SellerController::class, 'violation'])->name('admin.sellers.violation');
+        Route::get('/supply-network', [\App\Http\Controllers\Admin\SupplyNetworkController::class, 'index'])->name('admin.supply.index');
+        Route::post('/supply-network/{connection}/end', [\App\Http\Controllers\Admin\SupplyNetworkController::class, 'end'])->name('admin.supply.end');
     });
 
     Route::middleware('can:staff.manage')->group(function () {

@@ -17,12 +17,16 @@ class SellerProfile extends Model
         'ad_credit', 'email_brand', 'social_settings', 'bio_views', 'banner_path', 'announcement', 'announcement_until', 'featured_product_ids',
         'referral_bonus_pct', 'referral_bonus_until', 'theme', 'loyalty', 'offsite_ads_opt_out',
         'ship_from', 'return_window_days', 'return_shipping', 'vacation_until', 'vacation_pause_sales',
+        'supply_enabled', 'supply_margin_pct', 'supply_auto_approve', 'supply_note',
     ];
 
     protected $casts = [
         'ein_encrypted' => 'encrypted',
         'shipping_settings' => 'array',
         'stripe_onboarding_complete' => 'boolean',
+        'supply_enabled' => 'boolean',
+        'supply_auto_approve' => 'boolean',
+        'supply_margin_pct' => 'decimal:2',
         'vacation_mode' => 'boolean',
         'commission_rate_override' => 'decimal:2',
         'rating' => 'decimal:2',

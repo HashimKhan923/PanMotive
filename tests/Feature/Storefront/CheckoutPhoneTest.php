@@ -43,7 +43,8 @@ class CheckoutPhoneTest extends TestCase
         $this->assertStringContainsString('name="phone"', $html);
         $this->assertMatchesRegularExpression('/id="co-phone"[^>]*type="tel"[^>]*required/s', $html);
         $this->assertMatchesRegularExpression('/id="co-line2"(?![^>]*required)[^>]*>/s', $html); // apartment stays optional
-        $this->assertSame(7, substr_count($html, '<span class="text-rose-500" aria-hidden="true">*</span>')); // name, address, city, state, ZIP, phone, country
+        // Shipping: name, address, city, state, ZIP, phone, country. Billing (when not the same): name, address, city, state, ZIP, country.
+        $this->assertSame(13, substr_count($html, '<span class="text-rose-500" aria-hidden="true">*</span>'));
     }
 
     public function test_phone_is_required_and_must_look_like_a_phone_number(): void

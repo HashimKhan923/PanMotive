@@ -293,7 +293,25 @@ class CheckoutService
                 $netLine = round((float) $line['line_total'] - $lineDiscount, 2);
                 $split = OrderItem::calculateCommission($netLine, $rate);
 
-                $order->items()->create([
+                // Supply Network: bought from a reseller's listing. The supplier (seller of record)
+                // ships and is paid; the reseller's agreed margin comes out of the supplier's share.
+                $resale = [];
+                if ($listing = $line['listing'] ?? null) {
+                    $marginPct = app(\App\Services\Seller\SupplyNetworkService::class)->marginFor($listing);
+                    if ($marginPct === null) {
+                        throw new CheckoutProblem('cart', "\"{$listing->title}\" is no longer available from this store. Remove it from your cart.");
+                    }
+                    $margin = round($netLine * $marginPct / 100, 2);
+                    $split['seller_payout_amount'] = round($split['seller_payout_amount'] - $margin, 2);
+                    $resale = [
+                        'reseller_id' => $listing->seller_id,
+                        'listing_product_id' => $listing->id,
+                        'reseller_margin' => $margin,
+                        'reseller_margin_pct' => $marginPct,
+                    ];
+                }
+
+                $order->items()->create($resale + [
                     'seller_id' => $product->seller_id,
                     'product_id' => $product->id,
                     'product_variant_id' => $line['variant']?->id,

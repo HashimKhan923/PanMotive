@@ -40,6 +40,12 @@
             @if (($pnl['label_fees'] ?? 0) > 0)
                 <div class="flex justify-between py-2 text-muted"><span>Less shipping labels</span><span>−${{ number_format($pnl['label_fees'], 2) }}</span></div>
             @endif
+            @if (($pnl['reseller_margins'] ?? 0) > 0)
+                <div class="flex justify-between py-2 text-muted"><span>Less reseller margins (Supply Network)</span><span>−${{ number_format($pnl['reseller_margins'], 2) }}</span></div>
+            @endif
+            @if (($pnl['resale_earnings'] ?? 0) != 0)
+                <div class="flex justify-between py-2 text-emerald-600"><span>Plus resale margins earned (Supply Network)</span><span>${{ number_format($pnl['resale_earnings'], 2) }}</span></div>
+            @endif
             @if (($pnl['affiliate_fees'] ?? 0) > 0)
                 <div class="flex justify-between py-2 text-muted"><span>Less affiliate commissions</span><span>−${{ number_format($pnl['affiliate_fees'], 2) }}</span></div>
             @endif

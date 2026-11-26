@@ -4,6 +4,7 @@ namespace App\Services\Cart;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Support\ShopContext;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -93,18 +94,35 @@ class CartService
             ->filter(fn ($item) => $item->product && $item->product->isListed())
             ->filter(fn ($item) => ! $item->product_variant_id || ($item->variant && $item->variant->is_active))
             ->map(function ($item) {
+                $product = $item->product;
                 $variant = $item->variant;
+                $listing = null;
+
+                // Supply Network: the buyer chose a reseller's listing, but the supplier's product is
+                // what ships — its price, stock, shipping and seller are what the order uses.
+                if ($product->source_product_id) {
+                    $listing = $product;
+                    $product = $product->source;
+                    $variant = $variant?->source_variant_id ? ProductVariant::find($variant->source_variant_id) : $variant;
+                    if (! $product || ($item->product_variant_id && (! $variant || ! $variant->is_active))) {
+                        return null;
+                    }
+                }
 
                 $unit = $variant
                     ? $variant->effectivePrice()
-                    : $item->product->unitPriceForQuantity($item->quantity);
+                    : $product->unitPriceForQuantity($item->quantity);
 
                 $listUnit = $variant
                     ? $variant->listPrice()
-                    : (float) $item->product->price;
+                    : (float) $product->price;
 
                 return [
-                    'product' => $item->product,
+                    'product' => $product,
+                    'listing' => $listing,
+                    // What is actually in the cart (the reseller's listing for a resold line).
+                    'cart_product_id' => $item->product_id,
+                    'cart_variant_id' => $item->product_variant_id,
                     'variant' => $variant,
                     'quantity' => $item->quantity,
                     'unit_price' => $unit,
@@ -112,6 +130,7 @@ class CartService
                     'line_total' => round($unit * $item->quantity, 2),
                 ];
             })
+            ->filter()
             ->values();
     }
 

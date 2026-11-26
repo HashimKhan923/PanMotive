@@ -99,7 +99,7 @@ class ShopQuery
     /** The listings the current filters allow. $except leaves one filter out, which is what its own counts need. */
     public function filtered(?string $except = null): Builder
     {
-        $query = Product::query()->listed();
+        $query = Product::query()->listed()->original();
 
         $this->catalog->apply($query, $this->searchTerm ?? $this->q);
 

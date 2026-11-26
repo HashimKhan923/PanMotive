@@ -77,6 +77,14 @@ class BuyerRefundService
                 throw new RuntimeException('The seller payout could not be pulled back: '.$e->getMessage(), 0, $e);
             }
         }
+        // Supply Network: the reseller's margin for this line goes back too.
+        if ($item->reseller_paid_at) {
+            try {
+                $this->reversals->reverseResellerMargin($item);
+            } catch (\Stripe\Exception\ApiErrorException $e) {
+                throw new RuntimeException('The reseller\'s margin could not be pulled back: '.$e->getMessage(), 0, $e);
+            }
+        }
 
         $this->refunds->refundAmount($order, $cardShare, ['order_item_id' => $item->id, 'kind' => $kind]);
 

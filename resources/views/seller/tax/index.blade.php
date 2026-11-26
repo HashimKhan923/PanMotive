@@ -7,7 +7,7 @@
     $pct = $threshold > 0 ? min(100, round($gross / $threshold * 100)) : 0;
     $txnPct = $minTxns > 0 ? min(100, round($txns / $minTxns * 100)) : 0;
     $willIssue = $gross > $threshold && $txns > $minTxns;
-    $expenses = $pnl['platform_fees'] + $pnl['ad_spend'] + $pnl['offsite_ad_fees'] + ($pnl['affiliate_fees'] ?? 0) + ($pnl['label_fees'] ?? 0) + $pnl['instant_payout_fees'];
+    $expenses = $pnl['platform_fees'] + $pnl['ad_spend'] + $pnl['offsite_ad_fees'] + ($pnl['affiliate_fees'] ?? 0) + ($pnl['label_fees'] ?? 0) + ($pnl['reseller_margins'] ?? 0) + $pnl['instant_payout_fees'];
 @endphp
 <div class="max-w-3xl">
     <div class="flex flex-wrap items-end justify-between gap-3">

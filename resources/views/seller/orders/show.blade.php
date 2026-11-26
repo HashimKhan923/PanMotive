@@ -44,6 +44,9 @@
                     <div class="min-w-0 flex-1">
                         <p class="font-medium">{{ $item->product_title }}</p>
                         @if ($item->variant_label)<p class="mt-0.5 text-sm">{{ $item->variant_label }}</p>@endif
+                        @if ($item->reseller_id)
+                            <p class="mt-0.5 text-xs text-muted">Sold through {{ $item->reseller?->sellerProfile?->business_name ?? 'a reseller' }} (Supply Network) · their margin ${{ number_format($item->reseller_margin, 2) }} comes out of your payout</p>
+                        @endif
                         <p class="mt-0.5 text-sm text-muted">SKU {{ $item->product_sku ?: '—' }} · Qty {{ $item->quantity }} × ${{ number_format($item->unit_price, 2) }}</p>
                     </div>
                     <p class="text-right font-semibold">${{ number_format($item->line_total, 2) }}</p>

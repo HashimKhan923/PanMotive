@@ -32,6 +32,7 @@ class AdminNav
                 ['admin.users.index', 'Buyers & accounts', 'users', 0, 'users.view', 'admin.users.*'],
                 ['admin.sellers.index', 'Sellers', 'store', $c['pending_sellers'], 'sellers.approve', 'admin.sellers.*'],
                 ['admin.verifications.index', 'Identity checks', 'shield', $c['kyc'], 'sellers.approve', null],
+                ['admin.supply.index', 'Supply Network', 'package', 0, 'sellers.manage', null],
                 ['admin.staff.index', 'Staff & roles', 'user', 0, 'staff.manage', 'admin.staff.*'],
             ]],
             ['Catalog', [

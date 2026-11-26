@@ -14,7 +14,7 @@ class PartFinderController extends Controller
         return view('storefront.find-parts', [
             'categories' => Category::shopRoots()->take(12),
             'makes' => VehicleMake::orderBy('name')->take(24)->get()
-                ->filter(fn ($make) => Product::listed()->forVehicleMake($make)->exists())->values(),
+                ->filter(fn ($make) => Product::listed()->original()->forVehicleMake($make)->exists())->values(),
         ]);
     }
 }

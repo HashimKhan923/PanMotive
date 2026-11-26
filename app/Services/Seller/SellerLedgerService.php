@@ -41,8 +41,21 @@ class SellerLedgerService
                     'fee' => -1 * (float) $i->platform_fee_amount,
                     // Payout already has any Offsite Ads fee / affiliate commission taken out —
                     // add them back here and show each as its own line below, so every row adds up.
-                    'net' => (float) $i->seller_payout_amount + (float) $i->offsite_ad_fee + (float) $i->affiliate_fee + (float) $i->label_fee,
+                    'net' => (float) $i->seller_payout_amount + (float) $i->offsite_ad_fee + (float) $i->affiliate_fee + (float) $i->label_fee + (float) $i->reseller_margin,
                 ]);
+
+                // Supply Network: this line was sold through a reseller, who earns its margin.
+                if ((float) $i->reseller_margin > 0) {
+                    $rows->push([
+                        'date' => $i->created_at,
+                        'type' => 'reseller_margin',
+                        'ref' => $i->order?->order_number ?? "#{$i->order_id}",
+                        'description' => "Reseller margin ({$i->reseller_margin_pct}%) — {$i->product_title}",
+                        'gross' => 0.0,
+                        'fee' => -1 * (float) $i->reseller_margin,
+                        'net' => -1 * (float) $i->reseller_margin,
+                    ]);
+                }
 
                 if ((float) $i->offsite_ad_fee > 0) {
                     $rows->push([
@@ -102,6 +115,46 @@ class SellerLedgerService
                     'gross' => -1 * (float) $i->line_total,
                     'fee' => (float) $i->platform_fee_amount,       // fee returned to seller
                     'net' => -1 * (float) $i->seller_payout_amount,
+                ]);
+            });
+
+        // Supply Network: margins this store earned reselling other stores' products…
+        OrderItem::where('reseller_id', $sellerId)
+            ->whereNotIn('status', self::EARNING_ITEM_STATUSES_EXCLUDED)
+            ->whereBetween('created_at', [$from, $to])
+            ->with('order:id,order_number')
+            ->get()
+            ->each(function (OrderItem $i) use ($rows) {
+                $rows->push([
+                    'date' => $i->created_at,
+                    'type' => 'resale_margin',
+                    'ref' => $i->order?->order_number ?? "#{$i->order_id}",
+                    'description' => "Resale margin ({$i->reseller_margin_pct}%) — {$i->product_title}",
+                    'gross' => (float) $i->reseller_margin,
+                    'fee' => 0.0,
+                    'net' => (float) $i->reseller_margin,
+                ]);
+            });
+
+        // …and taken back when such a sale was refunded.
+        OrderItem::where('reseller_id', $sellerId)
+            ->where('status', OrderStatus::Refunded->value)
+            ->with(['order:id,order_number', 'statusHistory'])
+            ->get()
+            ->each(function (OrderItem $i) use ($rows, $from, $to) {
+                $refundedAt = optional($i->statusHistory->where('status', OrderStatus::Refunded->value)->sortByDesc('id')->first())->created_at
+                    ?? $i->updated_at;
+                if ($refundedAt->lt($from) || $refundedAt->gt($to)) {
+                    return;
+                }
+                $rows->push([
+                    'date' => $refundedAt,
+                    'type' => 'resale_margin_reversed',
+                    'ref' => $i->order?->order_number ?? "#{$i->order_id}",
+                    'description' => "Resale margin reversed (refund) — {$i->product_title}",
+                    'gross' => -1 * (float) $i->reseller_margin,
+                    'fee' => 0.0,
+                    'net' => -1 * (float) $i->reseller_margin,
                 ]);
             });
 
@@ -167,6 +220,8 @@ class SellerLedgerService
         $offsiteFees = (float) abs($entries->where('type', 'offsite_ad_fee')->sum('net'));
         $affiliateFees = (float) abs($entries->where('type', 'affiliate_fee')->sum('net'));
         $labelFees = (float) abs($entries->where('type', 'shipping_label')->sum('net'));
+        $resellerMargins = (float) abs($entries->where('type', 'reseller_margin')->sum('net'));
+        $resaleEarnings = (float) $entries->whereIn('type', ['resale_margin', 'resale_margin_reversed'])->sum('net');
 
         return [
             'gross_sales' => round($grossSales, 2),
@@ -178,6 +233,8 @@ class SellerLedgerService
             'offsite_ad_fees' => round($offsiteFees, 2),
             'affiliate_fees' => round($affiliateFees, 2),
             'label_fees' => round($labelFees, 2),
+            'reseller_margins' => round($resellerMargins, 2),
+            'resale_earnings' => round($resaleEarnings, 2),
             // Each entry's `net` is already the signed effect on seller earnings.
             'net_earnings' => round($entries->sum('net'), 2),
             'orders' => $entries->where('type', 'sale')->count(),

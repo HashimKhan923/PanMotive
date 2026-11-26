@@ -16,10 +16,50 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Product extends Model implements HasMedia
 {
-    use InteractsWithMedia, Searchable, SoftDeletes;
+    use InteractsWithMedia {
+        getMedia as protected ownMedia;
+    }
+    use Searchable, SoftDeletes;
+
+    /**
+     * Fields a Supply Network listing copies from the supplier's product and can't change itself.
+     * The reseller only controls whether its listing is live (status).
+     */
+    public const SUPPLY_SYNCED = [
+        'category_id', 'brand_id', 'title', 'sku', 'part_number', 'oem_number', 'description', 'bullet_points',
+        'price', 'sale_price', 'sale_starts_at', 'deal_ends_at', 'quantity', 'weight_lbs', 'handling_days',
+        'dimensions', 'condition', 'meta_title', 'meta_description', 'structured_data', 'avg_rating', 'reviews_count',
+    ];
+
+    /** True while SupplyNetworkService writes a copy, so the guard below lets the change through. */
+    public static bool $supplySyncing = false;
 
     protected static function booted(): void
     {
+        // A Supply Network listing mirrors its supplier's product: price, stock, title, photos and
+        // fitment come from the supplier. Anything else that tries to change them (bulk edits, sale
+        // events, repricing...) is undone here, so the supplier is always paid what they set.
+        static::saving(function (Product $product) {
+            if ($product->source_product_id && ! static::$supplySyncing && $product->exists) {
+                foreach (self::SUPPLY_SYNCED as $field) {
+                    if ($product->isDirty($field)) {
+                        $product->{$field} = $product->getOriginal($field);
+                    }
+                }
+                $product->accepts_offers = false;
+                $product->subscription_enabled = false;
+            }
+        });
+
+        // A supplier's change reaches every reseller copy: price and stock straight away,
+        // the rest (options, fitment) in the background.
+        static::saved(function (Product $product) {
+            if (! $product->source_product_id && $product->resoldCopies()->exists()) {
+                app(\App\Services\Seller\SupplyNetworkService::class)->pushQuick($product);
+                \App\Jobs\SyncSupplyListings::dispatch($product->id)->afterCommit();
+            }
+        });
+
         // A listing staff took down can't simply be switched back on by its seller. Publishing it
         // again sends it to staff for review; only their approval (which clears the note) makes it live.
         static::saving(function (Product $product) {
@@ -69,7 +109,7 @@ class Product extends Model implements HasMedia
         'quantity', 'reorder_point', 'reorder_qty', 'weight_lbs', 'shipping_policy_id', 'handling_days',
         'dimensions', 'condition', 'status', 'ai_generated_content',
         'meta_title', 'meta_description', 'structured_data', 'published_at',
-        'deal_ends_at', 'sale_starts_at', 'avg_rating', 'reviews_count',
+        'deal_ends_at', 'sale_starts_at', 'avg_rating', 'reviews_count', 'source_product_id', 'supply_excluded',
     ];
 
     protected $casts = [
@@ -78,6 +118,7 @@ class Product extends Model implements HasMedia
         'structured_data' => 'array',
         'ai_generated_content' => 'boolean',
         'accepts_offers' => 'boolean',
+        'supply_excluded' => 'boolean',
         'subscription_enabled' => 'boolean',
         'subscription_discount_pct' => 'decimal:2',
         'price' => 'decimal:2',
@@ -93,6 +134,39 @@ class Product extends Model implements HasMedia
     public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');
+    }
+
+    /** For a Supply Network listing: the supplier's product it resells. */
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'source_product_id');
+    }
+
+    /** Resellers' listings of this product. */
+    public function resoldCopies(): HasMany
+    {
+        return $this->hasMany(Product::class, 'source_product_id');
+    }
+
+    public function isResold(): bool
+    {
+        return (bool) $this->source_product_id;
+    }
+
+    /** The product that's physically shipped: the supplier's for a resold listing, else this one. */
+    public function shippedProduct(): Product
+    {
+        return $this->source_product_id && $this->source ? $this->source : $this;
+    }
+
+    /** A resold listing shows the supplier's photos - always the same, nothing copied. */
+    public function getMedia(string $collectionName = 'default', array|callable $filters = []): \Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection
+    {
+        if ($this->source_product_id && ($source = $this->source)) {
+            return $source->getMedia($collectionName, $filters);
+        }
+
+        return $this->ownMedia($collectionName, $filters);
     }
 
     public function category(): BelongsTo
@@ -262,15 +336,41 @@ class Product extends Model implements HasMedia
     {
         return $query->where('products.status', 'active')
             ->whereNotIn('products.seller_id', SellerProfile::whereIn('status', ['suspended', 'rejected'])->select('user_id'))
-            ->whereNotIn('products.seller_id', User::where('is_active', false)->select('id'));
+            ->whereNotIn('products.seller_id', User::where('is_active', false)->select('id'))
+            // A resold listing is only buyable while its supplier's product is, the supplier still
+            // offers it, and the two stores are still connected.
+            ->where(fn ($q) => $q->whereNull('products.source_product_id')->orWhereExists(fn ($s) => $s->selectRaw('1')
+                ->from('products as src')
+                ->join('seller_profiles as src_sp', 'src_sp.user_id', '=', 'src.seller_id')
+                ->join('supply_connections as sc', fn ($j) => $j->on('sc.supplier_id', '=', 'src.seller_id')->on('sc.reseller_id', '=', 'products.seller_id'))
+                ->whereColumn('src.id', 'products.source_product_id')
+                ->where('src.status', 'active')->whereNull('src.deleted_at')->where('src.supply_excluded', false)
+                ->where('src_sp.supply_enabled', true)->whereNotIn('src_sp.status', ['suspended', 'rejected'])
+                ->where('sc.status', 'approved')
+                ->whereNotIn('src.seller_id', User::where('is_active', false)->select('id'))));
+    }
+
+    /** Only sellers' own listings (not resold copies): search and browse lists show each part once. */
+    public function scopeOriginal($query)
+    {
+        return $query->whereNull('products.source_product_id');
     }
 
     /** scopeListed() for one product already in memory, such as a line in someone's cart. */
     public function isListed(): bool
     {
-        return $this->status === 'active'
+        $own = $this->status === 'active'
             && $this->seller?->is_active !== false
             && ! in_array($this->seller?->sellerProfile?->status, ['suspended', 'rejected'], true);
+        if (! $own || ! $this->source_product_id) {
+            return $own;
+        }
+        $source = $this->source;
+
+        return $source !== null && $source->isListed() && ! $source->supply_excluded
+            && (bool) $source->seller?->sellerProfile?->supply_enabled
+            && SupplyConnection::where('supplier_id', $source->seller_id)->where('reseller_id', $this->seller_id)
+                ->where('status', 'approved')->exists();
     }
 
     /** Sort by the price shoppers actually pay, so a sale that has ended or hasn't started doesn't count. */
@@ -414,7 +514,8 @@ class Product extends Model implements HasMedia
 
     public function shouldBeSearchable(): bool
     {
-        return $this->status === 'active';
+        // Resold copies stay out of search: the supplier's own listing already represents the part.
+        return $this->status === 'active' && ! $this->source_product_id;
     }
 
     public function registerMediaCollections(): void
