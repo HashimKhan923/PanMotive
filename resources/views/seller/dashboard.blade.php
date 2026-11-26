@@ -9,6 +9,7 @@
     $needsAttention = collect([
         ($stats['late_shipments'] ?? 0) > 0 ? ['route' => route('seller.orders.index', ['status' => 'late']), 'label' => $stats['late_shipments'] . ' ' . Str::plural('order', $stats['late_shipments']) . ' late to ship', 'icon' => 'alert'] : null,
         $stats['pending_orders'] > 0 ? ['route' => route('seller.orders.index', ['status' => 'new']), 'label' => $stats['pending_orders'] . ' new ' . Str::plural('order', $stats['pending_orders']) . ' to accept', 'icon' => 'bell'] : null,
+        ($stats['supply_requests'] ?? 0) > 0 ? ['route' => route('seller.supply.index', ['tab' => 'resellers']), 'label' => $stats['supply_requests'] . ' ' . Str::plural('store', $stats['supply_requests']) . ' asking to resell your products', 'icon' => 'package'] : null,
         ($stats['open_offers'] ?? 0) > 0 ? ['route' => route('seller.offers.index'), 'label' => $stats['open_offers'] . ' ' . Str::plural('offer', $stats['open_offers']) . ' awaiting a response', 'icon' => 'tag'] : null,
         $stats['to_ship'] > 0 ? ['route' => route('seller.orders.index', ['status' => 'seller_accepted']), 'label' => $stats['to_ship'] . ' ' . Str::plural('order', $stats['to_ship']) . ' ready to ship', 'icon' => 'truck'] : null,
         $stats['open_returns'] > 0 ? ['route' => route('seller.returns.index'), 'label' => $stats['open_returns'] . ' open return ' . Str::plural('request', $stats['open_returns']), 'icon' => 'refresh'] : null,
@@ -59,6 +60,9 @@
             </div>
             <p class="mt-2 text-2xl font-bold">${{ number_format($stats['month_sales'], 2) }}</p>
             <p class="mt-1 text-xs text-muted">${{ number_format($stats['lifetime_sales'], 2) }} lifetime</p>
+            @if (($stats['resale_margin_month'] ?? 0) > 0)
+                <p class="mt-1 text-xs text-emerald-600">+ ${{ number_format($stats['resale_margin_month'], 2) }} resale margin ({{ $stats['resale_orders_month'] }} {{ Str::plural('order', $stats['resale_orders_month']) }})</p>
+            @endif
         </div>
         <div class="card p-5">
             <div class="flex items-center justify-between text-muted">

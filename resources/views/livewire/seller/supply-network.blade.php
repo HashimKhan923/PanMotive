@@ -34,9 +34,12 @@
                     @if ($supplierProfile->supply_note)<p class="mt-1 max-w-2xl text-sm text-muted">{{ $supplierProfile->supply_note }}</p>@endif
                 </div>
                 @if ($connection?->isApproved())
-                    <div class="flex items-center gap-3">
+                    <div class="flex flex-wrap items-center gap-2">
                         <span class="pill !bg-emerald-500/10 !text-emerald-600">Connected · you earn {{ rtrim(rtrim(number_format($connection->margin_pct, 2), '0'), '.') }}%</span>
-                        <button type="button" wire:click="addAll" wire:loading.attr="disabled" class="btn-accent btn-sm">Add all on this page</button>
+                        <button type="button" wire:click="addAll" wire:loading.attr="disabled" class="btn-ghost btn-sm">Add all on this page</button>
+                        @if ($missingCount > 0)
+                            <button type="button" wire:click="addCatalog" wire:loading.attr="disabled" wire:confirm="Add all {{ $missingCount }} products this supplier offers to your store?" class="btn-accent btn-sm">Add whole catalog ({{ $missingCount }})</button>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -57,8 +60,26 @@
                 </div>
             @endunless
 
-            <div class="mt-4">
-                <input wire:model.live.debounce.400ms="q" class="input max-w-md" placeholder="Search this supplier's parts" aria-label="Search this supplier's parts">
+            <div class="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                <input wire:model.live.debounce.400ms="q" class="input" placeholder="Search this supplier's parts" aria-label="Search this supplier's parts">
+                <select wire:model.live="category" class="input" aria-label="Category">
+                    <option value="">All categories</option>
+                    @foreach ($categories as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->parent_id ? '— ' : '' }}{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+                <select wire:model.live="make" class="input" aria-label="Make">
+                    <option value="">Any make</option>
+                    @foreach ($makes as $mk)
+                        <option value="{{ $mk->id }}">{{ $mk->name }}</option>
+                    @endforeach
+                </select>
+                <select wire:model.live="model" class="input" aria-label="Model" @disabled(! $make)>
+                    <option value="">{{ $make ? 'Any model' : 'Pick a make first' }}</option>
+                    @foreach ($models as $md)
+                        <option value="{{ $md->id }}">{{ $md->name }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 @forelse ($catalog as $p)
@@ -227,7 +248,10 @@
                 <ul class="mt-4 divide-y divide-line">
                     @foreach ($products as $p)
                         <li class="flex items-center justify-between gap-3 py-2" wire:key="ex-{{ $p->id }}">
-                            <span class="line-clamp-1 text-sm">{{ $p->title }}</span>
+                            <span class="min-w-0">
+                                <span class="line-clamp-1 text-sm">{{ $p->title }}</span>
+                                @if (($resoldBy[$p->id] ?? 0) > 0)<span class="text-xs text-muted">Resold by {{ $resoldBy[$p->id] }} {{ Str::plural('store', $resoldBy[$p->id]) }}</span>@endif
+                            </span>
                             <label class="flex shrink-0 items-center gap-2 text-sm">
                                 <input type="checkbox" @checked(! $p->supply_excluded) wire:click="toggleExcluded({{ $p->id }})" class="rounded text-accent focus:ring-accent">
                                 Offered

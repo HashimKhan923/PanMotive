@@ -64,6 +64,12 @@
             <div class="flex justify-between py-2"><span>Affiliate commissions</span><span>${{ number_format($pnl['affiliate_fees'] ?? 0, 2) }}</span></div>
             <div class="flex justify-between py-2"><span>Shipping labels bought on Panmotive</span><span>${{ number_format($pnl['label_fees'] ?? 0, 2) }}</span></div>
             <div class="flex justify-between py-2"><span>Instant payout fees</span><span>${{ number_format($pnl['instant_payout_fees'], 2) }}</span></div>
+            @if (($pnl['reseller_margins'] ?? 0) > 0)
+                <div class="flex justify-between py-2"><span>Reseller margins (Supply Network)<span class="block text-xs text-muted">Paid to stores that resold your parts. Your gross sales include the full price.</span></span><span>${{ number_format($pnl['reseller_margins'], 2) }}</span></div>
+            @endif
+            @if (($pnl['resale_earnings'] ?? 0) != 0)
+                <div class="flex justify-between py-2 text-emerald-600"><span>Resale margin income (Supply Network)<span class="block text-xs text-muted">Earned reselling other stores' parts. Not part of the gross sales above — report it as income; ask your tax adviser how.</span></span><span>+${{ number_format($pnl['resale_earnings'], 2) }}</span></div>
+            @endif
             <div class="flex justify-between py-2 font-bold"><span>Net earnings</span><span>${{ number_format($pnl['net_earnings'], 2) }}</span></div>
         </div>
         <p class="mt-3 text-xs text-muted">Labels, parts and packaging you buy elsewhere aren't included — add those from your own records.</p>

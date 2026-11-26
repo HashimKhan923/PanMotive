@@ -344,6 +344,43 @@ class SupplyNetworkTest extends TestCase
         $this->assertFalse($copy->fresh()->isListed());
     }
 
+    public function test_supplier_catalog_filters_by_category_and_vehicle_and_whole_catalog_add(): void
+    {
+        $this->supply()->approve($this->supply()->request($this->reseller, $this->supplier));
+        $other = Product::create([
+            'seller_id' => $this->supplier->id,
+            'category_id' => Category::create(['name' => 'Spoilers', 'slug' => 'sp-'.Str::random(4)])->id,
+            'title' => 'Camry Trunk Spoiler', 'slug' => 'camry-spoiler-'.Str::random(5), 'price' => 150, 'quantity' => 4, 'status' => 'active',
+        ]);
+
+        $page = Livewire::actingAs($this->reseller)->test(SupplyNetwork::class, ['supplier' => $this->supplier->id])
+            ->assertSee('Civic LED Tail Lights')->assertSee('Camry Trunk Spoiler')
+            ->set('category', $other->category_id)->assertSee('Camry Trunk Spoiler')->assertDontSee('Civic LED Tail Lights')
+            ->set('category', null)->set('make', $this->civic->vehicle_make_id)->set('model', $this->civic->vehicle_model_id)
+            ->assertSee('Civic LED Tail Lights')->assertDontSee('Camry Trunk Spoiler')
+            ->assertSee('Add whole catalog (2)');
+
+        $page->call('addCatalog');
+        $this->assertSame(2, Product::where('seller_id', $this->reseller->id)->whereNotNull('source_product_id')->count());
+        $page->call('addCatalog');   // nothing left to add, no duplicates
+        $this->assertSame(2, Product::where('seller_id', $this->reseller->id)->whereNotNull('source_product_id')->count());
+    }
+
+    public function test_dashboard_analytics_and_tax_page_show_resale_numbers(): void
+    {
+        $copy = $this->connectAndAdd();
+        $this->buy($copy)->items()->first()->update(['status' => OrderStatus::Paid]);
+
+        $this->actingAs($this->reseller)->get(route('seller.dashboard'))->assertOk()->assertSee('resale margin');
+        $this->actingAs($this->reseller)->get(route('seller.analytics.index'))->assertOk()->assertSee('Supply Network')->assertSee('Margin earned');
+        $this->actingAs($this->supplier)->get(route('seller.analytics.index'))->assertOk()->assertSee('Sold through resellers');
+        $this->actingAs($this->reseller)->get(route('seller.tax.index'))->assertOk()->assertSee('Resale margin income');
+        $this->actingAs($this->supplier)->get(route('seller.supply.index', ['tab' => 'offer']))->assertOk()->assertSee('Resold by 1 store');
+
+        $this->supply()->request($this->store('Third Store'), $this->supplier);
+        $this->actingAs($this->supplier)->get(route('seller.dashboard'))->assertSee('asking to resell your products');
+    }
+
     public function test_supplier_settings_and_exclusions(): void
     {
         Livewire::actingAs($this->supplier)->test(SupplyNetwork::class, ['tab' => 'offer'])

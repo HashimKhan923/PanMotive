@@ -134,5 +134,26 @@
             @endif
         </div>
     </div>
+
+    {{-- Supply Network: reselling other stores' parts, and own parts sold through resellers. --}}
+    @php($sc = $supply['current'] ?? null)
+    @php($sp = $supply['previous'] ?? null)
+    @if ($sc && ($sc['resale_orders'] || $sc['via_resellers_orders'] || $sp['resale_orders'] || $sp['via_resellers_orders']))
+        @php($chg = fn ($now, $before) => $before > 0 ? round(($now - $before) / $before * 100) : null)
+        <div class="card mt-6 p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-bold">Supply Network</h2>
+                <a href="{{ route('seller.supply.index', ['tab' => 'sales']) }}" class="text-xs font-medium text-accent hover:underline">Details →</a>
+            </div>
+            <div class="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+                <div><p class="text-muted">Resale orders</p><p class="text-lg font-bold">{{ $sc['resale_orders'] }}</p><p class="text-xs text-muted">other stores' parts you sold</p></div>
+                <div><p class="text-muted">Margin earned</p><p class="text-lg font-bold text-emerald-600">${{ number_format($sc['resale_margin'], 2) }}</p>
+                    @if (($c = $chg($sc['resale_margin'], $sp['resale_margin'])) !== null)<p class="text-xs {{ $c >= 0 ? 'text-emerald-600' : 'text-rose-500' }}">{{ $c >= 0 ? '+' : '' }}{{ $c }}% vs previous</p>@endif
+                </div>
+                <div><p class="text-muted">Sold through resellers</p><p class="text-lg font-bold">${{ number_format($sc['via_resellers_sales'], 2) }}</p><p class="text-xs text-muted">{{ $sc['via_resellers_orders'] }} orders of your parts</p></div>
+                <div><p class="text-muted">Margin given to resellers</p><p class="text-lg font-bold">${{ number_format($sc['margin_given'], 2) }}</p><p class="text-xs text-muted">already in your sales figures above</p></div>
+            </div>
+        </div>
+    @endif
 </div>
 @endsection

@@ -34,6 +34,16 @@ class SupplyNetwork extends Component
     #[Url]
     public string $q = '';
 
+    /** Supplier catalog filters: category (with its sub-categories) and vehicle. */
+    #[Url]
+    public ?int $category = null;
+
+    #[Url]
+    public ?int $make = null;
+
+    #[Url]
+    public ?int $model = null;
+
     // supplier settings
     public bool $enabled = false;
 
@@ -78,6 +88,22 @@ class SupplyNetwork extends Component
     }
 
     public function updatingTab(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingCategory(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingMake(): void
+    {
+        $this->model = null;
+        $this->resetPage();
+    }
+
+    public function updatingModel(): void
     {
         $this->resetPage();
     }
@@ -152,15 +178,39 @@ class SupplyNetwork extends Component
     public function openSupplier(int $id): void
     {
         $this->supplier = $id;
-        $this->q = '';
+        $this->reset('q', 'category', 'make', 'model');
         $this->resetPage();
     }
 
     public function closeSupplier(): void
     {
         $this->supplier = null;
-        $this->q = '';
+        $this->reset('q', 'category', 'make', 'model');
         $this->resetPage();
+    }
+
+    /**
+     * Add every product this supplier offers that isn't in the store yet. Small catalogs are added at
+     * once; big ones in the background (you get a notification when it's done).
+     */
+    public function addCatalog(): void
+    {
+        abort_unless(SellerContext::can('products.manage'), 403);
+        abort_unless($this->supplier && $this->supply()->connection($this->supplier, $this->me()->id)?->isApproved(), 403);
+        $missing = $this->supply()->offered((int) $this->supplier)->whereNotIn('id', $this->addedSourceIds())->count();
+        if ($missing === 0) {
+            $this->dispatch('toast', message: 'You already resell everything this supplier offers');
+
+            return;
+        }
+        if ($missing <= 40) {
+            \App\Jobs\AddSupplierCatalog::dispatchSync($this->me()->id, (int) $this->supplier, false);
+            $this->dispatch('toast', message: "{$missing} products added to your store");
+
+            return;
+        }
+        \App\Jobs\AddSupplierCatalog::dispatch($this->me()->id, (int) $this->supplier);
+        $this->dispatch('toast', message: "Adding {$missing} products in the background — we'll notify you when it's done");
     }
 
     public function requestConnection(int $supplierId): void
@@ -215,8 +265,15 @@ class SupplyNetwork extends Component
 
     private function catalog()
     {
+        $categoryIds = $this->category
+            ? \App\Models\Category::where('id', $this->category)->orWhere('parent_id', $this->category)->pluck('id')
+            : null;
+
         return $this->supply()->offered((int) $this->supplier)
             ->when(trim($this->q) !== '', fn ($q) => app(\App\Services\Search\CatalogSearch::class)->apply($q, $this->q))
+            ->when($categoryIds, fn ($q) => $q->whereIn('category_id', $categoryIds))
+            ->when($this->make, fn ($q) => $q->whereHas('fitments', fn ($f) => $f->where('vehicles.vehicle_make_id', $this->make)
+                ->when($this->model, fn ($m) => $m->where('vehicles.vehicle_model_id', $this->model))))
             ->with('category')
             ->latest('id')
             ->paginate(24);
@@ -232,6 +289,9 @@ class SupplyNetwork extends Component
                 ->when(trim($this->excludeSearch) !== '', fn ($q) => $q->where('title', 'like', '%'.trim($this->excludeSearch).'%'))
                 ->orderBy('title')->paginate(20, pageName: 'offerPage');
             $data['offeredCount'] = $this->supply()->offered($me->id)->count();
+            // How many stores resell each product on this page.
+            $data['resoldBy'] = Product::whereIn('source_product_id', $data['products']->pluck('id'))
+                ->where('status', 'active')->selectRaw('source_product_id, COUNT(*) c')->groupBy('source_product_id')->pluck('c', 'source_product_id');
         }
 
         if ($this->tab === 'resellers') {
@@ -253,6 +313,21 @@ class SupplyNetwork extends Component
                 $data['catalog'] = $this->catalog();
                 $data['added'] = $this->addedSourceIds();
                 $data['connection'] = $data['myConnections'][$this->supplier] ?? null;
+                // Filter choices: only categories and vehicles this supplier actually has parts for.
+                $offered = $this->supply()->offered((int) $this->supplier);
+                $catIds = (clone $offered)->distinct()->pluck('category_id')->filter();
+                $data['categories'] = \App\Models\Category::whereIn('id', $catIds)
+                    ->orWhereIn('id', \App\Models\Category::whereIn('id', $catIds)->whereNotNull('parent_id')->pluck('parent_id'))
+                    ->orderByRaw('parent_id IS NOT NULL')->orderBy('name')->get(['id', 'name', 'parent_id']);
+                $vehicleRows = \Illuminate\Support\Facades\DB::table('product_fitments')
+                    ->join('vehicles', 'vehicles.id', '=', 'product_fitments.vehicle_id')
+                    ->whereIn('product_fitments.product_id', (clone $offered)->select('products.id'))
+                    ->distinct()->get(['vehicles.vehicle_make_id', 'vehicles.vehicle_model_id']);
+                $data['makes'] = \App\Models\VehicleMake::whereIn('id', $vehicleRows->pluck('vehicle_make_id')->unique())->orderBy('name')->get(['id', 'name']);
+                $data['models'] = $this->make
+                    ? \App\Models\VehicleModel::whereIn('id', $vehicleRows->where('vehicle_make_id', $this->make)->pluck('vehicle_model_id')->unique())->orderBy('name')->get(['id', 'name'])
+                    : collect();
+                $data['missingCount'] = (clone $offered)->whereNotIn('id', $data['added'])->count();
             } else {
                 $data['suppliers'] = $this->supply()->suppliers($me->id)
                     ->when(trim($this->q) !== '', fn ($q) => $q->where('business_name', 'like', '%'.trim($this->q).'%'))

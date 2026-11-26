@@ -95,6 +95,25 @@ class SiteCrawlTest extends TestCase
         Offer::create(['seller_id' => $this->seller->id, 'buyer_id' => $this->buyer->id, 'product_id' => $product->id, 'offer_price' => 80, 'quantity' => 1, 'status' => 'pending', 'expires_at' => now()->addDay()]);
         Subscription::create(['buyer_id' => $this->buyer->id, 'seller_id' => $this->seller->id, 'product_id' => $product->id, 'quantity' => 1, 'interval_days' => 30, 'discount_pct' => 5, 'status' => 'active', 'next_run_at' => now()->addDay()]);
         SupportTicket::create(['seller_id' => $this->seller->id, 'opened_by' => $this->seller->id, 'category' => array_key_first(SupportTicket::CATEGORIES), 'subject' => 'Help', 'status' => 'open', 'priority' => 'normal', 'last_reply_at' => now()]);
+
+        // Supply Network: seller2 supplies, seller1 resells one of its parts and has a resold order.
+        $supplier = User::where('email', 'seller2@panmotive.test')->firstOrFail();
+        $supplier->sellerProfile->update(['supply_enabled' => true, 'supply_margin_pct' => 20]);
+        $supply = app(\App\Services\Seller\SupplyNetworkService::class);
+        $supply->approve($supply->request($this->seller, $supplier, 'Crawl'));
+        $copy = $supply->addToStore($this->seller, Product::where('seller_id', $supplier->id)->where('status', 'active')->firstOrFail());
+        $resold = Order::create([
+            'order_number' => 'PM-CRAWLSN', 'buyer_id' => $this->buyer->id, 'status' => OrderStatus::Paid,
+            'subtotal' => 100, 'total' => 100, 'currency' => 'USD', 'placed_at' => now(),
+            'shipping_address' => ['name' => 'B', 'line1' => '1 Main', 'city' => 'Dallas', 'state' => 'TX', 'postal_code' => '75001', 'country' => 'US'],
+            'billing_address' => ['name' => 'B', 'line1' => '1 Main', 'city' => 'Dallas', 'state' => 'TX', 'postal_code' => '75001', 'country' => 'US'],
+        ]);
+        $resold->items()->create([
+            'seller_id' => $supplier->id, 'product_id' => $copy->source_product_id, 'product_title' => $copy->title,
+            'quantity' => 1, 'unit_price' => 100, 'line_total' => 100, 'commission_rate' => 10, 'platform_fee_amount' => 10,
+            'seller_payout_amount' => 70, 'status' => OrderStatus::Paid,
+            'reseller_id' => $this->seller->id, 'listing_product_id' => $copy->id, 'reseller_margin' => 20, 'reseller_margin_pct' => 20,
+        ]);
     }
 
     private function member(string $preset): User

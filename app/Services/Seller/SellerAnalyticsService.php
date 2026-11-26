@@ -36,6 +36,34 @@ class SellerAnalyticsService
             'categories' => $this->categories($sellerId, $from, $to),
             'repeat_rate' => $this->repeatRate($sellerId),
             'return_rate' => $this->returnRate($sellerId, $from, $to),
+            'supply' => [
+                'current' => $this->supplyTotals($sellerId, $from, $to),
+                'previous' => $this->supplyTotals($sellerId, $prevFrom, $from->copy()->subSecond()),
+            ],
+        ];
+    }
+
+    /**
+     * Supply Network in a window: as a reseller (orders and margin earned selling other stores' parts)
+     * and as a supplier (sales made through resellers and the margin given to them).
+     *
+     * @return array{resale_orders:int, resale_sales:float, resale_margin:float, via_resellers_orders:int, via_resellers_sales:float, margin_given:float}
+     */
+    public function supplyTotals(int $sellerId, Carbon $from, Carbon $to): array
+    {
+        $real = fn ($q) => $q->whereNotIn('status', self::excluded())->whereBetween('created_at', [$from, $to]);
+        $resale = $real(\App\Models\OrderItem::where('reseller_id', $sellerId))
+            ->selectRaw('COUNT(DISTINCT order_id) o, COALESCE(SUM(line_total),0) s, COALESCE(SUM(reseller_margin),0) m')->first();
+        $via = $real(\App\Models\OrderItem::where('seller_id', $sellerId)->whereNotNull('reseller_id'))
+            ->selectRaw('COUNT(DISTINCT order_id) o, COALESCE(SUM(line_total),0) s, COALESCE(SUM(reseller_margin),0) m')->first();
+
+        return [
+            'resale_orders' => (int) $resale->o,
+            'resale_sales' => round((float) $resale->s, 2),
+            'resale_margin' => round((float) $resale->m, 2),
+            'via_resellers_orders' => (int) $via->o,
+            'via_resellers_sales' => round((float) $via->s, 2),
+            'margin_given' => round((float) $via->m, 2),
         ];
     }
 

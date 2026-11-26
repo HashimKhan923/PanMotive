@@ -37,9 +37,9 @@ class DashboardController extends Controller
                 ->whereIn('status', $escrowStatuses)->sum('seller_payout_amount'),
             'released_payout' => (float) OrderItem::where('seller_id', $sellerId)
                 ->where('status', OrderStatus::PayoutReleased->value)->sum('seller_payout_amount'),
-            'low_stock' => Product::where('seller_id', $sellerId)->where('status', 'active')
+            'low_stock' => Product::where('seller_id', $sellerId)->whereNull('source_product_id')->where('status', 'active')
                 ->where('quantity', '>', 0)->where('quantity', '<=', self::LOW_STOCK)->count(),
-            'out_of_stock' => Product::where('seller_id', $sellerId)->where('status', 'active')->where('quantity', '<=', 0)->count(),
+            'out_of_stock' => Product::where('seller_id', $sellerId)->whereNull('source_product_id')->where('status', 'active')->where('quantity', '<=', 0)->count(),
             'open_returns' => ReturnRequest::whereIn('status', ['requested', 'approved'])
                 ->whereHas('orderItem', fn ($q) => $q->where('seller_id', $sellerId))->count(),
             'unanswered_questions' => \App\Models\Question::where('status', 'published')
@@ -51,6 +51,16 @@ class DashboardController extends Controller
                 ->get()->filter(fn (OrderItem $i) => $i->isLate())->count(),
             'support_replies' => \App\Models\SupportTicket::where('seller_id', $sellerId)->where('seller_unread', true)->count(),
             'open_offers' => \App\Models\Offer::where('seller_id', $sellerId)->whereIn('status', ['pending', 'countered'])->count(),
+            // Supply Network: margin earned this month reselling, and reseller requests waiting.
+            'resale_margin_month' => (float) OrderItem::where('reseller_id', $sellerId)
+                ->where('created_at', '>=', now()->startOfMonth())
+                ->whereNotIn('status', [OrderStatus::Placed->value, OrderStatus::Cancelled->value, OrderStatus::Refunded->value])
+                ->sum('reseller_margin'),
+            'resale_orders_month' => OrderItem::where('reseller_id', $sellerId)
+                ->where('created_at', '>=', now()->startOfMonth())
+                ->whereNotIn('status', [OrderStatus::Placed->value, OrderStatus::Cancelled->value, OrderStatus::Refunded->value])
+                ->distinct('order_id')->count('order_id'),
+            'supply_requests' => \App\Models\SupplyConnection::where('supplier_id', $sellerId)->where('status', 'pending')->count(),
             'rating' => $profile?->rating ? (float) $profile->rating : null,
             'rating_count' => (int) ($profile?->rating_count ?? 0),
         ];
