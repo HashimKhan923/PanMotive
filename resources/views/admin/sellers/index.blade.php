@@ -15,38 +15,12 @@
     </select>
 </x-admin.filters>
 
-@if ($status === 'started')
-<x-admin.card flush>
-    @if ($started->isEmpty())
-        <x-admin.empty icon="store" title="Nobody is part-way through sign-up" text="People who open seller sign-up but don't set up their store show here." />
-    @else
-        <p class="px-4 pt-4 text-sm text-muted">These people started selling but never set up their store (business name, shipping, payouts), so they have no store yet. They get one automatic reminder a day after signing up.</p>
-        <table class="adm-table">
-            <thead><tr><th>Person</th><th>Signed up</th><th>Email confirmed</th><th>Reminded</th><th></th></tr></thead>
-            <tbody>
-                @foreach ($started as $u)
-                    <tr>
-                        <td>{{ $u->name }}<p class="text-xs text-muted">{{ $u->email }}</p></td>
-                        <td class="whitespace-nowrap text-muted">{{ $u->created_at->format('M j, Y g:i a') }}</td>
-                        <td>{{ $u->email_verified_at ? 'Yes' : 'Not yet' }}</td>
-                        <td class="whitespace-nowrap text-muted">{{ $u->seller_signup_reminded_at?->format('M j, Y') ?? '—' }}</td>
-                        <td class="whitespace-nowrap text-right">
-                            <x-admin.action :url="route('admin.sellers.remind-signup', $u)" label="Send reminder" size="xs" :title="'Remind '.$u->email" body="We email them a link to finish setting up their store." confirm="Send" />
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    @endif
-</x-admin.card>
-<div class="mt-4">{{ $started->links() }}</div>
-@else
 <x-admin.card flush>
     @if ($sellers->isEmpty())
         <x-admin.empty icon="store" title="No sellers here" text="Nothing matches this tab and search." />
     @else
         <table class="adm-table">
-            <thead><tr><th>Store</th><th>Status</th><th>Tier</th><th class="num">Commission</th><th class="num">Live listings</th><th class="num">Sales</th><th>Applied</th><th></th></tr></thead>
+            <thead><tr><th>Store</th><th>Status</th><th>Setup</th><th>Tier</th><th class="num">Commission</th><th class="num">Live listings</th><th class="num">Sales</th><th>Applied</th><th></th></tr></thead>
             <tbody>
                 @foreach ($sellers as $s)
                     <tr>
@@ -58,6 +32,11 @@
                             <x-admin.status :value="$s->status" />
                             @if ($s->payouts_held)<x-admin.status value="held" label="Payouts held" />@endif
                         </td>
+                        @php($stepLabels = ['Just signed up', 'Business details done', 'Shipping done', 'Payouts connected'])
+                        <td class="whitespace-nowrap text-xs {{ (int) $s->setup_step >= 3 ? 'text-emerald-600' : 'text-muted' }}">
+                            {{ min(3, (int) $s->setup_step) }}/3 · {{ $stepLabels[min(3, (int) $s->setup_step)] }}
+                            @if ($s->user?->seller_signup_reminded_at)<p>Reminded {{ $s->user->seller_signup_reminded_at->format('M j') }}</p>@endif
+                        </td>
                         <td class="whitespace-nowrap text-muted">{{ $s->tierLabel() }}</td>
                         <td class="num">{{ rtrim(rtrim(number_format($s->commissionRate(), 2), '0'), '.') }}%@if ($s->commission_rate_override !== null)<span class="text-accent" title="Set just for this store"> *</span>@endif</td>
                         <td class="num">{{ number_format($listings[$s->user_id] ?? 0) }}</td>
@@ -65,7 +44,10 @@
                         <td class="whitespace-nowrap text-muted">{{ $s->created_at->format('M j, Y') }}</td>
                         <td class="text-right">
                             @if ($s->status === 'pending')
-                                <x-admin.action :url="route('admin.sellers.approve', $s)" label="Approve" tone="primary" size="xs" :body="'Approve '.$s->business_name.' to sell on Panmotive?'" />
+                                @if ((int) $s->setup_step < 2 && $s->user)
+                                    <x-admin.action :url="route('admin.sellers.remind-signup', $s->user)" label="Remind" size="xs" :title="'Remind '.$s->user->email" body="We email them a link to finish setting up their store." confirm="Send" />
+                                @endif
+                                <x-admin.action :url="route('admin.sellers.approve', $s)" label="Approve" tone="primary" size="xs" :body="(int) $s->setup_step < 1 ? 'They haven\'t entered their business details yet. Approve '.$s->business_name.' anyway?' : 'Approve '.$s->business_name.' to sell on Panmotive?'" />
                             @endif
                         </td>
                     </tr>
@@ -75,5 +57,4 @@
     @endif
 </x-admin.card>
 <div class="mt-4">{{ $sellers->links() }}</div>
-@endif
 @endsection

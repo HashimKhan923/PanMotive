@@ -19,10 +19,10 @@ class SellerSignupService
     /** Don't chase old sign-ups. */
     public const REMIND_WITHIN_DAYS = 14;
 
+    /** Sellers whose application is pending and who haven't finished business + shipping details. */
     public function unfinished(): Builder
     {
-        return User::role('seller')
-            ->whereDoesntHave('sellerProfile')
+        return User::whereHas('sellerProfile', fn ($q) => $q->where('status', 'pending')->where('setup_step', '<', 2))
             ->whereNotIn('id', SellerTeamMember::select('user_id')->whereNotNull('user_id'))
             ->where('is_active', true);
     }

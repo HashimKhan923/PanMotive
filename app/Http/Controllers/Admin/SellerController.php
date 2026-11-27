@@ -26,17 +26,8 @@ class SellerController extends Controller
     {
         $status = $request->query('status', '');
         $counts = SellerProfile::selectRaw('status, COUNT(*) AS c')->groupBy('status')->pluck('c', 'status');
-        $signups = app(\App\Services\Seller\SellerSignupService::class);
 
-        // People who started seller sign-up but never set up their store (no store profile yet).
-        $started = $status === 'started'
-            ? $signups->unfinished()
-                ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w
-                    ->where('name', 'like', $this->like($request->q))->orWhere('email', 'like', $this->like($request->q))))
-                ->latest()->paginate(25)->withQueryString()
-            : null;
-
-        $sellers = SellerProfile::with('user:id,name,email,is_active')
+        $sellers = SellerProfile::with('user:id,name,email,is_active,seller_signup_reminded_at')
             ->when($status === 'held', fn ($q) => $q->where('payouts_held', true))
             ->when($status && $status !== 'held', fn ($q) => $q->where('status', $status))
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w
@@ -52,10 +43,9 @@ class SellerController extends Controller
             ->selectRaw('seller_id, COUNT(*) AS c')->groupBy('seller_id')->pluck('c', 'seller_id');
 
         return view('admin.sellers.index', [
-            'sellers' => $sellers, 'sales' => $sales, 'listings' => $listings, 'status' => $status, 'started' => $started,
+            'sellers' => $sellers, 'sales' => $sales, 'listings' => $listings, 'status' => $status,
             'tabs' => [
                 '' => ['All', $counts->sum()],
-                'started' => ['Started sign-up', $signups->unfinished()->count()],
                 'pending' => ['Applications', $counts['pending'] ?? 0],
                 'approved' => ['Approved', $counts['approved'] ?? 0],
                 'suspended' => ['Suspended', $counts['suspended'] ?? 0],

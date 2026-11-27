@@ -19,18 +19,19 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $tab = $request->query('type', '');
-        $staff = fn ($q) => $q->whereIn('name', self::STAFF_ROLES);
-        $sellers = fn ($q) => $q->where('name', 'seller');
 
-        $query = User::with('roles', 'sellerProfile:id,user_id,business_name,slug')
+        // Shoppers only: sellers live under Sellers, staff under Staff & roles. A seller's team
+        // member works in someone else's store, so they aren't a buyer account either.
+        $buyers = fn () => User::query()
+            ->whereDoesntHave('roles', fn ($r) => $r->whereIn('name', [...self::STAFF_ROLES, 'seller']))
+            ->whereNotIn('id', \App\Models\SellerTeamMember::select('user_id')->whereNotNull('user_id'));
+
+        $query = $buyers()->with('roles')
             ->withCount('orders')
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w
                 ->where('name', 'like', $this->like($request->q))
                 ->orWhere('email', 'like', $this->like($request->q))
                 ->orWhere('phone', 'like', $this->like($request->q))))
-            ->when($tab === 'buyers', fn ($q) => $q->whereDoesntHave('roles', fn ($r) => $r->whereIn('name', [...self::STAFF_ROLES, 'seller'])))
-            ->when($tab === 'sellers', fn ($q) => $q->whereHas('roles', $sellers))
-            ->when($tab === 'staff', fn ($q) => $q->whereHas('roles', $staff))
             ->when($tab === 'plus', fn ($q) => $q->where('plus_until', '>', now()))
             ->when($tab === 'banned', fn ($q) => $q->where('is_active', false));
 
@@ -40,12 +41,9 @@ class UserController extends Controller
             'users' => $query->paginate(25)->withQueryString(),
             'tab' => $tab,
             'tabs' => [
-                '' => ['All', User::count()],
-                'buyers' => ['Buyers', User::whereDoesntHave('roles', fn ($r) => $r->whereIn('name', [...self::STAFF_ROLES, 'seller']))->count()],
-                'sellers' => ['Sellers', User::whereHas('roles', $sellers)->count()],
-                'staff' => ['Staff', User::whereHas('roles', $staff)->count()],
-                'plus' => ['Members', User::where('plus_until', '>', now())->count()],
-                'banned' => ['Suspended', User::where('is_active', false)->count()],
+                '' => ['All buyers', $buyers()->count()],
+                'plus' => ['Members', $buyers()->where('plus_until', '>', now())->count()],
+                'banned' => ['Suspended', $buyers()->where('is_active', false)->count()],
             ],
         ]);
     }

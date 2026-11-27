@@ -26,17 +26,35 @@ class OnboardingWizard extends Component
 
     public function mount(): void
     {
-        auth()->user()->assignRole('seller');
+        $user = auth()->user();
+        $user->assignRole('seller');
 
         $this->sref = (string) request()->query('sref', '');
 
-        // Resume where the seller left off.
-        $profile = auth()->user()->sellerProfile;
+        // The store record exists from the first visit: a pending application admin can see and
+        // approve straight away, even before the seller finishes the steps below. Team members
+        // (who work in someone else's store) never get one.
+        $profile = $user->sellerProfile;
+        if (! $profile && ! \App\Models\SellerTeamMember::where('user_id', $user->id)->exists()) {
+            $profile = SellerProfile::create([
+                'user_id' => $user->id,
+                'business_name' => $user->name ?: 'New store',
+                'business_type' => 'sole_prop',
+                'status' => 'pending',
+                'kyc_status' => 'unsubmitted',
+                'setup_step' => 0,
+            ]);
+        }
 
+        // Resume where the seller left off.
         if ($profile) {
-            $this->business_name = $profile->business_name ?? '';
+            $this->business_name = $profile->setup_step >= 1 ? ($profile->business_name ?? '') : '';
             $this->business_type = $profile->business_type ?? 'sole_prop';
-            $this->step = $profile->shipping_settings ? 3 : 2;
+            $this->step = match (true) {
+                $profile->setup_step >= 2 => 3,
+                $profile->setup_step >= 1 => 2,
+                default => 1,
+            };
         }
     }
 
@@ -48,18 +66,27 @@ class OnboardingWizard extends Component
             'ein' => 'nullable|string|max:20',
         ]);
 
+        $existing = auth()->user()->sellerProfile;
+        $firstTime = ! $existing || (int) $existing->setup_step < 1;
+
         $profile = SellerProfile::updateOrCreate(
             ['user_id' => auth()->id()],
             [
                 'business_name' => $this->business_name,
                 'business_type' => $this->business_type,
                 'ein_encrypted' => $this->ein ?: null,
-                'status' => 'pending',
-                'kyc_status' => 'unsubmitted',
+                // An application staff already approved stays approved.
+                'status' => $existing?->status === 'approved' ? 'approved' : ($existing?->status ?? 'pending'),
+                'kyc_status' => $existing?->kyc_status ?? 'unsubmitted',
+                'setup_step' => max(1, (int) ($existing?->setup_step ?? 0)),
             ]
         );
+        // The store's web address follows the real business name on first setup.
+        if ($firstTime && $profile->business_name !== ($existing?->business_name ?? null)) {
+            $profile->forceFill(['slug' => SellerProfile::uniqueSlug($profile->business_name, $profile->id)])->save();
+        }
 
-        if ($profile->wasRecentlyCreated) {
+        if ($firstTime) {
             try {
                 auth()->user()->notify(new \App\Notifications\SellerApplicationReceived($profile->business_name));
             } catch (\Throwable $e) {
@@ -76,11 +103,13 @@ class OnboardingWizard extends Component
 
     public function saveShippingSettings(): void
     {
-        auth()->user()->sellerProfile->update([
+        $profile = auth()->user()->sellerProfile;
+        $profile->update([
             'shipping_settings' => [
                 'default_carrier' => $this->shipping_default_carrier,
                 'processing_days' => $this->shipping_processing_days,
             ],
+            'setup_step' => max(2, (int) $profile->setup_step),
         ]);
 
         $this->step = 3;

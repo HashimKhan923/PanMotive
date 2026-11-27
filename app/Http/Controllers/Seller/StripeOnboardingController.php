@@ -12,7 +12,7 @@ class StripeOnboardingController extends Controller
         $profile = auth()->user()->sellerProfile;
 
         if ($profile?->stripe_account_id && $stripe->isOnboardingComplete($profile->stripe_account_id)) {
-            $profile->update(['stripe_onboarding_complete' => true]);
+            $profile->update(['stripe_onboarding_complete' => true, 'setup_step' => 3]);
         }
 
         return redirect()->route('seller.onboarding.pending');

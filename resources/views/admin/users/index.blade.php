@@ -3,7 +3,7 @@
 @section('title', 'Buyers & accounts')
 
 @section('content')
-<x-admin.header title="Buyers & accounts" subtitle="Every account on Panmotive. Open one to see orders and wallet, or to suspend it." />
+<x-admin.header title="Buyers & accounts" subtitle="Shopper accounts — people who signed up to buy. Sellers are under Sellers, staff under Staff and roles." />
 
 <x-admin.tabs :tabs="$tabs" param="type" :current="$tab" />
 
@@ -20,7 +20,7 @@
         <x-admin.empty icon="users" title="No accounts match" text="Try a different search or tab." />
     @else
         <table class="adm-table">
-            <thead><tr><th>Person</th><th>Type</th><th>Status</th><th class="num">Orders</th><th class="num">Lifetime spend</th><th class="num">Wallet</th><th>Joined</th></tr></thead>
+            <thead><tr><th>Person</th><th>Status</th><th class="num">Orders</th><th class="num">Lifetime spend</th><th class="num">Wallet</th><th>Joined</th></tr></thead>
             <tbody>
                 @foreach ($users as $u)
                     <tr>
@@ -28,7 +28,6 @@
                             <a href="{{ route('admin.users.show', $u) }}" class="font-medium hover:text-accent">{{ $u->name }}</a>
                             <p class="text-xs text-muted">{{ $u->email }}</p>
                         </td>
-                        <td class="capitalize text-muted">{{ str_replace('_', ' ', $u->roles->pluck('name')->first() ?? 'buyer') }}</td>
                         <td>
                             @if ($u->is_active === false)
                                 <x-admin.status value="suspended" />
