@@ -12,6 +12,7 @@ Artisan::command('inspire', function () {
 Schedule::call(fn () => \App\Support\Heartbeat::beat('scheduler'))->everyMinute()->name('system-heartbeat');
 
 Schedule::command('orders:auto-confirm-deliveries')->daily();
+Schedule::command('sellers:remind-unfinished')->hourlyAt(35)->withoutOverlapping();
 Schedule::command('carts:send-abandoned-reminders')->hourly();
 // Browse reminder, add-your-car tip, did-it-fit check, win-back. Runs at :20 so it doesn't pile on the hour.
 Schedule::command('emails:lifecycle')->hourlyAt(20)->withoutOverlapping();

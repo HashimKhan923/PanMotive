@@ -26,6 +26,15 @@ class SellerController extends Controller
     {
         $status = $request->query('status', '');
         $counts = SellerProfile::selectRaw('status, COUNT(*) AS c')->groupBy('status')->pluck('c', 'status');
+        $signups = app(\App\Services\Seller\SellerSignupService::class);
+
+        // People who started seller sign-up but never set up their store (no store profile yet).
+        $started = $status === 'started'
+            ? $signups->unfinished()
+                ->when($request->filled('q'), fn ($q) => $q->where(fn ($w) => $w
+                    ->where('name', 'like', $this->like($request->q))->orWhere('email', 'like', $this->like($request->q))))
+                ->latest()->paginate(25)->withQueryString()
+            : null;
 
         $sellers = SellerProfile::with('user:id,name,email,is_active')
             ->when($status === 'held', fn ($q) => $q->where('payouts_held', true))
@@ -43,9 +52,10 @@ class SellerController extends Controller
             ->selectRaw('seller_id, COUNT(*) AS c')->groupBy('seller_id')->pluck('c', 'seller_id');
 
         return view('admin.sellers.index', [
-            'sellers' => $sellers, 'sales' => $sales, 'listings' => $listings, 'status' => $status,
+            'sellers' => $sellers, 'sales' => $sales, 'listings' => $listings, 'status' => $status, 'started' => $started,
             'tabs' => [
                 '' => ['All', $counts->sum()],
+                'started' => ['Started sign-up', $signups->unfinished()->count()],
                 'pending' => ['Applications', $counts['pending'] ?? 0],
                 'approved' => ['Approved', $counts['approved'] ?? 0],
                 'suspended' => ['Suspended', $counts['suspended'] ?? 0],
@@ -54,6 +64,16 @@ class SellerController extends Controller
             ],
             'tiers' => config('marketplace.seller_tiers'),
         ]);
+    }
+
+    /** Nudge someone who started seller sign-up to finish setting up their store. */
+    public function remindSignup(\App\Models\User $user, \App\Services\Seller\SellerSignupService $signups)
+    {
+        abort_unless($signups->unfinished()->whereKey($user->id)->exists(), 404);
+        $signups->remind($user);
+        $this->audit('Reminded seller to finish sign-up', $user);
+
+        return back()->with('success', "Reminder sent to {$user->email}.");
     }
 
     public function show(SellerProfile $sellerProfile)

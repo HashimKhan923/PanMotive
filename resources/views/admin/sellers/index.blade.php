@@ -15,6 +15,32 @@
     </select>
 </x-admin.filters>
 
+@if ($status === 'started')
+<x-admin.card flush>
+    @if ($started->isEmpty())
+        <x-admin.empty icon="store" title="Nobody is part-way through sign-up" text="People who open seller sign-up but don't set up their store show here." />
+    @else
+        <p class="px-4 pt-4 text-sm text-muted">These people started selling but never set up their store (business name, shipping, payouts), so they have no store yet. They get one automatic reminder a day after signing up.</p>
+        <table class="adm-table">
+            <thead><tr><th>Person</th><th>Signed up</th><th>Email confirmed</th><th>Reminded</th><th></th></tr></thead>
+            <tbody>
+                @foreach ($started as $u)
+                    <tr>
+                        <td>{{ $u->name }}<p class="text-xs text-muted">{{ $u->email }}</p></td>
+                        <td class="whitespace-nowrap text-muted">{{ $u->created_at->format('M j, Y g:i a') }}</td>
+                        <td>{{ $u->email_verified_at ? 'Yes' : 'Not yet' }}</td>
+                        <td class="whitespace-nowrap text-muted">{{ $u->seller_signup_reminded_at?->format('M j, Y') ?? '—' }}</td>
+                        <td class="whitespace-nowrap text-right">
+                            <x-admin.action :url="route('admin.sellers.remind-signup', $u)" label="Send reminder" size="xs" :title="'Remind '.$u->email" body="We email them a link to finish setting up their store." confirm="Send" />
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+</x-admin.card>
+<div class="mt-4">{{ $started->links() }}</div>
+@else
 <x-admin.card flush>
     @if ($sellers->isEmpty())
         <x-admin.empty icon="store" title="No sellers here" text="Nothing matches this tab and search." />
@@ -49,4 +75,5 @@
     @endif
 </x-admin.card>
 <div class="mt-4">{{ $sellers->links() }}</div>
+@endif
 @endsection

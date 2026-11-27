@@ -65,6 +65,7 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::middleware('can:sellers.approve')->group(function () {
         Route::get('/sellers', [SellerController::class, 'index'])->name('admin.sellers.index');
         Route::get('/sellers/pending', fn () => redirect()->route('admin.sellers.index', ['status' => 'pending']))->name('admin.sellers.pending');
+        Route::post('/sellers/signups/{user}/remind', [SellerController::class, 'remindSignup'])->middleware('throttle:20,1')->name('admin.sellers.remind-signup');
         Route::get('/sellers/verifications', [SellerApprovalController::class, 'verifications'])->name('admin.verifications.index');
         Route::post('/verifications/{sellerVerification}/review', [SellerApprovalController::class, 'reviewVerification'])->name('admin.verifications.review');
         Route::get('/verifications/{sellerVerification}/document/{type}', [SellerApprovalController::class, 'document'])->name('admin.verifications.document');
